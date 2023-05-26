@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
+nalgebra = "0.32.2"
 rapier2d = { version = "0.17.2", features = ["simd-stable"] }
 raylib = "3.7.0"
 tokio = { version = "1.28.1", features = ["full"] }
