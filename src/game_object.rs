@@ -1,7 +1,9 @@
+use flume::Sender;
+use rapier2d::geometry::NarrowPhase;
 use rapier2d::prelude::{ColliderSet, RigidBodyHandle, RigidBodySet};
 use raylib::drawing::RaylibDrawHandle;
 use raylib::ffi::GetFrameTime;
-use crate::{FlameEngine, FlameEngineView};
+use crate::{FlameEngine, FlameEngineView, FlameEvent};
 use crate::game_object::behaviours::{UserBehaviour};
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
@@ -38,7 +40,7 @@ impl GameObject {
             }
         }
     }
-    pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet) {
+    pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
 
         let mut time: f32 = 0.0;
         unsafe {
@@ -58,6 +60,8 @@ impl GameObject {
                 pos_y: &mut self.pos_y,
             }, FlameEngineView {
                 rigid_body_set,
+                narrow_phase,
+                event_tx
             }, time);
         }
         self.render(d);

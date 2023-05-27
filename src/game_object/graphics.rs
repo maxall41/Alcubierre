@@ -15,7 +15,6 @@ pub struct CircleData {
 }
 
 pub struct SquareData {
-    pub radius: f32,
     pub color: Color,
     pub width: i32,
     pub height: i32
