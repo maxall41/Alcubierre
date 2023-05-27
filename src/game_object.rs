@@ -40,6 +40,16 @@ impl GameObject {
             }
         }
     }
+    pub fn unloading(&mut self) {
+        for behaviour in &mut self.behaviours {
+            behaviour.scene_unloaded();
+        }
+    }
+    pub fn loading(&mut self) {
+        for behaviour in &mut self.behaviours {
+            behaviour.scene_loaded();
+        }
+    }
     pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
 
         let mut time: f32 = 0.0;

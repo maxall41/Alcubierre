@@ -48,7 +48,7 @@ pub struct FlameEngine {
     collider_set: ColliderSet,
     pub rigid_body_set: RigidBodySet,
     pub scenes: HashMap<String,Scene>,
-    pub current_scene: Option<String>,
+    current_scene: Option<String>,
     narrow_phase_collision: NarrowPhase,
     event_rx: Receiver<FlameEvent>,
     event_tx: Sender<FlameEvent>
@@ -81,6 +81,23 @@ impl FlameEngine {
             event_rx
         }
     }
+
+    fn set_current_scene(&mut self,new_scene: String) {
+        let scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
+
+        for object in &mut scene.game_objects {
+            object.unloading()
+        }
+
+        self.current_scene = Some(new_scene);
+
+        let new_scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
+
+        for object in &mut new_scene.game_objects {
+            object.loading()
+        }
+    }
+
     pub fn start_cycle(&mut self,game_code: fn(&mut Self)) {
 
 
@@ -121,7 +138,7 @@ impl FlameEngine {
                     Ok(event) => {
                         match event {
                             FlameEvent::SwitchToScene(scene) => {
-                                self.current_scene= Some(scene);
+                                self.current_scene = Some(scene);
                             },
                         }
                     },
