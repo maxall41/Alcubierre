@@ -37,4 +37,11 @@ impl UserBehaviour for PlayerBehaviour {
     fn init(&mut self) {
         println!("INIT");
     }
+
+    fn scene_loaded(&mut self, game_object_view: GameObjectView, engine_view: FlameEngineView) {
+        let rigid_body = engine_view.rigid_body_set.get_mut(game_object_view.physics.rigid_body_handle.unwrap()).unwrap();
+
+        rigid_body.set_translation(vector![0.0, 0.0], true);
+    }
+
 }

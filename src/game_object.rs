@@ -40,14 +40,30 @@ impl GameObject {
             }
         }
     }
-    pub fn unloading(&mut self) {
+    pub fn unloading(&mut self,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
         for behaviour in &mut self.behaviours {
-            behaviour.scene_unloaded();
+            behaviour.scene_unloaded(GameObjectView {
+                physics: &mut self.physics,
+                pos_x: &mut self.pos_x,
+                pos_y: &mut self.pos_y,
+            }, FlameEngineView {
+                rigid_body_set,
+                narrow_phase,
+                event_tx
+            });
         }
     }
-    pub fn loading(&mut self) {
+    pub fn loading(&mut self,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
         for behaviour in &mut self.behaviours {
-            behaviour.scene_loaded();
+            behaviour.scene_loaded(GameObjectView {
+                physics: &mut self.physics,
+                pos_x: &mut self.pos_x,
+                pos_y: &mut self.pos_y,
+            }, FlameEngineView {
+                rigid_body_set,
+                narrow_phase,
+                event_tx
+            });
         }
     }
     pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {

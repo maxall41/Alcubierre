@@ -17,12 +17,15 @@ impl UserBehaviour for GatewayBehaviour {
     fn game_loop(&mut self, game_object_view: GameObjectView,mut engine_view: FlameEngineView,frame_delta: f32) {
         if engine_view.is_colliding_with_sensor(game_object_view.physics.collider_handle.unwrap(),self.player_collider) && self.going_to_next == false {
             self.going_to_next = true;
-            println!("Intersect!");
             engine_view.load_scene(self.scene_to_switch_to.clone())
         }
     }
 
     fn init(&mut self) {
-        println!("INIT");
+
+    }
+
+    fn scene_unloaded(&mut self, _: GameObjectView,_: FlameEngineView) {
+        self.going_to_next = false;
     }
 }

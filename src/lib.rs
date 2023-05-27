@@ -1,6 +1,7 @@
 pub mod game_object;
 pub mod keyboard;
 pub mod helpers;
+pub mod ui;
 
 use std::thread::sleep;
 use std::time::Duration;
@@ -82,11 +83,13 @@ impl FlameEngine {
         }
     }
 
-    fn set_current_scene(&mut self,new_scene: String) {
-        let scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
+    pub fn set_current_scene(&mut self,new_scene: String) {
+        if self.current_scene.as_ref().is_some() {
+            let scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
 
-        for object in &mut scene.game_objects {
-            object.unloading()
+            for object in &mut scene.game_objects {
+                object.unloading(&mut self.rigid_body_set,&mut self.narrow_phase_collision,&mut self.event_tx)
+            }
         }
 
         self.current_scene = Some(new_scene);
@@ -94,7 +97,7 @@ impl FlameEngine {
         let new_scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
 
         for object in &mut new_scene.game_objects {
-            object.loading()
+            object.loading(&mut self.rigid_body_set,&mut self.narrow_phase_collision,&mut self.event_tx)
         }
     }
 
@@ -138,7 +141,7 @@ impl FlameEngine {
                     Ok(event) => {
                         match event {
                             FlameEvent::SwitchToScene(scene) => {
-                                self.current_scene = Some(scene);
+                                self.set_current_scene(scene);
                             },
                         }
                     },

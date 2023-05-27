@@ -30,7 +30,7 @@ async fn main() {
 
     register_second_scene(&mut flame);
 
-    flame.current_scene = Some("Main".to_string());
+    flame.set_current_scene("Main".to_string());
 
     flame.start_cycle(game_code);
     println!("Cycle started");
