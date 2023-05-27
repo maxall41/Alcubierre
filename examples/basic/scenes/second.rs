@@ -11,6 +11,8 @@ use crate::scripts::player::PlayerBehaviour;
 use flame::physics::pixels_to_physics_units;
 
 pub fn register_second_scene(flame: &mut FlameEngine) {
+    let scene = flame.register_scene("Second".to_string());
+
     let mut player = GameObject::new(0,0);
 
     player.insert_behaviour(PlayerBehaviour { speed: 1.0 });
@@ -21,7 +23,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         .angular_damping(2.0)
         .build();
 
-    player.attach_rigid_body(player_rigid_body,flame);
+    player.attach_rigid_body(player_rigid_body,scene);
 
     let player_collider = FlameCollider {
         collider_type: FlameColliderType::Circle(20),
@@ -29,13 +31,14 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         restitution: 0.7,
     };
 
-    let player_collider_handle = player.attach_collider_with_rigid_body(player_collider,flame);
+    let player_collider_handle = player.attach_collider_with_rigid_body(player_collider,scene);
 
     player.add_graphics(GraphicsType::Circle(CircleData {
         radius: 20.0,
         color: Color::RED,
     }));
-    flame.register_game_object(player, "Second".to_string());
+
+    scene.register_game_object(player);
 
 
 
@@ -45,7 +48,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         .translation(vector![0.0, pixels_to_physics_units(450)])
         .build();
 
-    ground.attach_rigid_body(ground_rigid_body,flame);
+    ground.attach_rigid_body(ground_rigid_body,scene);
 
     let ground_collider = FlameCollider {
         collider_type: FlameColliderType::Rectangle((640,30)),
@@ -53,7 +56,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         restitution: 0.7,
     };
 
-    ground.attach_collider_with_rigid_body(ground_collider,flame);
+    ground.attach_collider_with_rigid_body(ground_collider,scene);
 
     ground.add_graphics(GraphicsType::Square(SquareData {
         color: Color::ORANGE,
@@ -61,7 +64,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         height: 30,
     }));
 
-    flame.register_game_object(ground, "Second".to_string());
+    scene.register_game_object(ground);
 
 
 
@@ -72,7 +75,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         .translation(vector![pixels_to_physics_units(100), pixels_to_physics_units(370)])
         .build();
 
-    gateway.attach_rigid_body(gateway_rigid_body,flame);
+    gateway.attach_rigid_body(gateway_rigid_body,scene);
 
     let gateway_collider = FlameCollider {
         collider_type: FlameColliderType::Rectangle((50,80)),
@@ -80,7 +83,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         restitution: 0.7,
     };
 
-    gateway.attach_collider_with_rigid_body(gateway_collider,flame);
+    gateway.attach_collider_with_rigid_body(gateway_collider,scene);
 
     gateway.insert_behaviour(GatewayBehaviour { player_collider: player_collider_handle, going_to_next: false, scene_to_switch_to: "Main".to_string() });
 
@@ -90,5 +93,5 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         height: 80,
     }));
 
-    flame.register_game_object(gateway, "Second".to_string());
+    scene.register_game_object(gateway);
 }

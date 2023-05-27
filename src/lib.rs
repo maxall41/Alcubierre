@@ -38,6 +38,14 @@ impl<'a> FlameEngineView<'a> {
 #[derive(Clone)]
 pub struct Scene {
     pub game_objects: Vec<GameObject>,
+    pub rigid_body_set: RigidBodySet,
+    pub collider_set: ColliderSet,
+    pub narrow_phase_collision: NarrowPhase,
+}
+impl Scene {
+    pub fn register_game_object(&mut self, game_object: GameObject) {
+        self.game_objects.push(game_object);
+    }
 }
 
 pub enum FlameEvent {
@@ -47,11 +55,8 @@ pub enum FlameEvent {
 pub struct FlameEngine {
     raylib: RaylibHandle,
     thread: RaylibThread,
-    collider_set: ColliderSet,
-    pub rigid_body_set: RigidBodySet,
     pub scenes: HashMap<String,Scene>,
     active_scene: Option<Scene>,
-    narrow_phase_collision: NarrowPhase,
     event_rx: Receiver<FlameEvent>,
     event_tx: Sender<FlameEvent>
 }
@@ -75,9 +80,6 @@ impl FlameEngine {
             raylib: rl,
             thread: thread,
             scenes: HashMap::new(),
-            collider_set,
-            rigid_body_set,
-            narrow_phase_collision: NarrowPhase::new(),
             event_tx,
             event_rx,
             active_scene: None
@@ -119,15 +121,17 @@ impl FlameEngine {
 
 
         loop {
-            if self.active_scene.as_ref().is_some() {
+            let active_scene = self.active_scene.as_mut();
+            if active_scene.is_some() {
+                let active_scene_unwraped = active_scene.unwrap();
                 physics_pipeline.step(
                     &gravity,
                     &integration_parameters,
                     &mut island_manager,
                     &mut broad_phase,
-                    &mut self.narrow_phase_collision,
-                    &mut self.rigid_body_set,
-                    &mut self.collider_set,
+                    &mut active_scene_unwraped.narrow_phase_collision,
+                    &mut active_scene_unwraped.rigid_body_set,
+                    &mut active_scene_unwraped.collider_set,
                     &mut impulse_joint_set,
                     &mut multibody_joint_set,
                     &mut ccd_solver,
@@ -154,9 +158,9 @@ impl FlameEngine {
 
                 let mut d = self.raylib.begin_drawing(&self.thread);
 
-
-                for object in &mut self.active_scene.as_mut().unwrap().game_objects {
-                    object.execute(&mut d,&mut self.rigid_body_set,&mut self.narrow_phase_collision,&mut self.event_tx);
+                let active_scene = self.active_scene.as_mut().unwrap();
+                for object in &mut active_scene.game_objects {
+                    object.execute(&mut d,&mut active_scene.rigid_body_set,&mut active_scene.narrow_phase_collision,&mut self.event_tx);
                 }
 
                 d.clear_background(Color::WHITE);
@@ -166,17 +170,14 @@ impl FlameEngine {
             sleep(Duration::new(0, 1_000_000_000u32 / 60));
         }
     }
-    pub fn register_game_object(&mut self, game_object: GameObject, scene_name: String) {
-        let scene = self.scenes.get_mut(&scene_name);
-        match scene {
-            Some(scene) => {
-                scene.game_objects.push(game_object);
-            },
-            None => {
-                self.scenes.insert(scene_name,Scene {
-                    game_objects: vec![game_object]
-                });
-            }
-        };
+    pub fn register_scene(&mut self,scene_name: String) -> &mut Scene {
+        self.scenes.insert(scene_name.clone(),Scene {
+            game_objects: vec![],
+            rigid_body_set: RigidBodySet::new(),
+            collider_set: ColliderSet::new(),
+            narrow_phase_collision: NarrowPhase::new(),
+        });
+        self.scenes.get_mut(&scene_name).unwrap()
+
     }
 }
