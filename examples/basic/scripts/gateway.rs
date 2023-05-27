@@ -6,7 +6,7 @@ use flame::game_object::behaviours::UserBehaviour;
 use flame::game_object::{GameObject, GameObjectView};
 use flame::keyboard::{is_key_down, is_key_pressed};
 
-
+#[derive(Clone)]
 pub struct GatewayBehaviour {
     pub(crate) player_collider: ColliderHandle,
     pub going_to_next: bool,
@@ -21,11 +21,4 @@ impl UserBehaviour for GatewayBehaviour {
         }
     }
 
-    fn init(&mut self) {
-
-    }
-
-    fn scene_unloaded(&mut self, _: GameObjectView,_: FlameEngineView) {
-        self.going_to_next = false;
-    }
 }

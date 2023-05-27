@@ -6,7 +6,7 @@ use flame::game_object::behaviours::UserBehaviour;
 use flame::game_object::{GameObject, GameObjectView};
 use flame::keyboard::{is_key_down, is_key_pressed};
 
-
+#[derive(Clone)]
 pub struct PlayerBehaviour {
     pub(crate) speed: f32,
 }
@@ -32,16 +32,6 @@ impl UserBehaviour for PlayerBehaviour {
         let current_vel = rigid_body.linvel();
 
         rigid_body.set_linvel(Vector::new(current_vel.x + x_vel,current_vel.y + y_vel),true);
-    }
-
-    fn init(&mut self) {
-        println!("INIT");
-    }
-
-    fn scene_loaded(&mut self, game_object_view: GameObjectView, engine_view: FlameEngineView) {
-        let rigid_body = engine_view.rigid_body_set.get_mut(game_object_view.physics.rigid_body_handle.unwrap()).unwrap();
-
-        rigid_body.set_translation(vector![0.0, 0.0], true);
     }
 
 }

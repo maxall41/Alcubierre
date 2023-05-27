@@ -1,7 +1,7 @@
 pub mod game_object;
 pub mod keyboard;
-pub mod helpers;
 pub mod ui;
+pub mod physics;
 
 use std::thread::sleep;
 use std::time::Duration;
@@ -35,6 +35,7 @@ impl<'a> FlameEngineView<'a> {
     }
 }
 
+#[derive(Clone)]
 pub struct Scene {
     pub game_objects: Vec<GameObject>,
 }
@@ -49,7 +50,7 @@ pub struct FlameEngine {
     collider_set: ColliderSet,
     pub rigid_body_set: RigidBodySet,
     pub scenes: HashMap<String,Scene>,
-    current_scene: Option<String>,
+    active_scene: Option<Scene>,
     narrow_phase_collision: NarrowPhase,
     event_rx: Receiver<FlameEvent>,
     event_tx: Sender<FlameEvent>
@@ -76,28 +77,27 @@ impl FlameEngine {
             scenes: HashMap::new(),
             collider_set,
             rigid_body_set,
-            current_scene: None,
             narrow_phase_collision: NarrowPhase::new(),
             event_tx,
-            event_rx
+            event_rx,
+            active_scene: None
         }
     }
 
     pub fn set_current_scene(&mut self,new_scene: String) {
-        if self.current_scene.as_ref().is_some() {
-            let scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
 
-            for object in &mut scene.game_objects {
-                object.unloading(&mut self.rigid_body_set,&mut self.narrow_phase_collision,&mut self.event_tx)
+        if self.active_scene.is_some() {
+            for object in &mut self.active_scene.as_mut().unwrap().game_objects {
+                object.unloading()
             }
         }
 
-        self.current_scene = Some(new_scene);
+        let new_scene = self.scenes.get(&new_scene).unwrap();
 
-        let new_scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
+        self.active_scene = Some(new_scene.clone());
 
-        for object in &mut new_scene.game_objects {
-            object.loading(&mut self.rigid_body_set,&mut self.narrow_phase_collision,&mut self.event_tx)
+        for object in &mut self.active_scene.as_mut().unwrap().game_objects {
+            object.loading()
         }
     }
 
@@ -119,7 +119,7 @@ impl FlameEngine {
 
 
         loop {
-            if self.current_scene.as_ref().is_some() {
+            if self.active_scene.as_ref().is_some() {
                 physics_pipeline.step(
                     &gravity,
                     &integration_parameters,
@@ -154,9 +154,8 @@ impl FlameEngine {
 
                 let mut d = self.raylib.begin_drawing(&self.thread);
 
-                let scene = self.scenes.get_mut(self.current_scene.as_ref().unwrap()).unwrap();
 
-                for object in &mut scene.game_objects {
+                for object in &mut self.active_scene.as_mut().unwrap().game_objects {
                     object.execute(&mut d,&mut self.rigid_body_set,&mut self.narrow_phase_collision,&mut self.event_tx);
                 }
 
@@ -167,7 +166,7 @@ impl FlameEngine {
             sleep(Duration::new(0, 1_000_000_000u32 / 60));
         }
     }
-    pub fn insert_game_object(&mut self,game_object: GameObject,scene_name: String) {
+    pub fn register_game_object(&mut self, game_object: GameObject, scene_name: String) {
         let scene = self.scenes.get_mut(&scene_name);
         match scene {
             Some(scene) => {

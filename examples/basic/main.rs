@@ -8,7 +8,6 @@ use std::sync::Arc;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{RigidBodyBuilder, vector};
 use flame::game_object::physics::PhysicsObject;
-use flame::helpers::pixels_to_physics_units;
 use crate::scenes::main::register_main_scene;
 use crate::scenes::second::register_second_scene;
 use crate::scripts::gateway::GatewayBehaviour;

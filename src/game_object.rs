@@ -12,7 +12,7 @@ pub mod physics;
 pub mod graphics;
 pub mod behaviours;
 
-
+#[derive(Clone)]
 pub struct GameObject {
     pub graphics: Option<GraphicsType>,
     pub behaviours: Vec<Box<dyn UserBehaviour + 'static>>,
@@ -40,30 +40,14 @@ impl GameObject {
             }
         }
     }
-    pub fn unloading(&mut self,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
+    pub fn unloading(&mut self) {
         for behaviour in &mut self.behaviours {
-            behaviour.scene_unloaded(GameObjectView {
-                physics: &mut self.physics,
-                pos_x: &mut self.pos_x,
-                pos_y: &mut self.pos_y,
-            }, FlameEngineView {
-                rigid_body_set,
-                narrow_phase,
-                event_tx
-            });
+            behaviour.unloaded();
         }
     }
-    pub fn loading(&mut self,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
+    pub fn loading(&mut self) {
         for behaviour in &mut self.behaviours {
-            behaviour.scene_loaded(GameObjectView {
-                physics: &mut self.physics,
-                pos_x: &mut self.pos_x,
-                pos_y: &mut self.pos_y,
-            }, FlameEngineView {
-                rigid_body_set,
-                narrow_phase,
-                event_tx
-            });
+            behaviour.loaded();
         }
     }
     pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {

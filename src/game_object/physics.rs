@@ -4,31 +4,33 @@ use rapier2d::math::Real;
 use rapier2d::prelude::{RigidBodyHandle, RigidBodySet, Vector};
 use crate::FlameEngine;
 use crate::game_object::GameObject;
-use crate::helpers::physics_units_to_pixels;
+use crate::physics::FlameCollider;
+use crate::physics::physics_units_to_pixels;
 
 pub trait PhysicsObject {
-    fn attach_collider(&mut self,collider: Collider,_: &mut FlameEngine) -> ColliderHandle;
-    fn attach_collider_with_rigid_body(&mut self, collider: Collider, flame: &mut FlameEngine) -> ColliderHandle;
+    fn attach_collider(&mut self,collider: FlameCollider,_: &mut FlameEngine) -> ColliderHandle;
+    fn attach_collider_with_rigid_body(&mut self, collider: FlameCollider, flame: &mut FlameEngine) -> ColliderHandle;
     fn remove_collider(&mut self,_: &mut FlameEngine);
     fn attach_rigid_body(&mut self,rigid_body: RigidBody,_: &mut FlameEngine);
     fn remove_rigid_body(&mut self,_: &mut FlameEngine);
     fn get_updated_physics_position(&mut self, rigid_body_set: &mut RigidBodySet) -> (Real,Real);
 }
 
+#[derive(Clone)]
 pub struct PhysicsData {
     pub collider_handle: Option<ColliderHandle>,
     pub rigid_body_handle: Option<RigidBodyHandle>
 }
 
 impl PhysicsObject for GameObject {
-    fn attach_collider(&mut self, collider: Collider,flame: &mut FlameEngine) -> ColliderHandle {
-        let handle = flame.collider_set.insert(collider);
+    fn attach_collider(&mut self, collider: FlameCollider,flame: &mut FlameEngine) -> ColliderHandle {
+        let handle = flame.collider_set.insert(collider.to_rapier());
         self.physics.collider_handle = Some(handle.clone());
         handle
     }
 
-    fn attach_collider_with_rigid_body(&mut self, collider: Collider, flame: &mut FlameEngine) -> ColliderHandle {
-        let handle = flame.collider_set.insert_with_parent(collider,self.physics.rigid_body_handle.unwrap(),&mut flame.rigid_body_set);
+    fn attach_collider_with_rigid_body(&mut self, collider: FlameCollider, flame: &mut FlameEngine) -> ColliderHandle {
+        let handle = flame.collider_set.insert_with_parent(collider.to_rapier(),self.physics.rigid_body_handle.unwrap(),&mut flame.rigid_body_set);
         self.physics.collider_handle = Some(handle.clone());
         handle
     }

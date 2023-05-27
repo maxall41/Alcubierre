@@ -3,28 +3,29 @@ use raylib::drawing::{RaylibDraw, RaylibDrawHandle};
 use raylib::ffi::DrawCircle;
 use crate::game_object::GameObject;
 
+#[derive(Clone)]
 pub struct SpriteData {
     pub image: String,
     pub x_pos: i32,
     pub y_pos: i32,
 }
-
+#[derive(Clone)]
 pub struct CircleData {
     pub radius: f32,
     pub color: Color
 }
-
+#[derive(Clone)]
 pub struct SquareData {
     pub color: Color,
     pub width: i32,
     pub height: i32
 }
-
+#[derive(Clone)]
 pub struct TriangleData {
     pub radius: f32,
     pub color: Color
 }
-
+#[derive(Clone)]
 pub enum GraphicsType {
     Sprite(SpriteData),
     Circle(CircleData),
