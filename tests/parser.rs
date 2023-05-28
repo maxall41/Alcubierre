@@ -1,12 +1,13 @@
 use std::fs;
+use std::fs::File;
+use tokio::io::AsyncWriteExt;
 use flame::ui::frontend::Element::{Button, Text};
 use flame::ui::frontend::ElementAlignment::TopLeft;
 use flame::ui::frontend::SpacingUnit::{PercentWidth, Pixels, PercentHeight};
 use flame::ui::frontend::ValueOrVar::{Value, Variable};
-use flame::ui::frontend::{
-    ButtonElement, ButtonStyleData, HyperFoilAST, RGBColor, TextElement, TextStyleData,
-};
+use flame::ui::frontend::{ButtonElement, ButtonStyleData, ElementAlignment, HyperFoilAST, RGBColor, TextElement, TextStyleData};
 use flame::ui::parse_file;
+use pretty_assertions::{assert_eq};
 
 #[test]
 fn basic_rough_parse() {
@@ -15,35 +16,43 @@ fn basic_rough_parse() {
             Text(TextElement {
                 content: Value("Im on the left!".to_string()),
                 styles: TextStyleData {
-                    font: None,
-                    font_size: None,
-                    alignment: Some(TopLeft),
-                    color: Some(RGBColor {
+                    font: "".to_string(),
+                    font_size: Pixels(12),
+                    alignment: TopLeft,
+                    color: RGBColor {
                         red: 250,
                         green: 17,
                         blue: 234,
-                    }),
-                    margin_top: Some(Pixels(2)),
-                    margin_bottom: None,
-                    margin_left: Some(PercentWidth(2)),
-                    margin_right: None,
+                    },
+                    margin_top: Pixels(2),
+                    margin_bottom: Pixels(0),
+                    margin_left: PercentWidth(2),
+                    margin_right: Pixels(0),
                 },
                 classes: vec!["sel2".to_string(), "xyz".to_string()],
             }),
             Button(ButtonElement {
                 content: Value("Decrement Health".to_string()),
                 styles: ButtonStyleData {
-                    font: None,
-                    font_size_px: None,
-                    alignment: Some(TopLeft),
-                    color: None,
-                    background_color: None,
-                    margin_top: None,
-                    margin_bottom: None,
-                    margin_left: None,
-                    margin_right: None,
-                    width: Some(Pixels(40)),
-                    height: None,
+                    font: "".to_string(),
+                    font_size_px: Pixels(12),
+                    alignment: TopLeft,
+                    color: RGBColor {
+                        red: 255,
+                        green: 255,
+                        blue: 255,
+                    },
+                    background_color: RGBColor {
+                        red: 0,
+                        green: 0,
+                        blue: 0,
+                    },
+                    margin_top: Pixels(0),
+                    margin_bottom: Pixels(0),
+                    margin_left: Pixels(0),
+                    margin_right: Pixels(0),
+                    width: Pixels(40),
+                    height: Pixels(50),
                 },
                 classes: vec!["b1".to_string(), "cubes".to_string()],
                 binding: "dec_health".to_string(),
@@ -51,14 +60,18 @@ fn basic_rough_parse() {
             Text(TextElement {
                 content: Variable("Health".to_string()),
                 styles: TextStyleData {
-                    font: None,
-                    font_size: None,
-                    alignment: None,
-                    color: None,
-                    margin_top: None,
-                    margin_bottom: None,
-                    margin_left: None,
-                    margin_right: None,
+                    font: "".to_string(),
+                    font_size: Pixels(12),
+                    alignment: ElementAlignment::TopLeft,
+                    color: RGBColor {
+                        red: 255,
+                        green: 255,
+                        blue: 255,
+                    },
+                    margin_top: Pixels(0),
+                    margin_bottom: Pixels(0),
+                    margin_left: Pixels(0),
+                    margin_right: Pixels(0),
                 },
                 classes: vec!["sel1".to_string()],
             }),
@@ -75,6 +88,12 @@ fn somewhat_complex_rough_parse() {
     let c1_ast: HyperFoilAST = serde_json::from_str(&c1).unwrap();
 
     assert_eq!(parse_file("tests/c1.hfm"), c1_ast);
+
+    // let ast = parse_file("tests/c1.hfm");
+    //
+    // let st = serde_json::to_string(&ast).unwrap();
+    //
+    // fs::write("c1.json", st).expect("Unable to write file");
 }
 
 #[test]
@@ -84,4 +103,10 @@ fn more_complex_rough_parse() {
     let c2_ast: HyperFoilAST = serde_json::from_str(&c2).unwrap();
 
     assert_eq!(parse_file("tests/c2.hfm"), c2_ast);
+
+    // let ast = parse_file("tests/c2.hfm");
+    //
+    // let st = serde_json::to_string(&ast).unwrap();
+    //
+    // fs::write("c2.json", st).expect("Unable to write file");
 }

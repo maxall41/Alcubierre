@@ -15,6 +15,8 @@ use raylib::drawing::RaylibDraw;
 use raylib::ffi::{GetKeyPressed, IsKeyPressed};
 use crate::game_object::GameObject;
 use crate::game_object::graphics::Graphics;
+use crate::ui::backends::raylib::raylib::process_ast_to_raylib_calls;
+use crate::ui::parse_file;
 
 pub struct FlameEngineView<'a> {
     pub rigid_body_set: &'a mut RigidBodySet,
@@ -58,31 +60,31 @@ pub struct FlameEngine {
     pub scenes: HashMap<String,Scene>,
     active_scene: Option<Scene>,
     event_rx: Receiver<FlameEvent>,
-    event_tx: Sender<FlameEvent>
+    event_tx: Sender<FlameEvent>,
+    window_width: i32,
+    window_height: i32
 }
 
 
 impl FlameEngine {
-    pub fn new() -> Self {
+    pub fn new(window_width: i32,window_height: i32) -> Self {
         let (mut rl, thread) = raylib::init()
-            .size(640, 480)
+            .size(window_width, window_height)
             .title("Hello, World")
             .build();
-
-        let collider_set = ColliderSet::new();
-
-        let rigid_body_set = RigidBodySet::new();
 
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
 
         FlameEngine {
             raylib: rl,
-            thread: thread,
+            thread,
             scenes: HashMap::new(),
             event_tx,
+            window_width,
             event_rx,
-            active_scene: None
+            active_scene: None,
+            window_height,
         }
     }
 
@@ -118,6 +120,11 @@ impl FlameEngine {
         let mut ccd_solver = CCDSolver::new();
         let physics_hooks = ();
         let event_handler = ();
+
+        let function_map : HashMap<String,fn()> = HashMap::new();
+        let data_map : HashMap<String,String> = HashMap::new();
+
+        let ui_ast = parse_file("examples/basic/ui/scene1.html");
 
 
         loop {
@@ -157,6 +164,8 @@ impl FlameEngine {
                 { game_code(self); }
 
                 let mut d = self.raylib.begin_drawing(&self.thread);
+
+                process_ast_to_raylib_calls(&ui_ast,&mut d,self.window_width,self.window_height,&data_map,&function_map);
 
                 let active_scene = self.active_scene.as_mut().unwrap();
                 for object in &mut active_scene.game_objects {

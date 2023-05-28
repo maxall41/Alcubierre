@@ -6,8 +6,10 @@
           "Value": "Im on the left!"
         },
         "styles": {
-          "font": null,
-          "font_size": null,
+          "font": "",
+          "font_size": {
+            "Pixels": 12
+          },
           "alignment": "TopLeft",
           "color": {
             "red": 250,
@@ -17,11 +19,15 @@
           "margin_top": {
             "Pixels": 2
           },
-          "margin_bottom": null,
+          "margin_bottom": {
+            "Pixels": 0
+          },
           "margin_left": {
             "PercentHeight": 2
           },
-          "margin_right": null
+          "margin_right": {
+            "Pixels": 0
+          }
         },
         "classes": [
           "sel2",
@@ -35,21 +41,38 @@
           "Value": "Decrement Health"
         },
         "styles": {
-          "font": null,
-          "font_size_px": null,
+          "font": "",
+          "font_size_px": {
+            "Pixels": 12
+          },
           "alignment": "TopLeft",
-          "color": null,
-          "background_color": null,
-          "border_radius": null,
-          "border_color": null,
-          "border_thickness": null,
+          "color": {
+            "red": 255,
+            "green": 255,
+            "blue": 255
+          },
+          "background_color": {
+            "red": 0,
+            "green": 0,
+            "blue": 0
+          },
           "margin_top": {
             "Pixels": 4
           },
-          "margin_bottom": null,
-          "margin_left": null,
+          "margin_bottom": {
+            "Pixels": 0
+          },
+          "margin_left": {
+            "Pixels": 0
+          },
           "margin_right": {
             "PercentHeight": 2
+          },
+          "width": {
+            "Pixels": 100
+          },
+          "height": {
+            "Pixels": 50
           }
         },
         "classes": [
@@ -65,8 +88,10 @@
           "Variable": "Health"
         },
         "styles": {
-          "font": null,
-          "font_size": null,
+          "font": "",
+          "font_size": {
+            "Pixels": 12
+          },
           "alignment": "CenterVerticalAndHorizontal",
           "color": {
             "red": 235,
@@ -76,11 +101,15 @@
           "margin_top": {
             "PercentHeight": 6
           },
-          "margin_bottom": null,
+          "margin_bottom": {
+            "Pixels": 0
+          },
           "margin_left": {
             "PercentHeight": 2
           },
-          "margin_right": null
+          "margin_right": {
+            "Pixels": 0
+          }
         },
         "classes": [
           "sel1"

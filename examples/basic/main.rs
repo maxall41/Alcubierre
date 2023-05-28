@@ -23,7 +23,7 @@ fn game_code(engine: &mut FlameEngine) {
 
 #[tokio::main]
 async fn main() {
-    let mut flame = FlameEngine::new();
+    let mut flame = FlameEngine::new(640,480);
 
     register_main_scene(&mut flame);
 

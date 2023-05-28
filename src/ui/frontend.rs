@@ -28,7 +28,7 @@ pub struct RGBColor {
     pub blue: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub enum SpacingUnit {
     Pixels(i32),
     PercentWidth(i32),
@@ -37,28 +37,28 @@ pub enum SpacingUnit {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct TextStyleData {
-    pub font: Option<String>,
-    pub font_size: Option<SpacingUnit>,
-    pub alignment: Option<ElementAlignment>,
-    pub color: Option<RGBColor>,
-    pub margin_top: Option<SpacingUnit>,
-    pub margin_bottom: Option<SpacingUnit>,
-    pub margin_left: Option<SpacingUnit>,
-    pub margin_right: Option<SpacingUnit>,
+    pub font: String,
+    pub font_size: SpacingUnit,
+    pub alignment: ElementAlignment,
+    pub color: RGBColor,
+    pub margin_top: SpacingUnit,
+    pub margin_bottom: SpacingUnit,
+    pub margin_left: SpacingUnit,
+    pub margin_right: SpacingUnit,
 }
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ButtonStyleData {
-    pub font: Option<String>,
-    pub font_size_px: Option<SpacingUnit>,
-    pub alignment: Option<ElementAlignment>,
-    pub color: Option<RGBColor>,
-    pub background_color: Option<RGBColor>,
-    pub margin_top: Option<SpacingUnit>,
-    pub margin_bottom: Option<SpacingUnit>,
-    pub margin_left: Option<SpacingUnit>,
-    pub margin_right: Option<SpacingUnit>,
-    pub width:  Option<SpacingUnit>,
-    pub height: Option<SpacingUnit>
+    pub font: String,
+    pub font_size_px: SpacingUnit,
+    pub alignment: ElementAlignment,
+    pub color: RGBColor,
+    pub background_color: RGBColor,
+    pub margin_top: SpacingUnit,
+    pub margin_bottom: SpacingUnit,
+    pub margin_left: SpacingUnit,
+    pub margin_right: SpacingUnit,
+    pub width:  SpacingUnit,
+    pub height: SpacingUnit
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
