@@ -1,0 +1,8 @@
+# Hello, World!
+<text color="#fa11ea" align="top-left" ml="2%h" mt="2px" class="sel2 xyz">Im on the left!</text>
+<button bind="dec_health" align="bottom-right" height="30px" mr="2%h" mt="4px" class="b1 cubes" align="top-left" >Decrement Health</button> # Inline comment
+# Cubes are cool!
+<text align="center" color="#eb3449# ml="2%h" mt="6%h" class="sel1 xyz cubes">Health: ?Health</text> # Anything prefixed with ? Can be filled in by Rust at runtime
+<text align="center-horizontal" color="#eb3449" ml="2%h" mt="6%h" class="sel1 xyz cubes">Health: ?Health</text> # Anything prefixed with ? Can be filled in by Rust at runtime
+<text align="center-vertical" color="#eb3449" ml="2%h" mt="6%h" class="sel1 xyz cubes">Health: ?Health</text> # Anything prefixed with ? Can be filled in by Rust at runtime
+<text align="center-vertical+center-horizontal" color="#eb3449" ml="2%h" mt="6%h" class="sel1 xyz cubes">Health: ?Health</text> # Anything prefixed with ? Can be filled in by Rust at runtime

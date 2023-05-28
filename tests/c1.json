@@ -1,0 +1,91 @@
+{
+  "elements": [
+    {
+      "Text": {
+        "content": {
+          "Value": "Im on the left!"
+        },
+        "styles": {
+          "font": null,
+          "font_size": null,
+          "alignment": "TopLeft",
+          "color": {
+            "red": 250,
+            "green": 17,
+            "blue": 234
+          },
+          "margin_top": {
+            "Pixels": 2
+          },
+          "margin_bottom": null,
+          "margin_left": {
+            "PercentHeight": 2
+          },
+          "margin_right": null
+        },
+        "classes": [
+          "sel2",
+          "xyz"
+        ]
+      }
+    },
+    {
+      "Button": {
+        "content": {
+          "Value": "Decrement Health"
+        },
+        "styles": {
+          "font": null,
+          "font_size_px": null,
+          "alignment": "TopLeft",
+          "color": null,
+          "background_color": null,
+          "border_radius": null,
+          "border_color": null,
+          "border_thickness": null,
+          "margin_top": {
+            "Pixels": 4
+          },
+          "margin_bottom": null,
+          "margin_left": null,
+          "margin_right": {
+            "PercentHeight": 2
+          }
+        },
+        "classes": [
+          "b1",
+          "cubes"
+        ],
+        "binding": "dec_health"
+      }
+    },
+    {
+      "Text": {
+        "content": {
+          "Variable": "Health"
+        },
+        "styles": {
+          "font": null,
+          "font_size": null,
+          "alignment": "CenterVerticalAndHorizontal",
+          "color": {
+            "red": 235,
+            "green": 52,
+            "blue": 73
+          },
+          "margin_top": {
+            "PercentHeight": 6
+          },
+          "margin_bottom": null,
+          "margin_left": {
+            "PercentHeight": 2
+          },
+          "margin_right": null
+        },
+        "classes": [
+          "sel1"
+        ]
+      }
+    }
+  ]
+}

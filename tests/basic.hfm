@@ -1,0 +1,5 @@
+# Hello, World!
+<text color="#fa11ea" align="top-left" ml="2%w" mt="2px" class="sel2 xyz">Im on the left!</text>
+<button w="40px" bind="dec_health" class="b1 cubes" align="top-left" >Decrement Health</button> # Inline comment
+# Cubes are cool!
+<text class="sel1">Health: ?Health</text> # Anything prefixed with ? Can be filled in by Rust at runtime
