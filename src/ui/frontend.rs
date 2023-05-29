@@ -6,12 +6,12 @@ pub(crate) mod errors;
 pub(crate) mod helpers;
 pub mod rough;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub enum ValueOrVar {
     Value(String),
-    Variable(String),
+    Variable((String,String)),
 }
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub enum ElementAlignment {
     TopLeft,
     TopRight,
@@ -21,7 +21,7 @@ pub enum ElementAlignment {
     CenterHorizontal,
     CenterVerticalAndHorizontal,
 }
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub struct RGBColor {
     pub red: u8,
     pub green: u8,
@@ -35,7 +35,7 @@ pub enum SpacingUnit {
     PercentHeight(i32),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub struct TextStyleData {
     pub font: String,
     pub font_size: SpacingUnit,
@@ -46,7 +46,7 @@ pub struct TextStyleData {
     pub margin_left: SpacingUnit,
     pub margin_right: SpacingUnit,
 }
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub struct ButtonStyleData {
     pub font: String,
     pub font_size_px: SpacingUnit,
@@ -61,13 +61,13 @@ pub struct ButtonStyleData {
     pub height: SpacingUnit
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub struct TextElement {
     pub content: ValueOrVar,
     pub styles: TextStyleData,
     pub classes: Vec<String>,
 }
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub struct ButtonElement {
     pub content: ValueOrVar,
     pub styles: ButtonStyleData,
@@ -75,13 +75,13 @@ pub struct ButtonElement {
     pub binding: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub enum Element {
     Text(TextElement),
     Button(ButtonElement),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq,Clone)]
 pub struct HyperFoilAST {
     pub elements: Vec<Element>,
 }

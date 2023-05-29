@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use raylib::color::Color;
-use flame::FlameEngine;
+use flame::{FlameConfig, FlameEngine};
 use flame::game_object::GameObject;
 use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
 use std::sync::RwLock;
@@ -8,9 +8,8 @@ use std::sync::Arc;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{RigidBodyBuilder, vector};
 use flame::game_object::physics::PhysicsObject;
+use crate::scenes::fail::register_fail_scene;
 use crate::scenes::main::register_main_scene;
-use crate::scenes::second::register_second_scene;
-use crate::scripts::gateway::GatewayBehaviour;
 
 mod scripts;
 mod scenes;
@@ -27,12 +26,13 @@ async fn main() {
 
     register_main_scene(&mut flame);
 
-    register_second_scene(&mut flame);
+    register_fail_scene(&mut flame);
 
     flame.set_current_scene("Main".to_string());
 
     flame.start_cycle(game_code,FlameConfig {
-        gravity: 65.24
+        gravity: 0.0,
+        clear_color: Color::BLACK
     });
     println!("Cycle started");
 }

@@ -15,6 +15,10 @@ fn strip_pre_insert_tag(input: &str) -> IResult<&str, &str> {
     recognize(take_until("?"))(input)
 }
 
+fn get_pre_insert_tag(input: &str) -> IResult<&str, &str> {
+    recognize(take_until("?"))(input)
+}
+
 fn no_pre_insert_tag(input: &str) -> IResult<&str, &str> {
     Ok((input, ""))
 }
@@ -33,7 +37,9 @@ pub fn get_content(input: &str) -> ValueOrVar {
     let content_tag_parsed = parse_insert_tag(content).unwrap().0;
 
     return if content_tag_parsed.starts_with("?") {
-        ValueOrVar::Variable(content_tag_parsed.to_string().replace("?", ""))
+        let sr = stripped.replace(">","");
+        let pre_insert_tag = get_pre_insert_tag(&sr).unwrap().1;
+        ValueOrVar::Variable((content_tag_parsed.to_string().replace("?", ""),pre_insert_tag.to_string()))
     } else {
         ValueOrVar::Value(content_tag_parsed.to_string())
     };

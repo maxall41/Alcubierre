@@ -18,7 +18,8 @@ pub struct GameObject {
     pub behaviours: Vec<Box<dyn UserBehaviour + 'static>>,
     pub pos_x: i32,
     pub pos_y: i32,
-    pub physics: PhysicsData
+    pub physics: PhysicsData,
+    scene: String
 }
 
 pub struct GameObjectView<'a> {
@@ -28,7 +29,7 @@ pub struct GameObjectView<'a> {
 }
 
 impl GameObject {
-    pub fn new(pos_x: i32,pos_y: i32) -> Self {
+    pub fn new(pos_x: i32,pos_y: i32,scene: String) -> Self {
         GameObject {
             graphics: None,
             behaviours: vec![],
@@ -37,17 +38,34 @@ impl GameObject {
             physics: PhysicsData {
                 collider_handle: None,
                 rigid_body_handle: None
-            }
+            },
+            scene
         }
     }
-    pub fn unloading(&mut self) {
+    pub fn unloading(&mut self,narrow_phase: &mut NarrowPhase, rigid_body_set: &mut RigidBodySet, mut tx: &mut Sender<FlameEvent>) {
         for behaviour in &mut self.behaviours {
-            behaviour.unloaded();
+            behaviour.unloaded(FlameEngineView {
+                rigid_body_set,
+                narrow_phase,
+                event_tx: tx,
+            },GameObjectView {
+                physics: &mut self.physics,
+                pos_x: &mut self.pos_x,
+                pos_y: &mut self.pos_y,
+            });
         }
     }
-    pub fn loading(&mut self) {
+    pub fn loading(&mut self, narrow_phase: &mut NarrowPhase, rigid_body_set: &mut RigidBodySet, mut tx: &mut Sender<FlameEvent>) {
         for behaviour in &mut self.behaviours {
-            behaviour.loaded();
+            behaviour.loaded(FlameEngineView {
+                rigid_body_set,
+                narrow_phase,
+                event_tx: tx,
+            }, GameObjectView {
+                physics: &mut self.physics,
+                pos_x: &mut self.pos_x,
+                pos_y: &mut self.pos_y,
+            });
         }
     }
     pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {

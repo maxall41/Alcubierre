@@ -11,7 +11,7 @@ pub trait PhysicsObject {
     fn attach_collider(&mut self,collider: FlameCollider, scene: &mut Scene) -> ColliderHandle;
     fn attach_collider_with_rigid_body(&mut self, collider: FlameCollider, scene: &mut Scene) -> ColliderHandle;
     fn remove_collider(&mut self, scene: &mut Scene);
-    fn attach_rigid_body(&mut self,rigid_body: RigidBody, scene: &mut Scene);
+    fn attach_rigid_body(&mut self,rigid_body: RigidBody, scene: &mut Scene) -> RigidBodyHandle;
     fn remove_rigid_body(&mut self, scene: &mut Scene);
     fn get_updated_physics_position(&mut self, rigid_body_set: &mut RigidBodySet) -> (Real,Real);
 }
@@ -39,9 +39,10 @@ impl PhysicsObject for GameObject {
         self.physics.collider_handle = None;
     }
 
-    fn attach_rigid_body(&mut self, rigid_body: RigidBody,scene: &mut Scene) {
+    fn attach_rigid_body(&mut self, rigid_body: RigidBody,scene: &mut Scene) -> RigidBodyHandle {
         let handle = scene.rigid_body_set.insert(rigid_body);
-        self.physics.rigid_body_handle = Some(handle)
+        self.physics.rigid_body_handle = Some(handle.clone());
+        handle
     }
 
     fn remove_rigid_body(&mut self,scene: &mut Scene) {

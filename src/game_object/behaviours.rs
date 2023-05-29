@@ -7,8 +7,8 @@ use crate::keyboard::{is_key_down, is_key_pressed, is_key_released, is_key_up};
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(&mut self,game_object_view: GameObjectView,engine_view: FlameEngineView,frame_delta: f32);
-    fn unloaded(&mut self) {} // {} Is Optional
-    fn loaded(&mut self) {} // {} Is Optional
+    fn unloaded(&mut self,engine_view: FlameEngineView,game_object_view: GameObjectView) {} // {} Is Optional
+    fn loaded(&mut self,engine_view: FlameEngineView,game_object_view: GameObjectView) {} // {} Is Optional
 }
 
 pub trait UserBehaviourClone: 'static {
@@ -33,7 +33,6 @@ impl Clone for Box<dyn UserBehaviour> {
 
 impl GameObject {
     pub fn insert_behaviour(&mut self, mut behaviour: impl UserBehaviour) {
-        behaviour.loaded();
         self.behaviours.push(Box::new(behaviour));
     }
 }

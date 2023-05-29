@@ -10,7 +10,8 @@ pub enum FlameColliderType {
 pub struct FlameCollider {
     pub collider_type: FlameColliderType,
     pub sensor: bool,
-    pub restitution: f32
+    pub restitution: f32,
+    pub friction: f32
 }
 
 pub fn pixels_to_physics_units(pixels: i32) -> f32 {
@@ -26,10 +27,10 @@ impl FlameCollider {
     pub fn to_rapier(&self) -> Collider {
         match self.collider_type {
             FlameColliderType::Rectangle((x,y)) => {
-                ColliderBuilder::cuboid(pixels_to_physics_units(x) / 2.0,pixels_to_physics_units(y) / 2.0).translation(vector![pixels_to_physics_units(x) / 2.0, pixels_to_physics_units(y) / 2.0]).sensor(self.sensor).restitution(self.restitution).build()
+                ColliderBuilder::cuboid(pixels_to_physics_units(x) / 2.0,pixels_to_physics_units(y) / 2.0).translation(vector![pixels_to_physics_units(x) / 2.0, pixels_to_physics_units(y) / 2.0]).sensor(self.sensor).friction(self.friction).restitution(self.restitution).build()
             }
             FlameColliderType::Circle(radius) => {
-                ColliderBuilder::ball(pixels_to_physics_units(radius)).sensor(self.sensor).restitution(self.restitution).build()
+                ColliderBuilder::ball(pixels_to_physics_units(radius)).sensor(self.sensor).friction(self.friction).restitution(self.restitution).build()
             }
         }
     }

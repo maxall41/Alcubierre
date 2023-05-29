@@ -16,10 +16,10 @@ pub fn draw_text(t: &TextElement,window_width: i32,window_height: i32,d: &mut Ra
 
     let value = match &t.content {
         ValueOrVar::Value(value) => {
-            value
+            value.to_string()
         },
         ValueOrVar::Variable(var) => {
-            data_hashmap.get(var).unwrap()
+            format!("{}{}",var.1,data_hashmap.get(&var.0).unwrap())
         }
     };
 
@@ -32,7 +32,7 @@ pub fn draw_text(t: &TextElement,window_width: i32,window_height: i32,d: &mut Ra
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
         ElementAlignment::TopRight => {
@@ -40,7 +40,7 @@ pub fn draw_text(t: &TextElement,window_width: i32,window_height: i32,d: &mut Ra
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
         ElementAlignment::BottomRight => {
@@ -48,7 +48,7 @@ pub fn draw_text(t: &TextElement,window_width: i32,window_height: i32,d: &mut Ra
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
         ElementAlignment::BottomLeft => {
@@ -56,16 +56,16 @@ pub fn draw_text(t: &TextElement,window_width: i32,window_height: i32,d: &mut Ra
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
         ElementAlignment::CenterHorizontal => {
             let text_size = measure_text_ex(d.get_font_default(), &value, font_size as f32, 0 as f32);
-            d.draw_text(&value,((window_height / 2) - text_size.x as i32) + left_margin - right_margin,0 + top_margin - bottom_margin,font_size,Color {
+            d.draw_text(&value,((window_width / 2) - text_size.x as i32) + left_margin - right_margin,0 + top_margin - bottom_margin,font_size,Color {
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
         ElementAlignment::CenterVertical => {
@@ -74,16 +74,16 @@ pub fn draw_text(t: &TextElement,window_width: i32,window_height: i32,d: &mut Ra
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
         ElementAlignment::CenterVerticalAndHorizontal => {
-            let text_size = measure_text_ex(d.get_font_default(), &value, font_size as f32, 0 as f32);
-            d.draw_text(&value,((window_height / 2) - text_size.x as i32) + left_margin - right_margin,((window_height / 2) - text_size.y as i32) + top_margin - bottom_margin,font_size,Color {
+            let text_size = measure_text_ex(d.get_font_default(), &value, font_size as f32, 5.0 as f32);
+            d.draw_text(&value,((window_width / 2) - text_size.x as i32 / 2) + left_margin - right_margin,((window_height / 2) - text_size.y as i32) + top_margin - bottom_margin,font_size,Color {
                 r: t.styles.color.red,
                 g: t.styles.color.green,
                 b: t.styles.color.blue,
-                a: 100,
+                a: 255,
             })
         },
     }
