@@ -17,8 +17,16 @@ fn hex_primary(input: &str) -> IResult<&str, u8> {
 }
 
 pub fn hex_color(input: &str) -> IResult<&str, RGBColor> {
-    let (input, _) = tag("#")(input)?;
-    let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
+    let mut modified_input = input;
+
+    if input == "#fff" {
+        modified_input = "#ffffff";
+    } else if input == "#000" {
+        modified_input = "#000000"
+    }
+
+    let (modified_input, _) = tag("#")(modified_input)?;
+    let (modified_input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(modified_input)?;
 
     Ok((input, RGBColor { red, green, blue }))
 }
