@@ -71,7 +71,7 @@ pub struct Scene {
     pub multibody_joint_set: MultibodyJointSet,
     pub ccd_solver: CCDSolver,
     pub ui_ast: Option<HyperFoilAST>,
-    pub function_map: HashMap<String,fn()>,
+    pub function_map: HashMap<String,fn(&mut FlameEngineView)>,
     pub data_map: HashMap<String,String>
 }
 impl Scene {
@@ -210,7 +210,11 @@ impl FlameEngine {
                 let active_scene = self.active_scene.as_mut().unwrap();
 
                 if active_scene.ui_ast.is_some() {
-                    process_ast_to_raylib_calls(&active_scene.ui_ast.as_ref().unwrap(),&mut d,self.window_width,self.window_height,&active_scene.data_map,&active_scene.function_map);
+                    process_ast_to_raylib_calls(&active_scene.ui_ast.as_ref().unwrap(),&mut d,self.window_width,self.window_height,&active_scene.data_map,&active_scene.function_map,&mut FlameEngineView {
+                        rigid_body_set: &mut active_scene.rigid_body_set,
+                        narrow_phase: &mut active_scene.narrow_phase_collision,
+                        event_tx: &mut self.event_tx,
+                    });
                 }
 
                 for object in &mut active_scene.game_objects {
@@ -231,12 +235,13 @@ impl FlameEngine {
         let impulse_joint_set = ImpulseJointSet::new();
         let multibody_joint_set = MultibodyJointSet::new();
         let ccd_solver = CCDSolver::new();
+        let narrow_phase = NarrowPhase::new();
 
         self.scenes.insert(scene_name.clone(),Scene {
             game_objects: vec![],
             rigid_body_set: RigidBodySet::new(),
             collider_set: ColliderSet::new(),
-            narrow_phase_collision: NarrowPhase::new(),
+            narrow_phase_collision: narrow_phase,
             island_manager,
             broad_phase,
             impulse_joint_set,

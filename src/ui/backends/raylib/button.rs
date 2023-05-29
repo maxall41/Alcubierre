@@ -4,6 +4,7 @@ use raylib::drawing::{RaylibDraw, RaylibDrawHandle};
 use raylib::ffi::{CheckCollisionPointRec, GetMousePosition, Rectangle};
 use raylib::ffi::MouseButton::MOUSE_LEFT_BUTTON;
 use raylib::text::measure_text_ex;
+use crate::FlameEngineView;
 use crate::ui::backends::raylib::raylib::spacing_unit_to_pixels;
 use crate::ui::frontend::{ButtonElement, ElementAlignment, RGBColor, SpacingUnit, TextElement, ValueOrVar};
 
@@ -26,7 +27,7 @@ pub(crate) fn draw_button(x: i32, y: i32, width: i32, height: i32,bg_color: Colo
         let mouse_point = GetMousePosition();
         if CheckCollisionPointRec(mouse_point, btn_bounds)
         {
-            if d.is_mouse_button_down(MOUSE_LEFT_BUTTON) {
+            if d.is_mouse_button_pressed(MOUSE_LEFT_BUTTON) {
                 true
             } else {
                 false
@@ -47,7 +48,7 @@ pub fn rgb_color_to_raylib_color(color: RGBColor) -> Color {
     }
 }
 
-pub fn draw_button_handler(b: &ButtonElement,window_width: i32,window_height: i32,d: &mut RaylibDrawHandle,data_hashmap: &HashMap<String,String>,function_map: &HashMap<String,fn()>) {
+pub fn draw_button_handler(b: &ButtonElement,window_width: i32,window_height: i32,d: &mut RaylibDrawHandle,data_hashmap: &HashMap<String,String>,function_map: &HashMap<String,fn(&mut FlameEngineView)>,flame_view: &mut FlameEngineView) {
 
     let left_margin = spacing_unit_to_pixels(b.styles.margin_left.clone(),window_width,window_height);
     let right_margin = spacing_unit_to_pixels(b.styles.margin_right.clone(),window_width,window_height);
@@ -98,6 +99,6 @@ pub fn draw_button_handler(b: &ButtonElement,window_width: i32,window_height: i3
 
     if button_pressed {
         let action = function_map.get(&b.binding).unwrap();
-        action();
+        action(flame_view);
     }
 }

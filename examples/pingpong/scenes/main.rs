@@ -144,7 +144,7 @@ pub fn register_main_scene(mut flame: &mut FlameEngine) {
 
 
     let bottom_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
-        .translation(vector![0.0, 8.0])
+        .translation(vector![0.0, 9.25])
         .linear_damping(5.5)
         .angular_damping(2.0)
         .can_sleep(false)
