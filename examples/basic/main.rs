@@ -4,7 +4,7 @@ use crate::scripts::gateway::GatewayBehaviour;
 use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
 use flame::game_object::physics::PhysicsObject;
 use flame::game_object::GameObject;
-use flame::FlameEngine;
+use flame::{FlameConfig, FlameEngine};
 use lazy_static::lazy_static;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
@@ -29,6 +29,6 @@ async fn main() {
 
     flame.set_current_scene("Main".to_string());
 
-    flame.start_cycle(game_code, FlameConfig { gravity: 65.24 });
+    flame.start_cycle(game_code, FlameConfig { gravity: 65.24, clear_color: Color::WHITE });
     println!("Cycle started");
 }

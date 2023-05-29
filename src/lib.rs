@@ -219,7 +219,7 @@ impl FlameEngine {
                         }
                     },
                     Err(e) => {
-                        panic!("{}",e); //TODO: Handle
+                        // panic!("{}",e); //TODO: Handle
                     }
                 }
 

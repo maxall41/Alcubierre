@@ -29,6 +29,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         collider_type: FlameColliderType::Circle(20),
         sensor: false,
         restitution: 0.7,
+        friction: 0.0,
     };
 
     let player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
@@ -52,6 +53,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         collider_type: FlameColliderType::Rectangle((640, 30)),
         sensor: false,
         restitution: 0.7,
+        friction: 0.0,
     };
 
     ground.attach_collider_with_rigid_body(ground_collider, scene);
@@ -79,6 +81,7 @@ pub fn register_second_scene(flame: &mut FlameEngine) {
         collider_type: FlameColliderType::Rectangle((50, 80)),
         sensor: true,
         restitution: 0.7,
+        friction: 0.0,
     };
 
     gateway.attach_collider_with_rigid_body(gateway_collider, scene);

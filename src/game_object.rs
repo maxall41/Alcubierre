@@ -2,11 +2,11 @@ use crate::game_object::behaviours::UserBehaviour;
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::FlameCollider;
-use crate::{FlameEngine, FlameEngineView, FlameEvent, Scene};
+use crate::{FlameEngineView, FlameEvent, Scene};
 use flume::Sender;
 use rapier2d::dynamics::RigidBody;
-use rapier2d::geometry::{ColliderHandle, NarrowPhase};
-use rapier2d::prelude::{ColliderSet, RigidBodyHandle, RigidBodySet};
+use rapier2d::geometry::{NarrowPhase};
+use rapier2d::prelude::{RigidBodySet};
 use raylib::drawing::RaylibDrawHandle;
 use raylib::ffi::GetFrameTime;
 
@@ -21,7 +21,6 @@ pub struct GameObject {
     pub pos_x: i32,
     pub pos_y: i32,
     pub physics: PhysicsData,
-    scene: String,
 }
 
 pub struct GameObjectView<'a> {
@@ -31,7 +30,7 @@ pub struct GameObjectView<'a> {
 }
 
 impl GameObject {
-    pub fn new(pos_x: i32, pos_y: i32, scene: String) -> Self {
+    pub fn new(pos_x: i32, pos_y: i32) -> Self {
         GameObject {
             graphics: None,
             behaviours: vec![],
@@ -41,7 +40,6 @@ impl GameObject {
                 collider_handle: None,
                 rigid_body_handle: None,
             },
-            scene,
         }
     }
     pub fn unloading(
@@ -129,7 +127,6 @@ pub struct GameObjectBuilder {
     pub pos_x: i32,
     pub pos_y: i32,
     pub physics: PhysicsData,
-    scene: String,
 }
 
 impl GameObjectBuilder {
@@ -143,7 +140,6 @@ impl GameObjectBuilder {
                 collider_handle: None,
                 rigid_body_handle: None,
             },
-            scene: "Dead - If this shows up - You may not be setting the scene in your GameObjectBuilder".to_string(),
         }
     }
     pub fn graphics(mut self, graphics: GraphicsType) -> GameObjectBuilder {
@@ -173,10 +169,6 @@ impl GameObjectBuilder {
         }
         self
     }
-    pub fn scene(mut self, scene: String) -> GameObjectBuilder {
-        self.scene = scene;
-        self
-    }
     pub fn build(self) -> GameObject {
         GameObject {
             graphics: self.graphics,
@@ -184,7 +176,6 @@ impl GameObjectBuilder {
             pos_x: self.pos_x,
             pos_y: self.pos_y,
             physics: self.physics,
-            scene: self.scene,
         }
     }
 }
