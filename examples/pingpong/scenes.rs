@@ -1,2 +1,2 @@
-pub mod main;
 pub mod fail;
+pub mod main;

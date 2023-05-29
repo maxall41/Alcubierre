@@ -1,16 +1,18 @@
+use crate::game_object::behaviours::UserBehaviour;
+use crate::game_object::graphics::{Graphics, GraphicsType};
+use crate::game_object::physics::{PhysicsData, PhysicsObject};
+use crate::physics::FlameCollider;
+use crate::{FlameEngine, FlameEngineView, FlameEvent, Scene};
 use flume::Sender;
-use rapier2d::geometry::NarrowPhase;
+use rapier2d::dynamics::RigidBody;
+use rapier2d::geometry::{ColliderHandle, NarrowPhase};
 use rapier2d::prelude::{ColliderSet, RigidBodyHandle, RigidBodySet};
 use raylib::drawing::RaylibDrawHandle;
 use raylib::ffi::GetFrameTime;
-use crate::{FlameEngine, FlameEngineView, FlameEvent};
-use crate::game_object::behaviours::{UserBehaviour};
-use crate::game_object::graphics::{Graphics, GraphicsType};
-use crate::game_object::physics::{PhysicsData, PhysicsObject};
 
-pub mod physics;
-pub mod graphics;
 pub mod behaviours;
+pub mod graphics;
+pub mod physics;
 
 #[derive(Clone)]
 pub struct GameObject {
@@ -19,17 +21,17 @@ pub struct GameObject {
     pub pos_x: i32,
     pub pos_y: i32,
     pub physics: PhysicsData,
-    scene: String
+    scene: String,
 }
 
 pub struct GameObjectView<'a> {
     pub physics: &'a mut PhysicsData,
     pub pos_x: &'a mut i32,
-    pub pos_y: &'a mut i32
+    pub pos_y: &'a mut i32,
 }
 
 impl GameObject {
-    pub fn new(pos_x: i32,pos_y: i32,scene: String) -> Self {
+    pub fn new(pos_x: i32, pos_y: i32, scene: String) -> Self {
         GameObject {
             graphics: None,
             behaviours: vec![],
@@ -37,39 +39,60 @@ impl GameObject {
             pos_x,
             physics: PhysicsData {
                 collider_handle: None,
-                rigid_body_handle: None
+                rigid_body_handle: None,
             },
-            scene
+            scene,
         }
     }
-    pub fn unloading(&mut self,narrow_phase: &mut NarrowPhase, rigid_body_set: &mut RigidBodySet, mut tx: &mut Sender<FlameEvent>) {
+    pub fn unloading(
+        &mut self,
+        narrow_phase: &mut NarrowPhase,
+        rigid_body_set: &mut RigidBodySet,
+        mut tx: &mut Sender<FlameEvent>,
+    ) {
         for behaviour in &mut self.behaviours {
-            behaviour.unloaded(FlameEngineView {
-                rigid_body_set,
-                narrow_phase,
-                event_tx: tx,
-            },GameObjectView {
-                physics: &mut self.physics,
-                pos_x: &mut self.pos_x,
-                pos_y: &mut self.pos_y,
-            });
+            behaviour.unloaded(
+                FlameEngineView {
+                    rigid_body_set,
+                    narrow_phase,
+                    event_tx: tx,
+                },
+                GameObjectView {
+                    physics: &mut self.physics,
+                    pos_x: &mut self.pos_x,
+                    pos_y: &mut self.pos_y,
+                },
+            );
         }
     }
-    pub fn loading(&mut self, narrow_phase: &mut NarrowPhase, rigid_body_set: &mut RigidBodySet, mut tx: &mut Sender<FlameEvent>) {
+    pub fn loading(
+        &mut self,
+        narrow_phase: &mut NarrowPhase,
+        rigid_body_set: &mut RigidBodySet,
+        mut tx: &mut Sender<FlameEvent>,
+    ) {
         for behaviour in &mut self.behaviours {
-            behaviour.loaded(FlameEngineView {
-                rigid_body_set,
-                narrow_phase,
-                event_tx: tx,
-            }, GameObjectView {
-                physics: &mut self.physics,
-                pos_x: &mut self.pos_x,
-                pos_y: &mut self.pos_y,
-            });
+            behaviour.loaded(
+                FlameEngineView {
+                    rigid_body_set,
+                    narrow_phase,
+                    event_tx: tx,
+                },
+                GameObjectView {
+                    physics: &mut self.physics,
+                    pos_x: &mut self.pos_x,
+                    pos_y: &mut self.pos_y,
+                },
+            );
         }
     }
-    pub fn execute(&mut self,d: &mut RaylibDrawHandle,rigid_body_set: &mut RigidBodySet,narrow_phase: &mut NarrowPhase,event_tx: &mut Sender<FlameEvent>) {
-
+    pub fn execute(
+        &mut self,
+        d: &mut RaylibDrawHandle,
+        rigid_body_set: &mut RigidBodySet,
+        narrow_phase: &mut NarrowPhase,
+        event_tx: &mut Sender<FlameEvent>,
+    ) {
         let mut time: f32 = 0.0;
         unsafe {
             time = GetFrameTime();
@@ -82,17 +105,86 @@ impl GameObject {
         }
 
         for behaviour in &mut self.behaviours {
-            behaviour.game_loop(GameObjectView {
-                physics: &mut self.physics,
-                pos_x: &mut self.pos_x,
-                pos_y: &mut self.pos_y,
-            }, FlameEngineView {
-                rigid_body_set,
-                narrow_phase,
-                event_tx
-            }, time);
+            behaviour.game_loop(
+                GameObjectView {
+                    physics: &mut self.physics,
+                    pos_x: &mut self.pos_x,
+                    pos_y: &mut self.pos_y,
+                },
+                FlameEngineView {
+                    rigid_body_set,
+                    narrow_phase,
+                    event_tx,
+                },
+                time,
+            );
         }
         self.render(d);
     }
+}
 
+pub struct GameObjectBuilder {
+    pub graphics: Option<GraphicsType>,
+    pub behaviours: Vec<Box<dyn UserBehaviour + 'static>>,
+    pub pos_x: i32,
+    pub pos_y: i32,
+    pub physics: PhysicsData,
+    scene: String,
+}
+
+impl GameObjectBuilder {
+    pub fn new() -> GameObjectBuilder {
+        GameObjectBuilder {
+            graphics: None,
+            behaviours: vec![],
+            pos_y: 0,
+            pos_x: 0,
+            physics: PhysicsData {
+                collider_handle: None,
+                rigid_body_handle: None,
+            },
+            scene: "Dead - If this shows up - You may not be setting the scene in your GameObjectBuilder".to_string(),
+        }
+    }
+    pub fn graphics(mut self, graphics: GraphicsType) -> GameObjectBuilder {
+        self.graphics = Some(graphics);
+        self
+    }
+    pub fn rigid_body(mut self, rigid_body: RigidBody, scene: &mut Scene) -> GameObjectBuilder {
+        let handle = scene.rigid_body_set.insert(rigid_body);
+        self.physics.rigid_body_handle = Some(handle.clone());
+        self
+    }
+    pub fn behaviour(mut self, mut behaviour: impl UserBehaviour) -> GameObjectBuilder {
+        self.behaviours.push(Box::new(behaviour));
+        self
+    }
+    pub fn collider(mut self, collider: FlameCollider, scene: &mut Scene) -> GameObjectBuilder {
+        if self.physics.rigid_body_handle.is_some() {
+            let handle = scene.collider_set.insert_with_parent(
+                collider.to_rapier(),
+                self.physics.rigid_body_handle.unwrap(),
+                &mut scene.rigid_body_set,
+            );
+            self.physics.collider_handle = Some(handle.clone());
+        } else {
+            let handle = scene.collider_set.insert(collider.to_rapier());
+            self.physics.collider_handle = Some(handle.clone());
+        }
+        self
+    }
+    pub fn scene(mut self, scene: String) -> GameObjectBuilder {
+        self.scene = scene;
+        self
+    }
+    pub fn build(self) -> GameObject {
+        GameObject {
+            graphics: self.graphics,
+            behaviours: self.behaviours,
+            pos_x: self.pos_x,
+            pos_y: self.pos_y,
+            physics: self.physics,
+            scene: self.scene,
+        }
+    }
 }

@@ -23,5 +23,9 @@ fn take_until_percent_width(input: &str) -> IResult<&str, SpacingUnit> {
 }
 
 pub fn parse_spacing_units(input: &str) -> IResult<&str, SpacingUnit> {
-    alt((take_until_pixels, take_until_percent_width,take_until_percent_height))(input)
+    alt((
+        take_until_pixels,
+        take_until_percent_width,
+        take_until_percent_height,
+    ))(input)
 }

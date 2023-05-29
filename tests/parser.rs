@@ -1,13 +1,16 @@
+use flame::ui::frontend::Element::{Button, Text};
+use flame::ui::frontend::ElementAlignment::TopLeft;
+use flame::ui::frontend::SpacingUnit::{PercentHeight, PercentWidth, Pixels};
+use flame::ui::frontend::ValueOrVar::{Value, Variable};
+use flame::ui::frontend::{
+    ButtonElement, ButtonStyleData, ElementAlignment, HyperFoilAST, RGBColor, TextElement,
+    TextStyleData,
+};
+use flame::ui::parse_file;
+use pretty_assertions::assert_eq;
 use std::fs;
 use std::fs::File;
 use tokio::io::AsyncWriteExt;
-use flame::ui::frontend::Element::{Button, Text};
-use flame::ui::frontend::ElementAlignment::TopLeft;
-use flame::ui::frontend::SpacingUnit::{PercentWidth, Pixels, PercentHeight};
-use flame::ui::frontend::ValueOrVar::{Value, Variable};
-use flame::ui::frontend::{ButtonElement, ButtonStyleData, ElementAlignment, HyperFoilAST, RGBColor, TextElement, TextStyleData};
-use flame::ui::parse_file;
-use pretty_assertions::{assert_eq};
 
 #[test]
 fn basic_rough_parse() {

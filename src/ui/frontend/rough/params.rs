@@ -1,9 +1,12 @@
+use crate::show_compiler_error;
 use crate::ui::frontend::errors::*;
 use crate::ui::frontend::rough::colors::hex_color;
 use crate::ui::frontend::rough::spacing::parse_spacing_units;
-use crate::ui::frontend::{ButtonStyleData, ElementAlignment, RGBColor, SpacingUnit, TextStyleData};
-use crate::show_compiler_error;
-use miette::{IntoDiagnostic, miette};
+use crate::ui::frontend::{
+    ButtonStyleData, ElementAlignment, RGBColor, SpacingUnit, TextStyleData,
+};
+use miette::LabeledSpan;
+use miette::{miette, IntoDiagnostic};
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_until, take_while};
 use nom::character::complete::{char, multispace0};
@@ -14,7 +17,6 @@ use nom::sequence::{delimited, terminated};
 use nom::IResult;
 use std::collections::HashMap;
 use std::io::BufRead;
-use miette::LabeledSpan;
 
 pub struct RoughParamsText {
     pub classes: Vec<String>,
@@ -42,7 +44,7 @@ enum Parameter<'a> {
     MarginRight(&'a str),
     Alignment(&'a str),
     Width(&'a str),
-    Height(&'a str)
+    Height(&'a str),
 }
 
 pub fn starts_with_open_angle_bracket(input: &str) -> IResult<&str, &str> {
@@ -181,7 +183,7 @@ fn get_params_inner_sys(input: &str) -> IResult<&str, Parameter> {
             get_width_from_params,
             get_height_from_params,
             get_width_from_params_short,
-            get_height_from_params_short
+            get_height_from_params_short,
         )),
         multispace0,
     )(input)
@@ -191,7 +193,7 @@ fn get_all_params(input: &str) -> IResult<&str, Vec<Parameter>> {
     many1(get_params_inner_sys)(input)
 }
 
-fn get_element_alignment(input: &str,line: &str) -> ElementAlignment {
+fn get_element_alignment(input: &str, line: &str) -> ElementAlignment {
     match input {
         "top-left" => ElementAlignment::TopLeft,
         "top-right" => ElementAlignment::TopRight,
@@ -213,9 +215,9 @@ fn get_element_alignment(input: &str,line: &str) -> ElementAlignment {
                 diag.labels = Some(vec![LabeledSpan::at(apos..apos, UNKNOWN_ALIGNMENT_HELP)]);
                 diag.help = Some(UNKNOWN_ALIGNMENT_HELP.into());
                 diag
-            }).with_source_code(source);
+            })
+            .with_source_code(source);
             panic!("{:?}", report)
-
         }
     }
 }
@@ -249,7 +251,7 @@ pub fn extract_params_from_line_for_text(line: &str) -> RoughParamsText {
             color: RGBColor {
                 red: 255,
                 green: 255,
-                blue: 255
+                blue: 255,
             },
             margin_top: SpacingUnit::Pixels(0),
             margin_bottom: SpacingUnit::Pixels(0),
@@ -262,19 +264,54 @@ pub fn extract_params_from_line_for_text(line: &str) -> RoughParamsText {
         match param {
             Parameter::Font(d) => final_params.styles.font = d.to_string(),
             Parameter::FontSize(d) => {
-                final_params.styles.font_size = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.font_size = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginTop(d) => {
-                final_params.styles.margin_top = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_top = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginBottom(d) => {
-                final_params.styles.margin_bottom = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_bottom = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginLeft(d) => {
-                final_params.styles.margin_left = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_left = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginRight(d) => {
-                final_params.styles.margin_right = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_right = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::Color(d) => {
                 let color = show_compiler_error!(
@@ -288,7 +325,7 @@ pub fn extract_params_from_line_for_text(line: &str) -> RoughParamsText {
                 final_params.styles.color = color
             }
             Parameter::Alignment(d) => {
-                let element_alignment = get_element_alignment(d,line);
+                let element_alignment = get_element_alignment(d, line);
                 final_params.styles.alignment = element_alignment
             }
             Parameter::Classes(d) => {
@@ -333,7 +370,7 @@ pub fn extract_params_from_line_for_button(line: &str) -> RoughParamsButton {
             color: RGBColor {
                 red: 255,
                 green: 255,
-                blue: 255
+                blue: 255,
             },
             background_color: RGBColor {
                 red: 0,
@@ -353,19 +390,54 @@ pub fn extract_params_from_line_for_button(line: &str) -> RoughParamsButton {
         match param {
             Parameter::Font(d) => final_params.styles.font = d.to_string(),
             Parameter::FontSize(d) => {
-                final_params.styles.font_size_px = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.font_size_px = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginTop(d) => {
-                final_params.styles.margin_top = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_top = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginBottom(d) => {
-                final_params.styles.margin_bottom = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_bottom = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginLeft(d) => {
-                final_params.styles.margin_left = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_left = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::MarginRight(d) => {
-                final_params.styles.margin_right = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
+                final_params.styles.margin_right = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
             }
             Parameter::Color(d) => {
                 let color = show_compiler_error!(
@@ -390,7 +462,7 @@ pub fn extract_params_from_line_for_button(line: &str) -> RoughParamsButton {
                 final_params.styles.background_color = color
             }
             Parameter::Alignment(d) => {
-                let element_alignment = get_element_alignment(d,line);
+                let element_alignment = get_element_alignment(d, line);
                 final_params.styles.alignment = element_alignment
             }
             Parameter::Classes(d) => {
@@ -400,12 +472,26 @@ pub fn extract_params_from_line_for_button(line: &str) -> RoughParamsButton {
                 }
             }
             Parameter::Binding(d) => final_params.binding = Some(d.to_string()),
-            Parameter::Height(d ) => {
-                final_params.styles.height = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
-            },
-            Parameter::Width(d ) => {
-                final_params.styles.width = show_compiler_error!(parse_spacing_units(d),line,FAILED_TO_PARSE_UNIT_ERROR,FAILED_TO_PARSE_UNIT_HELP,line.find(d).unwrap_or(0)).1;
-            },
+            Parameter::Height(d) => {
+                final_params.styles.height = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
+            }
+            Parameter::Width(d) => {
+                final_params.styles.width = show_compiler_error!(
+                    parse_spacing_units(d),
+                    line,
+                    FAILED_TO_PARSE_UNIT_ERROR,
+                    FAILED_TO_PARSE_UNIT_HELP,
+                    line.find(d).unwrap_or(0)
+                )
+                .1;
+            }
         }
     }
 

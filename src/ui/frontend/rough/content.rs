@@ -37,9 +37,12 @@ pub fn get_content(input: &str) -> ValueOrVar {
     let content_tag_parsed = parse_insert_tag(content).unwrap().0;
 
     return if content_tag_parsed.starts_with("?") {
-        let sr = stripped.replace(">","");
+        let sr = stripped.replace(">", "");
         let pre_insert_tag = get_pre_insert_tag(&sr).unwrap().1;
-        ValueOrVar::Variable((content_tag_parsed.to_string().replace("?", ""),pre_insert_tag.to_string()))
+        ValueOrVar::Variable((
+            content_tag_parsed.to_string().replace("?", ""),
+            pre_insert_tag.to_string(),
+        ))
     } else {
         ValueOrVar::Value(content_tag_parsed.to_string())
     };
