@@ -1,7 +1,7 @@
-use crate::game_object::GameObject;
 use raylib::color::Color;
 use raylib::drawing::{RaylibDraw, RaylibDrawHandle};
 use raylib::ffi::DrawCircle;
+use crate::game_object::GameObject;
 
 #[derive(Clone)]
 pub struct SpriteData {

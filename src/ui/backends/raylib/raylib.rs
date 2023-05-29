@@ -29,7 +29,7 @@ pub(crate) fn spacing_unit_to_pixels(
 
 pub fn process_ast_to_raylib_calls(
     ast: &HyperFoilAST,
-    mut d: &mut RaylibDrawHandle,
+    d: &mut RaylibDrawHandle,
     window_width: i32,
     window_height: i32,
     data_hashmap: &HashMap<String, String>,

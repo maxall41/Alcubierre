@@ -48,7 +48,7 @@ impl GameObject {
         &mut self,
         narrow_phase: &mut NarrowPhase,
         rigid_body_set: &mut RigidBodySet,
-        mut tx: &mut Sender<FlameEvent>,
+        tx: &mut Sender<FlameEvent>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -69,7 +69,7 @@ impl GameObject {
         &mut self,
         narrow_phase: &mut NarrowPhase,
         rigid_body_set: &mut RigidBodySet,
-        mut tx: &mut Sender<FlameEvent>,
+        tx: &mut Sender<FlameEvent>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -93,7 +93,7 @@ impl GameObject {
         narrow_phase: &mut NarrowPhase,
         event_tx: &mut Sender<FlameEvent>,
     ) {
-        let mut time: f32 = 0.0;
+        let mut time: f32;
         unsafe {
             time = GetFrameTime();
         }
@@ -155,7 +155,7 @@ impl GameObjectBuilder {
         self.physics.rigid_body_handle = Some(handle.clone());
         self
     }
-    pub fn behaviour(mut self, mut behaviour: impl UserBehaviour) -> GameObjectBuilder {
+    pub fn behaviour(mut self, behaviour: impl UserBehaviour) -> GameObjectBuilder {
         self.behaviours.push(Box::new(behaviour));
         self
     }

@@ -1,22 +1,19 @@
+use miette::{miette};
+use miette::LabeledSpan;
+use nom::branch::alt;
+use nom::bytes::complete::{is_not, tag};
+use nom::character::complete::{char, multispace0};
+use nom::combinator::{map, value};
+use nom::IResult;
+use nom::multi::many1;
+use nom::sequence::{delimited, terminated};
 use crate::show_compiler_error;
-use crate::ui::frontend::errors::*;
-use crate::ui::frontend::rough::colors::hex_color;
-use crate::ui::frontend::rough::spacing::parse_spacing_units;
 use crate::ui::frontend::{
     ButtonStyleData, ElementAlignment, RGBColor, SpacingUnit, TextStyleData,
 };
-use miette::LabeledSpan;
-use miette::{miette, IntoDiagnostic};
-use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag, take_until, take_while};
-use nom::character::complete::{char, multispace0};
-use nom::combinator::{map, map_res, value};
-use nom::error::Error;
-use nom::multi::many1;
-use nom::sequence::{delimited, terminated};
-use nom::IResult;
-use std::collections::HashMap;
-use std::io::BufRead;
+use crate::ui::frontend::errors::*;
+use crate::ui::frontend::rough::colors::hex_color;
+use crate::ui::frontend::rough::spacing::parse_spacing_units;
 
 pub struct RoughParamsText {
     pub classes: Vec<String>,
@@ -208,7 +205,7 @@ fn get_element_alignment(input: &str, line: &str) -> ElementAlignment {
             let source = line.to_string();
             let apos = source.find(input).unwrap_or(0);
             let report = miette::Report::from({
-                let mut diag = ::miette::MietteDiagnostic::new({
+                let mut diag = miette::MietteDiagnostic::new({
                     let res = UNKNOWN_ALIGNMENT_ERROR;
                     res
                 });

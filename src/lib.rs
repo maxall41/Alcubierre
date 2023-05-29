@@ -155,7 +155,7 @@ impl FlameEngine {
 
         self.active_scene = Some(new_scene.clone());
 
-        let mut active_scene = self.active_scene.as_mut().unwrap();
+        let active_scene = self.active_scene.as_mut().unwrap();
 
         for object in &mut active_scene.game_objects {
             object.loading(
@@ -218,7 +218,9 @@ impl FlameEngine {
                             self.active_scene.as_mut().unwrap().data_map.remove(&var);
                         }
                     },
-                    Err(e) => {}
+                    Err(e) => {
+                        panic!("{}",e); //TODO: Handle
+                    }
                 }
 
                 {

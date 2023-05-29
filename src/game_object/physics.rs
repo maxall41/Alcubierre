@@ -1,11 +1,11 @@
-use crate::game_object::GameObject;
-use crate::physics::physics_units_to_pixels;
-use crate::physics::FlameCollider;
-use crate::{FlameEngine, Scene};
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::{Collider, ColliderHandle, ColliderSet};
 use rapier2d::math::Real;
 use rapier2d::prelude::{RigidBodyHandle, RigidBodySet, Vector};
+use crate::{Scene};
+use crate::game_object::GameObject;
+use crate::physics::FlameCollider;
+use crate::physics::physics_units_to_pixels;
 
 pub trait PhysicsObject {
     fn attach_collider(&mut self, collider: FlameCollider, scene: &mut Scene) -> ColliderHandle;
@@ -48,6 +48,7 @@ impl PhysicsObject for GameObject {
     }
 
     fn remove_collider(&mut self, scene: &mut Scene) {
+        scene.collider_set.remove(self.physics.collider_handle.unwrap(),&mut scene.island_manager,&mut scene.rigid_body_set,true);
         self.physics.collider_handle = None;
     }
 
@@ -57,7 +58,7 @@ impl PhysicsObject for GameObject {
         handle
     }
 
-    fn remove_rigid_body(&mut self, scene: &mut Scene) {
+    fn remove_rigid_body(&mut self, _scene: &mut Scene) {
         todo!()
     }
 

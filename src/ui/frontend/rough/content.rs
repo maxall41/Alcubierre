@@ -4,7 +4,6 @@ use nom::bytes::complete::{is_not, tag, take_until};
 use nom::character::complete::char;
 use nom::combinator::recognize;
 use nom::sequence::delimited;
-use nom::Err::Error;
 use nom::IResult;
 
 fn strip_pre_content(input: &str) -> IResult<&str, &str> {

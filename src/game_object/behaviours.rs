@@ -1,9 +1,10 @@
-use crate::game_object::{GameObject, GameObjectView};
-use crate::keyboard::{is_key_down, is_key_pressed, is_key_released, is_key_up};
-use crate::{FlameEngine, FlameEngineView};
 use std::collections::BTreeMap;
 use std::fs;
 use std::sync::Arc;
+
+use crate::{FlameEngine, FlameEngineView};
+use crate::game_object::{GameObject, GameObjectView};
+use crate::keyboard::{is_key_down, is_key_pressed, is_key_released, is_key_up};
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(
@@ -36,7 +37,7 @@ impl Clone for Box<dyn UserBehaviour> {
 }
 
 impl GameObject {
-    pub fn insert_behaviour(&mut self, mut behaviour: impl UserBehaviour) {
+    pub fn insert_behaviour(&mut self, behaviour: impl UserBehaviour) {
         self.behaviours.push(Box::new(behaviour));
     }
 }

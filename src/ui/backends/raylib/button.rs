@@ -93,7 +93,7 @@ pub fn draw_button_handler(
         }
     };
 
-    let mut button_pressed = false;
+    let mut button_pressed ;
 
     match b.styles.alignment {
         ElementAlignment::TopLeft => {
