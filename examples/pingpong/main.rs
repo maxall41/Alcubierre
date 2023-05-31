@@ -7,7 +7,6 @@ use flame::{FlameConfig, FlameEngine};
 use lazy_static::lazy_static;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
-use raylib::color::Color;
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -32,7 +31,7 @@ async fn main() {
         game_code,
         FlameConfig {
             gravity: 0.0,
-            clear_color: Color::BLACK,
+            // clear_color: Color::BLACK,
         },
     );
     println!("Cycle started");

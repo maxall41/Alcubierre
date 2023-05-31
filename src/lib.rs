@@ -6,7 +6,6 @@ pub mod camera;
 
 use crate::game_object::graphics::Graphics;
 use crate::game_object::GameObject;
-use crate::ui::backends::raylib::raylib::process_ast_to_raylib_calls;
 use crate::ui::frontend::HyperFoilAST;
 use crate::ui::parse_file;
 use flume::{Receiver, Sender};
@@ -16,10 +15,6 @@ use rapier2d::prelude::{
     vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
     IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, RigidBodySet,
 };
-use raylib::color::Color;
-use raylib::drawing::RaylibDraw;
-use raylib::ffi::{GetKeyPressed, IsKeyPressed};
-use raylib::{RaylibHandle, RaylibThread};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -104,8 +99,6 @@ pub enum FlameEvent {
 }
 
 pub struct FlameEngine {
-    raylib: RaylibHandle,
-    thread: RaylibThread,
     pub scenes: HashMap<String, Scene>,
     active_scene: Option<Scene>,
     event_rx: Receiver<FlameEvent>,
@@ -116,21 +109,14 @@ pub struct FlameEngine {
 
 pub struct FlameConfig {
     pub gravity: f32,
-    pub clear_color: Color,
 }
 
 impl FlameEngine {
     pub fn new(window_width: i32, window_height: i32) -> Self {
-        let (mut rl, thread) = raylib::init()
-            .size(window_width, window_height)
-            .title("Hello, World")
-            .build();
 
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
         FlameEngine {
-            raylib: rl,
-            thread,
             scenes: HashMap::new(),
             event_tx,
             window_width,
@@ -228,36 +214,20 @@ impl FlameEngine {
                     game_code(self);
                 }
 
-                let mut d = self.raylib.begin_drawing(&self.thread);
-
                 let active_scene = self.active_scene.as_mut().unwrap();
 
-                if active_scene.ui_ast.is_some() {
-                    process_ast_to_raylib_calls(
-                        &active_scene.ui_ast.as_ref().unwrap(),
-                        &mut d,
-                        self.window_width,
-                        self.window_height,
-                        &active_scene.data_map,
-                        &active_scene.function_map,
-                        &mut FlameEngineView {
-                            rigid_body_set: &mut active_scene.rigid_body_set,
-                            narrow_phase: &mut active_scene.narrow_phase_collision,
-                            event_tx: &mut self.event_tx,
-                        },
-                    );
-                }
+                // if active_scene.ui_ast.is_some() {
+                // }
 
                 for object in &mut active_scene.game_objects {
                     object.execute(
-                        &mut d,
                         &mut active_scene.rigid_body_set,
                         &mut active_scene.narrow_phase_collision,
                         &mut self.event_tx,
                     );
                 }
 
-                d.clear_background(config.clear_color);
+                // d.clear_background(config.clear_color);
             }
 
             sleep(Duration::new(0, 1_000_000_000u32 / 60));

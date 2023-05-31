@@ -7,8 +7,6 @@ use flume::Sender;
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::{NarrowPhase};
 use rapier2d::prelude::{RigidBodySet};
-use raylib::drawing::RaylibDrawHandle;
-use raylib::ffi::GetFrameTime;
 
 pub mod behaviours;
 pub mod graphics;
@@ -86,15 +84,10 @@ impl GameObject {
     }
     pub fn execute(
         &mut self,
-        d: &mut RaylibDrawHandle,
         rigid_body_set: &mut RigidBodySet,
         narrow_phase: &mut NarrowPhase,
         event_tx: &mut Sender<FlameEvent>,
     ) {
-        let mut time: f32;
-        unsafe {
-            time = GetFrameTime();
-        }
 
         if self.physics.rigid_body_handle.is_some() {
             let new_pos = self.get_updated_physics_position(rigid_body_set);
@@ -114,10 +107,10 @@ impl GameObject {
                     narrow_phase,
                     event_tx,
                 },
-                time,
+                0.0, //TODO
             );
         }
-        self.render(d);
+        // self.render(d);
     }
 }
 
