@@ -2,6 +2,7 @@ pub mod game_object;
 pub mod keyboard;
 pub mod physics;
 pub mod ui;
+pub mod camera;
 
 use crate::game_object::graphics::Graphics;
 use crate::game_object::GameObject;

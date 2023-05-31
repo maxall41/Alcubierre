@@ -53,7 +53,7 @@ pub fn register_main_scene(mut flame: &mut FlameEngine) {
 
     scene.register_game_object(ball);
 
-    let mut player = GameObject::new(0, 0, "Main".to_string());
+    let mut player = GameObject::new(0, 0);
 
     player.insert_behaviour(PlayerBehaviour {
         speed: 0.8,
@@ -88,7 +88,7 @@ pub fn register_main_scene(mut flame: &mut FlameEngine) {
     }));
     scene.register_game_object(player);
 
-    let mut ai = GameObject::new(0, 0, "Main".to_string());
+    let mut ai = GameObject::new(0, 0);
 
     ai.insert_behaviour(AIBehaviour {
         speed: 1.0,
@@ -123,7 +123,7 @@ pub fn register_main_scene(mut flame: &mut FlameEngine) {
 
     scene.register_game_object(ai);
 
-    let mut top_wall = GameObject::new(0, 0, "Main".to_string());
+    let mut top_wall = GameObject::new(0, 0);
 
     let top_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.0, 0.0])
@@ -147,7 +147,7 @@ pub fn register_main_scene(mut flame: &mut FlameEngine) {
 
     scene.register_game_object(top_wall);
 
-    let mut bottom_wall = GameObject::new(0, 0, "Main".to_string());
+    let mut bottom_wall = GameObject::new(0, 0);
 
     let bottom_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.0, 10.0])
@@ -169,7 +169,9 @@ pub fn register_main_scene(mut flame: &mut FlameEngine) {
     let bottom_wall_collider_handle =
         bottom_wall.attach_collider_with_rigid_body(bottom_wall_collider, scene);
 
-    let mut fail_barrier = GameObject::new(0, 0, "Main".to_string());
+    scene.register_game_object(bottom_wall);
+
+    let mut fail_barrier = GameObject::new(0, 0);
 
     fail_barrier.insert_behaviour(FailBehaviour {
         speed: 0.0,
