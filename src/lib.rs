@@ -2,7 +2,6 @@ pub mod game_object;
 pub mod keyboard;
 pub mod physics;
 pub mod ui;
-pub mod camera;
 mod renderer;
 
 use crate::game_object::graphics::Graphics;
@@ -13,8 +12,8 @@ use flume::{Receiver, Sender};
 use hashbrown::HashMap;
 use rapier2d::geometry::{ColliderBuilder, ColliderSet};
 use rapier2d::prelude::{
-    vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, RigidBodySet,
+    BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters, IslandManager,
+    MultibodyJointSet, NarrowPhase, PhysicsPipeline, RigidBodySet, vector,
 };
 use std::thread::sleep;
 use std::time::Duration;
@@ -159,7 +158,7 @@ impl FlameEngine {
         }
     }
 
-    pub fn start_cycle(&mut self, game_code: fn(&mut Self), config: FlameConfig) {
+    pub fn start_cycle(mut self, game_code: fn(&mut Self), config: FlameConfig) {
 
         let gravity = vector![0.0, config.gravity];
 
@@ -168,7 +167,7 @@ impl FlameEngine {
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
 
-        let mut current_size = PhysicalSize::new(1480, 1080);
+        let mut current_size = PhysicalSize::new(1080, 940);
 
         window.set_inner_size(current_size);
 
@@ -200,8 +199,75 @@ impl FlameEngine {
                 _ => {}
             },
             Event::RedrawRequested(window_id) if window_id == window.id() => {
+                let active_scene = self.active_scene.as_mut();
                 let mut buffer = QuadBufferBuilder::new();
-                buffer = buffer.push_square(0.0,0.0,0.2,0.2);
+
+                if active_scene.is_some() {
+                    let active_scene_unwraped = active_scene.unwrap();
+                    physics_pipeline.step(
+                        &gravity,
+                        &active_scene_unwraped.integration_params,
+                        &mut active_scene_unwraped.island_manager,
+                        &mut active_scene_unwraped.broad_phase,
+                        &mut active_scene_unwraped.narrow_phase_collision,
+                        &mut active_scene_unwraped.rigid_body_set,
+                        &mut active_scene_unwraped.collider_set,
+                        &mut active_scene_unwraped.impulse_joint_set,
+                        &mut active_scene_unwraped.multibody_joint_set,
+                        &mut active_scene_unwraped.ccd_solver,
+                        None,
+                        &(),
+                        &(),
+                    );
+
+                    let packet = self.event_rx.try_recv();
+                    match packet {
+                        Ok(event) => match event {
+                            FlameEvent::SwitchToScene(scene) => {
+                                self.set_current_scene(scene);
+                            }
+                            FlameEvent::SetDatamapValue((var, val)) => {
+                                *self
+                                    .active_scene
+                                    .as_mut()
+                                    .unwrap()
+                                    .data_map
+                                    .get_mut(&var)
+                                    .unwrap() = val;
+                            }
+                            FlameEvent::InsertDatamapValue((var, val)) => {
+                                self.active_scene
+                                    .as_mut()
+                                    .unwrap()
+                                    .data_map
+                                    .insert(var, val);
+                            }
+                            FlameEvent::RemoveDatamapValue(var) => {
+                                self.active_scene.as_mut().unwrap().data_map.remove(&var);
+                            }
+                        },
+                        Err(e) => {
+                            // panic!("{}",e); //TODO: Handle
+                        }
+                    }
+
+                    let active_scene = self.active_scene.as_mut().unwrap();
+
+                    // if active_scene.ui_ast.is_some() {
+                    // }
+
+                    for object in &mut active_scene.game_objects {
+                        object.execute(
+                            &mut active_scene.rigid_body_set,
+                            &mut active_scene.narrow_phase_collision,
+                            &mut self.event_tx,
+                        );
+                    }
+
+                    // d.clear_background(config.clear_color);
+                }
+
+                // let mut buffer = QuadBufferBuilder::new().push_square(0.0,0.0,3.0,3.0);
                 render.render_buffer(buffer);
                 window.request_redraw();
             }
@@ -209,75 +275,7 @@ impl FlameEngine {
         });
 
         // loop {4koqkrqkoq3 
-        //     let active_scene = self.active_scene.as_mut();
-        //     if active_scene.is_some() {
-        //         let active_scene_unwraped = active_scene.unwrap();
-        //         physics_pipeline.step(
-        //             &gravity,
-        //             &active_scene_unwraped.integration_params,
-        //             &mut active_scene_unwraped.island_manager,
-        //             &mut active_scene_unwraped.broad_phase,
-        //             &mut active_scene_unwraped.narrow_phase_collision,
-        //             &mut active_scene_unwraped.rigid_body_set,
-        //             &mut active_scene_unwraped.collider_set,
-        //             &mut active_scene_unwraped.impulse_joint_set,
-        //             &mut active_scene_unwraped.multibody_joint_set,
-        //             &mut active_scene_unwraped.ccd_solver,
-        //             None,
-        //             &(),
-        //             &(),
-        //         );
-        //
-        //         let packet = self.event_rx.try_recv();
-        //         match packet {
-        //             Ok(event) => match event {
-        //                 FlameEvent::SwitchToScene(scene) => {
-        //                     self.set_current_scene(scene);
-        //                 }
-        //                 FlameEvent::SetDatamapValue((var, val)) => {
-        //                     *self
-        //                         .active_scene
-        //                         .as_mut()
-        //                         .unwrap()
-        //                         .data_map
-        //                         .get_mut(&var)
-        //                         .unwrap() = val;
-        //                 }
-        //                 FlameEvent::InsertDatamapValue((var, val)) => {
-        //                     self.active_scene
-        //                         .as_mut()
-        //                         .unwrap()
-        //                         .data_map
-        //                         .insert(var, val);
-        //                 }
-        //                 FlameEvent::RemoveDatamapValue(var) => {
-        //                     self.active_scene.as_mut().unwrap().data_map.remove(&var);
-        //                 }
-        //             },
-        //             Err(e) => {
-        //                 // panic!("{}",e); //TODO: Handle
-        //             }
-        //         }
-        //
-        //         {
-        //             game_code(self);
-        //         }
-        //
-        //         let active_scene = self.active_scene.as_mut().unwrap();
-        //
-        //         // if active_scene.ui_ast.is_some() {
-        //         // }
-        //
-        //         for object in &mut active_scene.game_objects {
-        //             object.execute(
-        //                 &mut active_scene.rigid_body_set,
-        //                 &mut active_scene.narrow_phase_collision,
-        //                 &mut self.event_tx,
-        //             );
-        //         }
-        //
-        //         // d.clear_background(config.clear_color);
-        //     }
+
         //
         //     sleep(Duration::new(0, 1_000_000_000u32 / 60));
         // }

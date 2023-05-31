@@ -8,6 +8,7 @@ bytemuck = { version = "1.13.1", features = [ "derive" ] }
 cgmath = "0.18.0"
 flume = "0.10.14"
 hashbrown = "0.13.2"
+instant = "0.1.12"
 lazy_static = "1.4.0"
 miette = { version = "5.9.0", features = ["fancy"] }
 nalgebra = "0.32.2"

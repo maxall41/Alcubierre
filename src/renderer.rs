@@ -1,4 +1,5 @@
 pub(crate) mod buffer;
+pub mod camera;
 
 use std::iter;
 use wgpu::util::DeviceExt;
@@ -7,7 +8,7 @@ use winit::dpi::PhysicalSize;
 use winit::window::Window;
 
 use buffer::*;
-use crate::camera::{Camera, CameraUniform};
+use crate::renderer::camera::{Camera, CameraUniform};
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -22,6 +23,8 @@ pub struct Render {
     staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
+    camera: camera::Camera, // UPDATED!
+    projection: camera::Projection, // NEW!
     camera_bind_group: wgpu::BindGroup,
 }
 
@@ -90,20 +93,19 @@ impl Render {
             view_formats: vec![],
         };
 
-        /// Camera system
-
-        let camera = Camera {
-            eye: (0.0, 1.0, 2.0).into(),
-            target: (0.0, 0.0, 0.0).into(),
-            up: cgmath::Vector3::unit_y(),
-            aspect: config.width as f32 / config.height as f32,
-            fovy: 45.0,
-            znear: 0.1,
-            zfar: 100.0,
-        };
+        // Camera system
 
         let mut camera_uniform = CameraUniform::new();
-        camera_uniform.update_view_proj(&camera);
+
+        let camera = Camera {
+            eye: (0.0, 0.0, 6.0).into(),
+            target: (0.0, 0.0, 0.0).into(),
+            up: cgmath::Vector3::unit_y(),
+        };
+
+        let projection = camera::Projection::new(config.width, config.height, cgmath::Deg(90.0), 0.1, 100.0);
+
+        camera_uniform.update_view_proj(&camera, &projection);
 
         let camera_buffer = device.create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
@@ -143,7 +145,7 @@ impl Render {
 
 
 
-        ///
+        //
 
 
         surface.configure(&device, &config);
@@ -190,7 +192,9 @@ impl Render {
             staging_belt,
             camera_bind_group,
             camera_buffer,
-            camera_uniform
+            camera_uniform,
+            projection,
+            camera
         }
     }
 
@@ -198,6 +202,9 @@ impl Render {
         self.config.width = size.width;
         self.config.height = size.height;
         self.surface.configure(&self.device, &self.config);
+        self.projection.resize(size.width, size.height);
+        self.camera_uniform
+            .update_view_proj(&self.camera, &self.projection);
     }
 
     pub fn render_buffer(&mut self, buffer: QuadBufferBuilder) {
@@ -230,6 +237,8 @@ impl Render {
                     .set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
                 render_pass.set_pipeline(&self.pipeline);
                 render_pass.draw_indexed(0..num_indices, 0, 0..1);
+
+
 
                 drop(render_pass);
 
