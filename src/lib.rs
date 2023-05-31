@@ -319,6 +319,8 @@ impl FlameEngine {
                     // d.clear_background(config.clear_color);
                 }
 
+                buffer.push_square(self.pos_x,self.pos_y,square.width,square.height);
+
                 render.render_buffer(buffer);
                 window.request_redraw();
             }
