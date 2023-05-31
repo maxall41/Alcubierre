@@ -159,8 +159,7 @@ impl Render {
             &pipeline_layout,
             config.format,
             &[Vertex::DESC],
-            wgpu::include_wgsl!("./renderer/shaders/quad.vert.wgsl"),
-            wgpu::include_wgsl!("./renderer/shaders/quad.frag.wgsl"),
+            wgpu::include_wgsl!("./renderer/shaders/quad.wgsl"),
         );
 
         let vertex_buffer = device.create_buffer(&wgpu::BufferDescriptor {
@@ -271,28 +270,26 @@ fn create_render_pipeline(
     layout: &wgpu::PipelineLayout,
     color_format: wgpu::TextureFormat,
     vertex_layouts: &[wgpu::VertexBufferLayout],
-    vs_src: wgpu::ShaderModuleDescriptor,
-    fs_src: wgpu::ShaderModuleDescriptor,
+    src: wgpu::ShaderModuleDescriptor,
 ) -> wgpu::RenderPipeline {
-    let vs_module = device.create_shader_module(vs_src);
-    let fs_module = device.create_shader_module(fs_src);
+    let shader = device.create_shader_module(src);
 
     device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some("Render Pipeline"),
         layout: Some(layout),
         vertex: wgpu::VertexState {
-            module: &vs_module,
-            entry_point: "main",
-            buffers: &vertex_layouts,
+            module: &shader,
+            entry_point: "vs_main",
+            buffers: &[],
         },
         fragment: Some(wgpu::FragmentState {
-            module: &fs_module,
-            entry_point: "main",
+            module: &shader,
+            entry_point: "fs_main",
             targets: &[Some(wgpu::ColorTargetState {
                 format: color_format,
                 blend: Some(wgpu::BlendState {
-                    alpha: wgpu::BlendComponent::REPLACE,
                     color: wgpu::BlendComponent::REPLACE,
+                    alpha: wgpu::BlendComponent::REPLACE,
                 }),
                 write_mask: wgpu::ColorWrites::ALL,
             })],
