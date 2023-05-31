@@ -116,19 +116,6 @@ impl Render {
             }
         );
 
-        let color_buffer = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Color Buffer"),
-                contents: bytemuck::cast_slice(&[Color {
-                    r: 0.5,
-                    g: 0.2,
-                    b: 0.6,
-                    a: 1.0,
-                }]),
-                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            }
-        );
-
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
@@ -141,16 +128,6 @@ impl Render {
                     },
                     count: None,
                 },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                }
             ],
             label: Some("bind_group_layout"),
         });
@@ -162,16 +139,9 @@ impl Render {
                     binding: 0,
                     resource: camera_buffer.as_entire_binding(),
                 },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: color_buffer.as_entire_binding(),
-                }
             ],
             label: Some("camera_bind_group"),
         });
-
-
-
 
         //
 
@@ -203,6 +173,13 @@ impl Render {
         let index_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size: U32_SIZE * 6 * 3,
+            usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        let color_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            size: F32_SIZE * 4 * 20,
             usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });

@@ -10,6 +10,7 @@ pub const F32_SIZE: wgpu::BufferAddress = std::mem::size_of::<f32>() as wgpu::Bu
 pub struct Vertex {
     #[allow(dead_code)]
     position: cgmath::Vector2<f32>,
+    color: cgmath::Vector4<f32>,
 }
 
 
@@ -38,7 +39,8 @@ impl Vertex {
         array_stride: Self::SIZE,
         step_mode: wgpu::VertexStepMode::Vertex,
         attributes: &wgpu::vertex_attr_array![
-            0 => Float32x2
+            0 => Float32x2,
+            1 => Float32x4
         ],
     };
 }
@@ -71,15 +73,19 @@ impl QuadBufferBuilder {
         self.vertex_data.extend(&[
             Vertex {
                 position: (min_x, min_y).into(),
+                color: (0.5,0.2,0.6,1.0).into()
             },
             Vertex {
                 position: (max_x, min_y).into(),
+                color: (0.5,0.2,0.6,1.0).into()
             },
             Vertex {
                 position: (max_x, max_y).into(),
+                color: (0.5,0.2,0.6,1.0).into()
             },
             Vertex {
                 position: (min_x, max_y).into(),
+                color: (0.5,0.2,0.6,1.0).into()
             },
         ]);
         self.index_data.extend(&[
