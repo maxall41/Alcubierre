@@ -5,7 +5,7 @@ use crate::scripts::player::PlayerBehaviour;
 use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
 use flame::game_object::physics::PhysicsObject;
 use flame::game_object::{GameObject, GameObjectBuilder};
-use flame::physics::pixels_to_physics_units;
+use flame::physics::screen_units_to_physics_units;
 use flame::physics::{FlameCollider, FlameColliderType};
 use flame::FlameEngine;
 use rapier2d::geometry::ColliderBuilder;

@@ -51,7 +51,7 @@ impl Graphics for GameObject {
                    todo!()
                 }
                 GraphicsType::Square(square) => {
-                    buffer.push_square(self.pos_x,self.pos_y,square.width,square.height);
+                    buffer.push_square(self.pos_x,self.pos_y,square.width,square.height,&square.color);
                 }
                 GraphicsType::Triangle(triangle) => {
                     todo!()

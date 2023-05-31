@@ -238,7 +238,6 @@ impl Render {
                 });
 
                 render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
-
                 render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
@@ -276,11 +275,11 @@ fn create_render_pipeline(
 
     device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some("Render Pipeline"),
-        layout: Some(layout),
+        layout: Some(&layout),
         vertex: wgpu::VertexState {
             module: &shader,
             entry_point: "vs_main",
-            buffers: &[],
+            buffers: &vertex_layouts,
         },
         fragment: Some(wgpu::FragmentState {
             module: &shader,
@@ -299,7 +298,8 @@ fn create_render_pipeline(
             strip_index_format: None,
             front_face: wgpu::FrontFace::Ccw,
             cull_mode: Some(wgpu::Face::Back),
-            // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
+            // Setting this to anything other than Fill requires Features::POLYGON_MODE_LINE
+            // or Features::POLYGON_MODE_POINT
             polygon_mode: wgpu::PolygonMode::Fill,
             // Requires Features::DEPTH_CLIP_CONTROL
             unclipped_depth: false,

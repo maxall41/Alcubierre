@@ -8,9 +8,8 @@ pub const F32_SIZE: wgpu::BufferAddress = std::mem::size_of::<f32>() as wgpu::Bu
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
-    #[allow(dead_code)]
-    position: cgmath::Vector2<f32>,
-    color: cgmath::Vector4<f32>,
+    pub(crate) position: [f32; 2],
+    pub(crate) color: [f32; 3],
 }
 
 
@@ -40,7 +39,7 @@ impl Vertex {
         step_mode: wgpu::VertexStepMode::Vertex,
         attributes: &wgpu::vertex_attr_array![
             0 => Float32x2,
-            1 => Float32x4
+            1 => Float32x3
         ],
     };
 }
@@ -60,32 +59,33 @@ impl QuadBufferBuilder {
         }
     }
 
-    pub fn push_square(&mut self,x: f32,y: f32,width: f32,height: f32) {
+    pub fn push_square(&mut self,x: f32,y: f32,width: f32,height: f32,color: &RGBColor) {
         self.push_quad(
             x - width * 0.5,
             y - height * 0.5,
             x + width * 0.5,
             y + height * 0.5,
+            color
         );
     }
 
-    pub fn push_quad(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32) {
+    pub fn push_quad(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,color: &RGBColor) {
         self.vertex_data.extend(&[
             Vertex {
-                position: (min_x, min_y).into(),
-                color: (0.5,0.2,0.6,1.0).into()
+                position: [min_x,min_y],
+                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
             },
             Vertex {
-                position: (max_x, min_y).into(),
-                color: (0.5,0.2,0.6,1.0).into()
+                position: [max_x,min_y],
+                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
             },
             Vertex {
-                position: (max_x, max_y).into(),
-                color: (0.5,0.2,0.6,1.0).into()
+                position: [max_x,max_y],
+                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
             },
             Vertex {
-                position: (min_x, max_y).into(),
-                color: (0.5,0.2,0.6,1.0).into()
+                position: [min_x,max_y],
+                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
             },
         ]);
         self.index_data.extend(&[

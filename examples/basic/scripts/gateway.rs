@@ -1,10 +1,7 @@
 use flame::game_object::behaviours::UserBehaviour;
 use flame::game_object::{GameObject, GameObjectView};
-use flame::keyboard::{is_key_down, is_key_pressed};
 use flame::FlameEngineView;
 use rapier2d::prelude::{vector, ColliderHandle, Vector};
-use raylib::ffi::GetFrameTime;
-use raylib::ffi::KeyboardKey::{KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_UP};
 
 #[derive(Clone)]
 pub struct GatewayBehaviour {
@@ -26,7 +23,8 @@ impl UserBehaviour for GatewayBehaviour {
         ) && self.going_to_next == false
         {
             self.going_to_next = true;
-            engine_view.load_scene(self.scene_to_switch_to.clone())
+            println!("NEXT!");
+            // engine_view.load_scene(self.scene_to_switch_to.clone())
         }
     }
 }

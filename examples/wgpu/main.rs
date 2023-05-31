@@ -47,9 +47,9 @@ async fn main() {
         width: 1.0,
         height: 1.0,
         color: RGBColor {
-            red: 0,
-            green: 0,
-            blue: 0
+            red: 25,
+            green: 255,
+            blue: 100
         },
     }));
     scene.register_game_object(player);
