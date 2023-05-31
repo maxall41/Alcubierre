@@ -22,9 +22,9 @@ async fn main() {
 
     let scene = flame.register_scene("Main".to_string());
 
-    let mut player = GameObject::new(0, 0);
+    let mut player = GameObject::new(0.0, 0.0);
 
-    player.insert_behaviour(PlayerBehaviour { speed: 1.0 });
+    player.insert_behaviour(PlayerBehaviour { speed: 0.02 });
 
     let player_rigid_body = RigidBodyBuilder::dynamic()
         .translation(vector![0.0, 0.0])
@@ -35,7 +35,7 @@ async fn main() {
     player.attach_rigid_body(player_rigid_body, scene);
 
     let player_collider = FlameCollider {
-        collider_type: FlameColliderType::Circle(20),
+        collider_type: FlameColliderType::Rectangle((1,1)),
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
@@ -43,8 +43,9 @@ async fn main() {
 
     let player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
 
-    player.add_graphics(GraphicsType::Circle(CircleData {
-        radius: 20.0,
+    player.add_graphics(GraphicsType::Square(SquareData {
+        width: 1.0,
+        height: 1.0,
         color: RGBColor {
             red: 0,
             green: 0,

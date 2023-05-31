@@ -20,6 +20,7 @@ pub struct Render {
     pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
+    color_buffer: wgpu::Buffer,
     staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -115,7 +116,20 @@ impl Render {
             }
         );
 
-        let camera_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let color_buffer = device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                label: Some("Color Buffer"),
+                contents: bytemuck::cast_slice(&[Color {
+                    r: 0.5,
+                    g: 0.2,
+                    b: 0.6,
+                    a: 1.0,
+                }]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            }
+        );
+
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -126,17 +140,31 @@ impl Render {
                         min_binding_size: None,
                     },
                     count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
                 }
             ],
-            label: Some("camera_bind_group_layout"),
+            label: Some("bind_group_layout"),
         });
 
-        let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &camera_bind_group_layout,
+        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
                     resource: camera_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: color_buffer.as_entire_binding(),
                 }
             ],
             label: Some("camera_bind_group"),
@@ -151,10 +179,11 @@ impl Render {
         surface.configure(&device, &config);
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            bind_group_layouts: &[&camera_bind_group_layout],
+            bind_group_layouts: &[&bind_group_layout],
             push_constant_ranges: &[],
             label: Some("Pipeline Layout"),
         });
+
         let pipeline = create_render_pipeline(
             &device,
             &pipeline_layout,
@@ -178,6 +207,7 @@ impl Render {
             mapped_at_creation: false,
         });
 
+
         let staging_belt = wgpu::util::StagingBelt::new(1024);
 
         Self {
@@ -190,11 +220,12 @@ impl Render {
             vertex_buffer,
             index_buffer,
             staging_belt,
-            camera_bind_group,
+            camera_bind_group: bind_group,
             camera_buffer,
             camera_uniform,
             projection,
-            camera
+            camera,
+            color_buffer
         }
     }
 

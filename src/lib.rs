@@ -1,5 +1,4 @@
 pub mod game_object;
-pub mod keyboard;
 pub mod physics;
 pub mod ui;
 mod renderer;
@@ -9,7 +8,7 @@ use crate::game_object::GameObject;
 use crate::ui::frontend::HyperFoilAST;
 use crate::ui::parse_file;
 use flume::{Receiver, Sender};
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use rapier2d::geometry::{ColliderBuilder, ColliderSet};
 use rapier2d::prelude::{
     BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters, IslandManager,
@@ -27,6 +26,8 @@ pub struct FlameEngineView<'a> {
     pub rigid_body_set: &'a mut RigidBodySet,
     pub narrow_phase: &'a mut NarrowPhase,
     event_tx: &'a mut Sender<FlameEvent>,
+    key_locks: &'a mut HashSet<VirtualKeyCode>,
+    keys_pressed: &'a  mut HashSet<VirtualKeyCode>
 }
 
 impl<'a> FlameEngineView<'a> {
@@ -67,6 +68,26 @@ impl<'a> FlameEngineView<'a> {
         self.event_tx
             .send(FlameEvent::RemoveDatamapValue(var))
             .unwrap();
+    }
+    pub fn is_key_down(&self,key: VirtualKeyCode) -> bool {
+        self.keys_pressed.contains(&key)
+    }
+    pub fn is_key_up(&self,key: VirtualKeyCode) -> bool {
+        !self.keys_pressed.contains(&key)
+    }
+    pub fn is_key_pressed(&mut self, key: VirtualKeyCode) -> bool {
+        let contains = self.keys_pressed.contains(&key);
+        if contains {
+            if self.key_locks.contains(&key) {
+                false
+            } else {
+                self.key_locks.insert(key);
+                true
+            }
+        } else {
+            self.key_locks.remove(&key);
+            false
+        }
     }
 }
 
@@ -110,6 +131,8 @@ pub struct FlameEngine {
     event_tx: Sender<FlameEvent>,
     window_width: i32,
     window_height: i32,
+    keys_pressed: HashSet<VirtualKeyCode>,
+    key_locks: HashSet<VirtualKeyCode>
 }
 
 pub struct FlameConfig {
@@ -128,6 +151,8 @@ impl FlameEngine {
             event_rx,
             active_scene: None,
             window_height,
+            key_locks: HashSet::new(),
+            keys_pressed: HashSet::new()
         }
     }
 
@@ -139,6 +164,8 @@ impl FlameEngine {
                     &mut scene.narrow_phase_collision,
                     &mut scene.rigid_body_set,
                     &mut self.event_tx,
+                    &mut self.keys_pressed,
+                    &mut self.key_locks
                 )
             }
         }
@@ -154,6 +181,8 @@ impl FlameEngine {
                 &mut active_scene.narrow_phase_collision,
                 &mut active_scene.rigid_body_set,
                 &mut self.event_tx,
+                &mut self.keys_pressed,
+                &mut self.key_locks
             )
         }
     }
@@ -179,16 +208,36 @@ impl FlameEngine {
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
-                WindowEvent::CloseRequested
-                | WindowEvent::KeyboardInput {
+                // WindowEvent::CloseRequested
+                // | WindowEvent::KeyboardInput {
+                //     input:
+                //     KeyboardInput {
+                //         state: ElementState::Pressed,
+                //         virtual_keycode: Some(VirtualKeyCode::Escape),
+                //         ..
+                //     },
+                //     ..
+                // } => *control_flow = ControlFlow::Exit,
+                WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+                WindowEvent::KeyboardInput {
                     input:
                     KeyboardInput {
-                        state: ElementState::Pressed,
-                        virtual_keycode: Some(VirtualKeyCode::Escape),
+                        state: element_state,
+                        virtual_keycode: Some(key),
                         ..
                     },
                     ..
-                } => *control_flow = ControlFlow::Exit,
+                } => {
+                    // keys_pressed.push(*key);
+                    match element_state {
+                        ElementState::Released => {
+                            self.keys_pressed.remove(key);
+                        },
+                        ElementState::Pressed => {
+                            self.keys_pressed.insert(*key);
+                        }
+                    }
+                }
                 WindowEvent::Resized(physical_size) => {
                     render.resize(*physical_size);
                 }
@@ -261,24 +310,21 @@ impl FlameEngine {
                             &mut active_scene.rigid_body_set,
                             &mut active_scene.narrow_phase_collision,
                             &mut self.event_tx,
+                            &mut buffer,
+                            &mut self.keys_pressed,
+                            &mut self.key_locks
                         );
                     }
 
                     // d.clear_background(config.clear_color);
                 }
 
-                // let mut buffer = QuadBufferBuilder::new().push_square(0.0,0.0,3.0,3.0);
                 render.render_buffer(buffer);
                 window.request_redraw();
             }
             _ => {}
         });
 
-        // loop {4koqkrqkoq3 
-
-        //
-        //     sleep(Duration::new(0, 1_000_000_000u32 / 60));
-        // }
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {
         let integration_params = IntegrationParameters::default();

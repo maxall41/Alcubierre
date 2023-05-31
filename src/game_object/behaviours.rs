@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use crate::{FlameEngine, FlameEngineView};
 use crate::game_object::{GameObject, GameObjectView};
-use crate::keyboard::{is_key_down, is_key_pressed, is_key_released, is_key_up};
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(

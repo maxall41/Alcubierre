@@ -1,12 +1,25 @@
+use bytemuck::{Pod, Zeroable};
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use crate::game_object::graphics::SquareData;
+use crate::ui::frontend::RGBColor;
 
 pub const U32_SIZE: wgpu::BufferAddress = std::mem::size_of::<u32>() as wgpu::BufferAddress;
+pub const F32_SIZE: wgpu::BufferAddress = std::mem::size_of::<f32>() as wgpu::BufferAddress;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
     #[allow(dead_code)]
     position: cgmath::Vector2<f32>,
+}
+
+
+#[derive(Copy, Clone)]
+pub struct Color {
+    #[allow(dead_code)]
+    pub(crate) r: f32,
+    pub(crate) g: f32,
+    pub(crate) b: f32,
+    pub(crate) a: f32
 }
 
 pub fn size_of_slice<T: Sized>(slice: &[T]) -> usize {
@@ -15,6 +28,9 @@ pub fn size_of_slice<T: Sized>(slice: &[T]) -> usize {
 
 unsafe impl bytemuck::Pod for Vertex {}
 unsafe impl bytemuck::Zeroable for Vertex {}
+
+unsafe impl bytemuck::Pod for Color {}
+unsafe impl bytemuck::Zeroable for Color {}
 
 impl Vertex {
     pub const SIZE: wgpu::BufferAddress = std::mem::size_of::<Self>() as wgpu::BufferAddress;
@@ -36,22 +52,22 @@ pub struct QuadBufferBuilder {
 impl QuadBufferBuilder {
     pub fn new() -> Self {
         Self {
-            vertex_data: Vec::new(),
-            index_data: Vec::new(),
+            vertex_data: vec![],
+            index_data: vec![],
             current_quad: 0,
         }
     }
 
-    pub fn push_square(self,x: f32,y: f32,width: f32,height: f32) -> Self {
+    pub fn push_square(&mut self,x: f32,y: f32,width: f32,height: f32) {
         self.push_quad(
             x - width * 0.5,
             y - height * 0.5,
             x + width * 0.5,
             y + height * 0.5,
-        )
+        );
     }
 
-    pub fn push_quad(mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32) -> Self {
+    pub fn push_quad(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32) {
         self.vertex_data.extend(&[
             Vertex {
                 position: (min_x, min_y).into(),
@@ -75,10 +91,9 @@ impl QuadBufferBuilder {
             self.current_quad * 4 + 3,
         ]);
         self.current_quad += 1;
-        self
     }
 
-    pub fn build(self, device: &wgpu::Device) -> (StagingBuffer, StagingBuffer, u32) {
+    pub fn build(self, device: &wgpu::Device) -> (StagingBuffer, StagingBuffer,  u32) {
         (
             StagingBuffer::new(device, &self.vertex_data, false),
             StagingBuffer::new(device, &self.index_data, true),

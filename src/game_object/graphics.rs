@@ -1,11 +1,12 @@
 use crate::game_object::GameObject;
+use crate::renderer::buffer::QuadBufferBuilder;
 use crate::ui::frontend::RGBColor;
 
 #[derive(Clone)]
 pub struct SpriteData {
     pub image: String,
-    pub x_pos: i32,
-    pub y_pos: i32,
+    pub x_pos: f32,
+    pub y_pos: f32,
 }
 #[derive(Clone)]
 pub struct CircleData {
@@ -15,8 +16,8 @@ pub struct CircleData {
 #[derive(Clone)]
 pub struct SquareData {
     pub color: RGBColor,
-    pub width: i32,
-    pub height: i32,
+    pub width: f32,
+    pub height: f32,
 }
 #[derive(Clone)]
 pub struct TriangleData {
@@ -33,36 +34,30 @@ pub enum GraphicsType {
 
 pub trait Graphics {
     fn add_graphics(&mut self, graphics_type: GraphicsType);
-    fn render(&mut self);
+    fn render(&mut self,buffer: &mut QuadBufferBuilder);
 }
 
 impl Graphics for GameObject {
     fn add_graphics(&mut self, graphics_type: GraphicsType) {
         self.graphics = Some(graphics_type);
     }
-    fn render(&mut self) {
-        // match &self.graphics {
-        //     Some(graphics) => match graphics {
-        //         GraphicsType::Sprite(sprite) => {
-        //             todo!()
-        //         }
-        //         GraphicsType::Circle(circle) => {
-        //             draw_handle.draw_circle(self.pos_x, self.pos_y, circle.radius, circle.color);
-        //         }
-        //         GraphicsType::Square(square) => {
-        //             draw_handle.draw_rectangle(
-        //                 self.pos_x,
-        //                 self.pos_y,
-        //                 square.width,
-        //                 square.height,
-        //                 square.color,
-        //             );
-        //         }
-        //         GraphicsType::Triangle(triangle) => {
-        //             todo!()
-        //         }
-        //     },
-        //     None => {}
-        // }
+    fn render(&mut self, mut buffer: &mut QuadBufferBuilder) {
+        match &self.graphics {
+            Some(graphics) => match graphics {
+                GraphicsType::Sprite(sprite) => {
+                    todo!()
+                }
+                GraphicsType::Circle(circle) => {
+                   todo!()
+                }
+                GraphicsType::Square(square) => {
+                    buffer.push_square(self.pos_x,self.pos_y,square.width,square.height);
+                }
+                GraphicsType::Triangle(triangle) => {
+                    todo!()
+                }
+            },
+            None => {}
+        }
     }
 }
