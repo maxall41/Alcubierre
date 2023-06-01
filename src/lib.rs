@@ -3,15 +3,11 @@ pub mod physics;
 mod renderer;
 pub mod ui;
 pub mod scene;
-
-
+mod events;
 
 use crate::renderer::buffer::QuadBufferBuilder;
-
-
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
-
 use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
 use rapier2d::pipeline::QueryFilter;
@@ -20,136 +16,12 @@ use rapier2d::prelude::{
     IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RayIntersection,
     RigidBodySet,
 };
-
-
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{WindowBuilder};
 use crate::physics::screen_units_to_physics_units;
 use crate::scene::Scene;
-
-pub struct EngineView<'a> {
-    pub rigid_body_set: &'a mut RigidBodySet,
-    pub narrow_phase: &'a mut NarrowPhase,
-    pub collider_set: &'a mut ColliderSet,
-    event_tx: &'a mut Sender<EngineEvent>,
-    key_locks: &'a mut HashSet<VirtualKeyCode>,
-    keys_pressed: &'a mut HashSet<VirtualKeyCode>,
-    query_pipeline: &'a mut QueryPipeline,
-}
-
-impl<'a> EngineView<'a> {
-    pub fn is_colliding_with_sensor(&self, col1: ColliderHandle, col2: ColliderHandle) -> bool {
-        if self.narrow_phase.intersection_pair(col1, col2) == Some(true) {
-            true
-        } else {
-            false
-        }
-    }
-    pub fn is_colliding(&self, col1: ColliderHandle, col2: ColliderHandle) -> bool {
-        if let Some(contact_pair) = self.narrow_phase.contact_pair(col1, col2) {
-            if contact_pair.has_any_active_contact {
-                true
-            } else {
-                false
-            }
-        } else {
-            false
-        }
-    }
-    pub fn load_scene(&self, scene_name: String) {
-        self.event_tx
-            .send(EngineEvent::SwitchToScene(scene_name))
-            .unwrap();
-    }
-    pub fn insert_into_datamap(&self, var: String, val: String) {
-        self.event_tx
-            .send(EngineEvent::InsertDatamapValue((var, val)))
-            .unwrap();
-    }
-    pub fn set_datamap_value(&self, var: String, val: String) {
-        self.event_tx
-            .send(EngineEvent::SetDatamapValue((var, val)))
-            .unwrap();
-    }
-    pub fn remove_datamap_value(&self, var: String) {
-        self.event_tx
-            .send(EngineEvent::RemoveDatamapValue(var))
-            .unwrap();
-    }
-    pub fn is_key_down(&self, key: VirtualKeyCode) -> bool {
-        self.keys_pressed.contains(&key)
-    }
-    pub fn is_key_up(&self, key: VirtualKeyCode) -> bool {
-        !self.keys_pressed.contains(&key)
-    }
-    pub fn is_key_pressed(&mut self, key: VirtualKeyCode) -> bool {
-        let contains = self.keys_pressed.contains(&key);
-        if contains {
-            if self.key_locks.contains(&key) {
-                false
-            } else {
-                self.key_locks.insert(key);
-                true
-            }
-        } else {
-            self.key_locks.remove(&key);
-            false
-        }
-    }
-    pub fn cast_ray(
-        &mut self,
-        direction: Vector<Real>,
-        origin: &[f32],
-        length: Real,
-    ) -> Option<(RayIntersection, ColliderHandle, Ray)> {
-        let x = screen_units_to_physics_units(origin[0]);
-        let y = screen_units_to_physics_units(origin[1]);
-        let ray = Ray::new(Point::from([x,y]), direction);
-
-        let filter = QueryFilter::default();
-
-        if let Some((handle, intersection)) = self.query_pipeline.cast_ray_and_get_normal(
-            &self.rigid_body_set,
-            &self.collider_set,
-            &ray,
-            length,
-            true,
-            filter,
-        ) {
-            Some((intersection, handle, ray))
-        } else {
-            None
-        }
-    }
-    pub fn cast_ray_with_excluded_collider(
-        &mut self,
-        direction: Vector<Real>,
-        origin: &[f32],
-        length: Real,
-        excluded_collider: ColliderHandle,
-    ) -> Option<(RayIntersection, ColliderHandle, Ray)> {
-        let x = screen_units_to_physics_units(origin[0]);
-        let y = screen_units_to_physics_units(origin[1]);
-        let ray = Ray::new(Point::from([x,y]), direction);
-
-        let filter = QueryFilter::default().exclude_collider(excluded_collider);
-
-        if let Some((handle, intersection)) = self.query_pipeline.cast_ray_and_get_normal(
-            &self.rigid_body_set,
-            &self.collider_set,
-            &ray,
-            length,
-            true,
-            filter,
-        ) {
-            Some((intersection, handle, ray))
-        } else {
-            None
-        }
-    }
-}
 
 pub enum EngineEvent {
     SwitchToScene(String),
@@ -247,16 +119,6 @@ impl Engine {
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
-                // WindowEvent::CloseRequested
-                // | WindowEvent::KeyboardInput {
-                //     input:
-                //     KeyboardInput {
-                //         state: ElementState::Pressed,
-                //         virtual_keycode: Some(VirtualKeyCode::Escape),
-                //         ..
-                //     },
-                //     ..
-                // } => *control_flow = ControlFlow::Exit,
                 WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                 WindowEvent::KeyboardInput {
                     input:
@@ -291,58 +153,29 @@ impl Engine {
                 let mut buffer = QuadBufferBuilder::new();
 
                 if active_scene.is_some() {
-                    let active_scene_unwraped = active_scene.unwrap();
+                    let active_scene_unwrapped = active_scene.unwrap();
                     physics_pipeline.step(
                         &gravity,
-                        &active_scene_unwraped.integration_params,
-                        &mut active_scene_unwraped.island_manager,
-                        &mut active_scene_unwraped.broad_phase,
-                        &mut active_scene_unwraped.narrow_phase_collision,
-                        &mut active_scene_unwraped.rigid_body_set,
-                        &mut active_scene_unwraped.collider_set,
-                        &mut active_scene_unwraped.impulse_joint_set,
-                        &mut active_scene_unwraped.multibody_joint_set,
-                        &mut active_scene_unwraped.ccd_solver,
+                        &active_scene_unwrapped.integration_params,
+                        &mut active_scene_unwrapped.island_manager,
+                        &mut active_scene_unwrapped.broad_phase,
+                        &mut active_scene_unwrapped.narrow_phase_collision,
+                        &mut active_scene_unwrapped.rigid_body_set,
+                        &mut active_scene_unwrapped.collider_set,
+                        &mut active_scene_unwrapped.impulse_joint_set,
+                        &mut active_scene_unwrapped.multibody_joint_set,
+                        &mut active_scene_unwrapped.ccd_solver,
                         None,
                         &(),
                         &(),
                     );
 
                     self.query_pipeline.update(
-                        &active_scene_unwraped.rigid_body_set,
-                        &active_scene_unwraped.collider_set,
+                        &active_scene_unwrapped.rigid_body_set,
+                        &active_scene_unwrapped.collider_set,
                     );
 
-                    let packet = self.event_rx.try_recv();
-                    match packet {
-                        Ok(event) => match event {
-                            EngineEvent::SwitchToScene(scene) => {
-                                self.set_current_scene(scene);
-                            }
-                            EngineEvent::SetDatamapValue((var, val)) => {
-                                *self
-                                    .active_scene
-                                    .as_mut()
-                                    .unwrap()
-                                    .data_map
-                                    .get_mut(&var)
-                                    .unwrap() = val;
-                            }
-                            EngineEvent::InsertDatamapValue((var, val)) => {
-                                self.active_scene
-                                    .as_mut()
-                                    .unwrap()
-                                    .data_map
-                                    .insert(var, val);
-                            }
-                            EngineEvent::RemoveDatamapValue(var) => {
-                                self.active_scene.as_mut().unwrap().data_map.remove(&var);
-                            }
-                        },
-                        Err(_e) => {
-                            // panic!("{}",e); //TODO: Handle
-                        }
-                    }
+                    self.handle_events();
 
                     let active_scene = self.active_scene.as_mut().unwrap();
 

@@ -1,6 +1,5 @@
-use alcubierre::game_object::behaviours::UserBehaviour;
+use alcubierre::game_object::behaviours::{EngineView, UserBehaviour};
 use alcubierre::game_object::{GameObjectView};
-use alcubierre::EngineView;
 use rapier2d::prelude::{ColliderHandle};
 
 #[derive(Clone)]

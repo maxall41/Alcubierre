@@ -30,7 +30,6 @@ pub fn register_main_scene(flame: &mut Engine) {
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
-        user_data: 100
     };
 
     let _player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
@@ -59,7 +58,6 @@ pub fn register_main_scene(flame: &mut Engine) {
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
-        user_data: 200
     };
 
     ground.attach_collider_with_rigid_body(ground_collider, scene);

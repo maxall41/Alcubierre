@@ -1,9 +1,9 @@
-use crate::game_object::behaviours::UserBehaviour;
+use crate::game_object::behaviours::{EngineView, UserBehaviour};
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
-use crate::{EngineEvent, EngineView, Scene};
+use crate::{EngineEvent, Scene};
 use flume::Sender;
 use hashbrown::HashSet;
 use rapier2d::dynamics::RigidBody;

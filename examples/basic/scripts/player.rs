@@ -1,6 +1,6 @@
-use alcubierre::game_object::behaviours::UserBehaviour;
+use alcubierre::game_object::behaviours::{UserBehaviour};
 use alcubierre::game_object::{GameObjectView};
-use alcubierre::EngineView;
+use alcubierre::game_object::behaviours::EngineView;
 use rapier2d::prelude::{vector, Vector};
 use winit::event::VirtualKeyCode;
 
@@ -28,7 +28,6 @@ impl UserBehaviour for PlayerBehaviour {
             x_vel -= self.speed;
         }
         if engine_view.is_key_pressed(VirtualKeyCode::Space) {
-            println!("{},{}", game_object_view.pos_x, game_object_view.pos_y);
             let d = engine_view.cast_ray_with_excluded_collider(
                 vector![0.0, -0.3],
                 &[game_object_view.pos_x.clone(),game_object_view.pos_y.clone()],
@@ -36,7 +35,6 @@ impl UserBehaviour for PlayerBehaviour {
                 game_object_view.physics.collider_handle.unwrap(),
             );
             if d.is_none() {
-                println!("Hit nothing!");
                 return;
             }
             let (i, _h, _ray) = d.unwrap();

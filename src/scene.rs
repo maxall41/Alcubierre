@@ -5,9 +5,9 @@ use rapier2d::prelude::{
     IslandManager, MultibodyJointSet, NarrowPhase,
     RigidBodySet,
 };
-use crate::EngineView;
 use crate::game_object::GameObject;
 use crate::ui::frontend::HyperFoilAST;
+use crate::game_object::behaviours::EngineView;
 use crate::ui::parse_file;
 
 #[derive(Clone)]
