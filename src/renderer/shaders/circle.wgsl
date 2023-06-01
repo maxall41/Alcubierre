@@ -10,10 +10,17 @@ struct CameraUniform {
 var<uniform> camera: CameraUniform;
 
 fn circle(st: vec2<f32>, _radius: f32) -> f32 {
-    let dist = st-vec2(0.303);
-	return 1.-smoothstep(_radius-(_radius*0.01),
+    var dist = st-vec2(0.303);
+
+	let df = 1.-smoothstep(_radius-(_radius*0.01),
                          _radius+(_radius*0.01),
                          dot(dist,dist)*4.0);
+
+    if (df < _radius) {
+        discard;
+    }
+
+    return df;
 }
 
 
@@ -23,7 +30,7 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
 
     let cv = circle(st,0.003);
 
-    let out = vec4(cv,cv,cv,1.0);
+    let out = vec4(1.0);
 //
     return FragmentOutput(out);
 //    return FragmentOutput(vec4<f32>(f32(1.0)));
