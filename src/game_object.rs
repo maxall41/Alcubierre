@@ -112,12 +112,6 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
     ) {
-        if self.physics.rigid_body_handle.is_some() {
-            let new_pos = self.get_updated_physics_position(rigid_body_set);
-            self.pos_x = new_pos.0;
-            self.pos_y = new_pos.1;
-        }
-
         for behaviour in &mut self.behaviours {
             behaviour.game_loop(
                 GameObjectView {
@@ -136,6 +130,12 @@ impl GameObject {
                 },
                 0.0, //TODO
             );
+        }
+
+        if self.physics.rigid_body_handle.is_some() {
+            let new_pos = self.get_updated_physics_position(rigid_body_set);
+            self.pos_x = new_pos.0;
+            self.pos_y = new_pos.1;
         }
         self.render(buffer);
     }
