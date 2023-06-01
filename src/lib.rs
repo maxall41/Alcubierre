@@ -8,19 +8,19 @@ mod events;
 use crate::renderer::buffer::QuadBufferBuilder;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
-use rapier2d::geometry::{ColliderSet, Ray};
-use rapier2d::math::{Point, Real, Vector};
-use rapier2d::pipeline::QueryFilter;
+use rapier2d::geometry::{ColliderSet};
+
+
 use rapier2d::prelude::{
-    vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RayIntersection,
+    vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters,
+    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline,
     RigidBodySet,
 };
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{WindowBuilder};
-use crate::physics::screen_units_to_physics_units;
+
 use crate::scene::Scene;
 
 pub enum EngineEvent {

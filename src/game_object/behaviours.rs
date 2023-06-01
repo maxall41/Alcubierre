@@ -1,22 +1,21 @@
-use crate::renderer::buffer::QuadBufferBuilder;
-use flume::{Receiver, Sender};
-use hashbrown::{HashMap, HashSet};
+
+use flume::{Sender};
+use hashbrown::{HashSet};
 use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
 use rapier2d::pipeline::QueryFilter;
 use rapier2d::prelude::{
-    vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RayIntersection,
+    ColliderHandle, NarrowPhase, QueryPipeline, RayIntersection,
     RigidBodySet,
 };
-use winit::dpi::PhysicalSize;
-use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{WindowBuilder};
+
+use winit::event::{VirtualKeyCode};
+
+
 use crate::EngineEvent;
 use crate::game_object::{GameObject, GameObjectView};
 use crate::physics::screen_units_to_physics_units;
-use crate::scene::Scene;
+
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(

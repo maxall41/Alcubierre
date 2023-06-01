@@ -6,7 +6,6 @@ use cgmath::num_traits::Pow;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 
 pub const U32_SIZE: wgpu::BufferAddress = std::mem::size_of::<u32>() as wgpu::BufferAddress;
-pub const F32_SIZE: wgpu::BufferAddress = std::mem::size_of::<f32>() as wgpu::BufferAddress;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
