@@ -76,10 +76,10 @@ impl PhysicsObject for GameObject {
     }
 
     fn get_updated_physics_position(&mut self, rigid_body_set: &mut RigidBodySet) -> (Real, Real) {
-        let collider = rigid_body_set
+        let body = rigid_body_set
             .get(self.physics.rigid_body_handle.unwrap())
             .unwrap();
-        let translation = collider.translation();
+        let translation = body.translation();
         return (
             physics_units_to_pixels(translation.x),
             physics_units_to_pixels(translation.y),

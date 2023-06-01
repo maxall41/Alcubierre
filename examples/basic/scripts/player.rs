@@ -16,7 +16,6 @@ impl UserBehaviour for PlayerBehaviour {
         &mut self,
         game_object_view: GameObjectView,
         mut engine_view: EngineView,
-        _frame_delta: f32,
     ) {
         let mut x_vel: f32 = 0.0;
         let mut y_vel: f32 = 0.0;
@@ -29,6 +28,7 @@ impl UserBehaviour for PlayerBehaviour {
             x_vel -= self.speed;
         }
         if engine_view.is_key_pressed(VirtualKeyCode::Space) {
+
             let d = engine_view.cast_ray_with_excluded_collider(
                 vector![0.0, -0.3],
                 &[game_object_view.pos_x.clone(),game_object_view.pos_y.clone()],
@@ -40,16 +40,15 @@ impl UserBehaviour for PlayerBehaviour {
             }
             let (i, _h, _ray) = d.unwrap();
 
-            println!("{}",i.toi);
+            // println!("{}",i.toi);
 
             // If we are on the ground jump
-            if i.toi < 0.05 {
+            if i.toi < 0.1 {
                 let file = AudioSourceBuilder::new().path("examples/basic/Jump34.wav").build();
                 engine_view.play_sound(file);
                 println!("Added Y_vel!");
                 y_vel += 1.3;
             }
-            // *view.pos_y -= (self.speed * frame_delta) as i32;
         }
 
         let rigid_body = engine_view

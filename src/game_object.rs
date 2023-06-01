@@ -127,10 +127,14 @@ impl GameObject {
                     key_locks,
                     query_pipeline,
                     collider_set,
-                },
-                0.0, //TODO
+                }
             );
         }
+
+        // let handle = self.physics.collider_handle.unwrap();
+        // let collider = collider_set.get_mut(handle).unwrap();
+        //
+        // println!("{:?}",collider.shape().as_cuboid().unwrap());
 
         if self.physics.rigid_body_handle.is_some() {
             let new_pos = self.get_updated_physics_position(rigid_body_set);

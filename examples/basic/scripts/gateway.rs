@@ -14,7 +14,6 @@ impl UserBehaviour for GatewayBehaviour {
         &mut self,
         game_object_view: GameObjectView,
         engine_view: EngineView,
-        _frame_delta: f32,
     ) {
         if engine_view.is_colliding_with_sensor(
             game_object_view.physics.collider_handle.unwrap(),

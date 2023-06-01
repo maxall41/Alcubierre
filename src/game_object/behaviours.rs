@@ -23,7 +23,6 @@ pub trait UserBehaviour: UserBehaviourClone {
         &mut self,
         game_object_view: GameObjectView,
         engine_view: EngineView,
-        frame_delta: f32,
     );
     fn unloaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
     fn loaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional

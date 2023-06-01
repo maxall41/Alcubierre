@@ -13,7 +13,7 @@ use rapier2d::prelude::{vector, RigidBodyBuilder};
 pub fn register_main_scene(flame: &mut Engine) {
     let scene = flame.register_scene("Main".to_string());
 
-    let mut player = GameObject::new(100.0, 0.0);
+    let mut player = GameObject::new(0.0, 0.0);
 
     player.insert_behaviour(PlayerBehaviour { speed: 0.045 });
 
@@ -28,8 +28,8 @@ pub fn register_main_scene(flame: &mut Engine) {
     let player_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((1.0, 1.0)),
         sensor: false,
-        restitution: 0.7,
-        friction: 0.0,
+        restitution: 0.0,
+        friction: 1.0,
     };
 
     let _player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
@@ -56,8 +56,8 @@ pub fn register_main_scene(flame: &mut Engine) {
     let ground_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((10.0, 0.8)),
         sensor: false,
-        restitution: 0.7,
-        friction: 0.0,
+        restitution: 0.0,
+        friction: 0.1,
     };
 
     ground.attach_collider_with_rigid_body(ground_collider, scene);
