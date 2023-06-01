@@ -57,6 +57,8 @@ const CIRCLE_QUAD: &[Vertex] = &[
     },
 ];
 
+const CIRCLE_INDICE : &[u32] = &[0,1,2,0,2,3];
+
 pub struct Render {
     surface: wgpu::Surface,
     config: wgpu::SurfaceConfiguration,
@@ -68,6 +70,7 @@ pub struct Render {
     circle_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
+    circle_index_buffer: wgpu::Buffer,
     staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -232,6 +235,12 @@ impl Render {
             mapped_at_creation: false,
         });
 
+        let circle_index_buffer = device.create_buffer_init(&BufferInitDescriptor {
+            contents: bytemuck::cast_slice(CIRCLE_INDICE),
+            usage: wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::INDEX,
+            label: Some("Circle Index Buffer"),
+        });
+
 
         let staging_belt = wgpu::util::StagingBelt::new(1024);
 
@@ -257,7 +266,8 @@ impl Render {
             projection,
             camera,
             circle_buffer: circle_buf,
-            circle_pipeline
+            circle_pipeline,
+            circle_index_buffer
         }
     }
 
@@ -305,8 +315,10 @@ impl Render {
 
                 // Circles
                 render_pass.set_vertex_buffer(0, self.circle_buffer.slice(..));
+                render_pass
+                    .set_index_buffer(self.circle_index_buffer.slice(..), wgpu::IndexFormat::Uint32);
                 render_pass.set_pipeline(&self.circle_pipeline);
-                render_pass.draw_indexed(0..4, 0, 0..1);
+                render_pass.draw_indexed(0..6, 0, 0..1);
 
                 drop(render_pass);
 
