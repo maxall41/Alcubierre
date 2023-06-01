@@ -114,7 +114,7 @@ impl Engine {
 
         window.set_inner_size(current_size);
 
-        let mut render = pollster::block_on(renderer::Render::new(&window, current_size));
+        let mut render = futures::executor::block_on(renderer::Render::new(&window, current_size));
 
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
