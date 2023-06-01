@@ -7,7 +7,7 @@ use crate::ui::frontend::RGBColor;
 pub const U32_SIZE: wgpu::BufferAddress = std::mem::size_of::<u32>() as wgpu::BufferAddress;
 pub const F32_SIZE: wgpu::BufferAddress = std::mem::size_of::<f32>() as wgpu::BufferAddress;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone,Debug)]
 pub struct Vertex {
     pub(crate) position: [f32; 2],
     pub(crate) color: [f32; 3],
@@ -74,7 +74,8 @@ impl QuadBufferBuilder {
         let red = ((color.red as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let blue = ((color.blue as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
-        self.vertex_data.extend(&[
+
+        let vertices = &[
             Vertex {
                 position: [min_x,min_y],
                 color: [red,green,blue]
@@ -91,7 +92,9 @@ impl QuadBufferBuilder {
                 position: [min_x,max_y],
                 color: [red,green,blue]
             },
-        ]);
+        ];
+        self.vertex_data.extend(vertices);
+
         self.index_data.extend(&[
             self.current_quad * 4 + 0,
             self.current_quad * 4 + 1,
