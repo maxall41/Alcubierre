@@ -39,7 +39,7 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
         height: 1.0,
         color: RGBColor {
             red: 255,
-            green: 205,
+            green: 255,
             blue: 255,
         },
     }));
@@ -64,9 +64,9 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
 
     ground.add_graphics(GraphicsType::Square(SquareData {
         color: RGBColor {
-            red: 255,
-            green: 255,
-            blue: 255,
+            red: 235,
+            green: 64,
+            blue: 52,
         },
         width: 10.0,
         height: 0.8,

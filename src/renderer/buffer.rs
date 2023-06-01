@@ -1,4 +1,5 @@
 use bytemuck::{Pod, Zeroable};
+use cgmath::num_traits::Pow;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use crate::game_object::graphics::SquareData;
 use crate::ui::frontend::RGBColor;
@@ -70,22 +71,25 @@ impl QuadBufferBuilder {
     }
 
     pub fn push_quad(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,color: &RGBColor) {
+        let red = ((color.red as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
+        let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
+        let blue = ((color.blue as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         self.vertex_data.extend(&[
             Vertex {
                 position: [min_x,min_y],
-                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
+                color: [red,green,blue]
             },
             Vertex {
                 position: [max_x,min_y],
-                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
+                color: [red,green,blue]
             },
             Vertex {
                 position: [max_x,max_y],
-                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
+                color: [red,green,blue]
             },
             Vertex {
                 position: [min_x,max_y],
-                color: [(color.red / 255) as f32,(color.green / 255) as f32,(color.blue / 255) as f32]
+                color: [red,green,blue]
             },
         ]);
         self.index_data.extend(&[
