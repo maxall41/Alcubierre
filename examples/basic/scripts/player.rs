@@ -40,11 +40,14 @@ impl UserBehaviour for PlayerBehaviour {
             }
             let (i, _h, _ray) = d.unwrap();
 
+            println!("{}",i.toi);
+
             // If we are on the ground jump
-            if i.toi < 0.01 {
+            if i.toi < 0.005 {
                 let file = AudioSourceBuilder::new().path("examples/basic/Jump34.wav").build();
                 engine_view.play_sound(file);
-                y_vel += 0.8;
+                println!("Added Y_vel!");
+                y_vel += 1.3;
             }
             // *view.pos_y -= (self.speed * frame_delta) as i32;
         }
@@ -55,7 +58,7 @@ impl UserBehaviour for PlayerBehaviour {
             .unwrap();
 
         let current_vel = rigid_body.linvel();
-
+        println!("Apply force: {},{}",current_vel.x,current_vel.y);
         rigid_body.set_linvel(
             Vector::new(current_vel.x + x_vel, current_vel.y + y_vel),
             true,

@@ -17,7 +17,7 @@ mod scripts;
 
 #[tokio::main]
 async fn main() {
-    let mut engine = Engine::new(640, 480);
+    let mut engine = Engine::new(640, 480,EngineConfig { gravity: -1.8 });
 
     register_main_scene(&mut engine);
 
@@ -25,6 +25,6 @@ async fn main() {
 
     engine.set_current_scene("Main".to_string());
 
-    engine.start_cycle(EngineConfig { gravity: -0.8 });
+    engine.start_cycle();
     println!("Cycle started");
 }

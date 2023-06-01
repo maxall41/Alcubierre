@@ -6,12 +6,16 @@ pub mod scene;
 mod events;
 pub mod audio;
 
+use std::ops::Add;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 use crate::renderer::buffer::QuadBufferBuilder;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
 use kira::manager::{AudioManager, AudioManagerSettings};
 use kira::manager::backend::DefaultBackend;
 use kira::sound::static_sound::StaticSoundData;
+use nalgebra::SMatrix;
 use rapier2d::geometry::{ColliderSet};
 
 
@@ -23,8 +27,9 @@ use rapier2d::prelude::{
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{WindowBuilder};
+use winit::window::{Window, WindowBuilder};
 use crate::events::EngineEvent;
+use crate::renderer::Render;
 
 use crate::scene::Scene;
 
@@ -38,7 +43,10 @@ pub struct Engine {
     keys_pressed: HashSet<VirtualKeyCode>,
     key_locks: HashSet<VirtualKeyCode>,
     query_pipeline: QueryPipeline,
+    physics_pipeline: PhysicsPipeline,
+    gravity: SMatrix<f32,2,1>,
     audio_manager: AudioManager,
+    renderer: Option<Render>
 }
 
 pub struct EngineConfig {
@@ -46,10 +54,14 @@ pub struct EngineConfig {
 }
 
 impl Engine {
-    pub fn new(window_width: i32, window_height: i32) -> Self {
+    pub fn new(window_width: i32, window_height: i32, config: EngineConfig) -> Self {
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
         let query_pipeline = QueryPipeline::new();
+
+        let mut physics_pipeline = PhysicsPipeline::new();
+
+        let gravity = vector![0.0, config.gravity];
 
         let mut audio_manager = AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
 
@@ -63,7 +75,10 @@ impl Engine {
             key_locks: HashSet::new(),
             keys_pressed: HashSet::new(),
             query_pipeline,
-            audio_manager
+            audio_manager,
+            physics_pipeline,
+            gravity,
+            renderer: None,
         }
     }
 
@@ -102,10 +117,7 @@ impl Engine {
         }
     }
 
-    pub fn start_cycle(mut self, config: EngineConfig) {
-        let gravity = vector![0.0, config.gravity];
-
-        let mut physics_pipeline = PhysicsPipeline::new();
+    pub fn start_cycle(mut self) {
 
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
@@ -114,7 +126,13 @@ impl Engine {
 
         window.set_inner_size(current_size);
 
-        let mut render = futures::executor::block_on(renderer::Render::new(&window, current_size));
+        let fps = 60;
+
+        let mut next_redraw : Instant = Instant::now();
+
+        let till_next = Duration::from_millis(1000 / fps);
+
+        self.renderer = Some(futures::executor::block_on(renderer::Render::new(&window, current_size)));
 
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
@@ -142,69 +160,79 @@ impl Engine {
                     }
                 }
                 WindowEvent::Resized(physical_size) => {
-                    render.resize(*physical_size);
+                    self.renderer.as_mut().unwrap().resize(*physical_size);
                 }
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                     // new_inner_size is &mut so w have to dereference it twice
-                    render.resize(**new_inner_size);
+                    self.renderer.as_mut().unwrap().resize(**new_inner_size);
                 }
                 _ => {}
             },
             Event::RedrawRequested(window_id) if window_id == window.id() => {
-                let active_scene = self.active_scene.as_mut();
-                let mut buffer = QuadBufferBuilder::new();
-
-                if active_scene.is_some() {
-                    let active_scene_unwrapped = active_scene.unwrap();
-                    physics_pipeline.step(
-                        &gravity,
-                        &active_scene_unwrapped.integration_params,
-                        &mut active_scene_unwrapped.island_manager,
-                        &mut active_scene_unwrapped.broad_phase,
-                        &mut active_scene_unwrapped.narrow_phase_collision,
-                        &mut active_scene_unwrapped.rigid_body_set,
-                        &mut active_scene_unwrapped.collider_set,
-                        &mut active_scene_unwrapped.impulse_joint_set,
-                        &mut active_scene_unwrapped.multibody_joint_set,
-                        &mut active_scene_unwrapped.ccd_solver,
-                        None,
-                        &(),
-                        &(),
-                    );
-
-                    self.query_pipeline.update(
-                        &active_scene_unwrapped.rigid_body_set,
-                        &active_scene_unwrapped.collider_set,
-                    );
-
-                    self.handle_events();
-
-                    let active_scene = self.active_scene.as_mut().unwrap();
-
-                    // if active_scene.ui_ast.is_some() {
-                    // }
-
-                    for object in &mut active_scene.game_objects {
-                        object.execute(
-                            &mut active_scene.rigid_body_set,
-                            &mut active_scene.narrow_phase_collision,
-                            &mut self.event_tx,
-                            &mut buffer,
-                            &mut self.keys_pressed,
-                            &mut self.key_locks,
-                            &mut self.query_pipeline,
-                            &mut active_scene.collider_set,
-                        );
-                    }
-
-                    // d.clear_background(config.clear_color);
-                }
-
-                render.render_buffer(buffer);
-                window.request_redraw();
+                self.draw();
             }
-            _ => {}
+            Event::MainEventsCleared  => {
+                let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
+                self.physics_pipeline.step(
+                    &self.gravity,
+                    &active_scene_unwrapped.integration_params,
+                    &mut active_scene_unwrapped.island_manager,
+                    &mut active_scene_unwrapped.broad_phase,
+                    &mut active_scene_unwrapped.narrow_phase_collision,
+                    &mut active_scene_unwrapped.rigid_body_set,
+                    &mut active_scene_unwrapped.collider_set,
+                    &mut active_scene_unwrapped.impulse_joint_set,
+                    &mut active_scene_unwrapped.multibody_joint_set,
+                    &mut active_scene_unwrapped.ccd_solver,
+                    None,
+                    &(),
+                    &(),
+                );
+
+                self.query_pipeline.update(
+                    &active_scene_unwrapped.rigid_body_set,
+                    &active_scene_unwrapped.collider_set,
+                );
+
+                let current = Instant::now();
+                if current >= next_redraw {
+                    self.draw();
+                }
+                next_redraw = Instant::now() + till_next;
+            },
+            _ => *control_flow = ControlFlow::WaitUntil(Instant::now().add(till_next)),
         });
+    }
+    fn draw(&mut self,) {
+        let active_scene = self.active_scene.as_mut();
+        let mut buffer = QuadBufferBuilder::new();
+
+        if active_scene.is_some() {
+
+            self.handle_events();
+
+            let active_scene = self.active_scene.as_mut().unwrap();
+
+            // if active_scene.ui_ast.is_some() {
+            // }
+
+            for object in &mut active_scene.game_objects {
+                object.execute(
+                    &mut active_scene.rigid_body_set,
+                    &mut active_scene.narrow_phase_collision,
+                    &mut self.event_tx,
+                    &mut buffer,
+                    &mut self.keys_pressed,
+                    &mut self.key_locks,
+                    &mut self.query_pipeline,
+                    &mut active_scene.collider_set,
+                );
+            }
+
+            // d.clear_background(config.clear_color);
+        }
+
+        self.renderer.as_mut().unwrap().render_buffer(buffer);
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {
         let integration_params = IntegrationParameters::default();

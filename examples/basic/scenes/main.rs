@@ -15,7 +15,7 @@ pub fn register_main_scene(flame: &mut Engine) {
 
     let mut player = GameObject::new(100.0, 0.0);
 
-    player.insert_behaviour(PlayerBehaviour { speed: 0.02 });
+    player.insert_behaviour(PlayerBehaviour { speed: 0.045 });
 
     let player_rigid_body = RigidBodyBuilder::dynamic()
         .translation(vector![0.0, 0.0])
