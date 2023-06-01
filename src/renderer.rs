@@ -235,7 +235,7 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        let (stg_vertex, stg_index, circle_vert, circle_index, num_indices) = buffer.build(&self.device);
+        let (stg_vertex, stg_index, circle_vert, circle_index, num_indices, circle_num_indices) = buffer.build(&self.device);
 
         stg_vertex.copy_to_buffer(&mut encoder, &self.vertex_buffer);
         stg_index.copy_to_buffer(&mut encoder, &self.index_buffer);
@@ -272,7 +272,7 @@ impl Render {
                     wgpu::IndexFormat::Uint32,
                 );
                 render_pass.set_pipeline(&self.circle_pipeline);
-                render_pass.draw_indexed(0..6, 0, 0..1);
+                render_pass.draw_indexed(0..circle_num_indices, 0, 0..1);
 
                 drop(render_pass);
 

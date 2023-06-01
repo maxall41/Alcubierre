@@ -1,9 +1,9 @@
 use crate::game_object::behaviours::UserBehaviour;
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
-use crate::physics::FlameCollider;
+use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
-use crate::{FlameEngineView, FlameEvent, Scene};
+use crate::{EngineView, EngineEvent, Scene};
 use flume::Sender;
 use hashbrown::HashSet;
 use rapier2d::dynamics::RigidBody;
@@ -47,13 +47,13 @@ impl GameObject {
         &mut self,
         narrow_phase: &mut NarrowPhase,
         rigid_body_set: &mut RigidBodySet,
-        tx: &mut Sender<FlameEvent>,
+        tx: &mut Sender<EngineEvent>,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
         key_locks: &mut HashSet<VirtualKeyCode>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
-                FlameEngineView {
+                EngineView {
                     rigid_body_set,
                     narrow_phase,
                     event_tx: tx,
@@ -72,13 +72,13 @@ impl GameObject {
         &mut self,
         narrow_phase: &mut NarrowPhase,
         rigid_body_set: &mut RigidBodySet,
-        tx: &mut Sender<FlameEvent>,
+        tx: &mut Sender<EngineEvent>,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
         key_locks: &mut HashSet<VirtualKeyCode>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
-                FlameEngineView {
+                EngineView {
                     rigid_body_set,
                     narrow_phase,
                     event_tx: tx,
@@ -97,7 +97,7 @@ impl GameObject {
         &mut self,
         rigid_body_set: &mut RigidBodySet,
         narrow_phase: &mut NarrowPhase,
-        event_tx: &mut Sender<FlameEvent>,
+        event_tx: &mut Sender<EngineEvent>,
         buffer: &mut QuadBufferBuilder,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
         key_locks: &mut HashSet<VirtualKeyCode>,
@@ -115,7 +115,7 @@ impl GameObject {
                     pos_x: &mut self.pos_x,
                     pos_y: &mut self.pos_y,
                 },
-                FlameEngineView {
+                EngineView {
                     rigid_body_set,
                     narrow_phase,
                     event_tx,
@@ -163,7 +163,7 @@ impl GameObjectBuilder {
         self.behaviours.push(Box::new(behaviour));
         self
     }
-    pub fn collider(mut self, collider: FlameCollider, scene: &mut Scene) -> GameObjectBuilder {
+    pub fn collider(mut self, collider: AlcubierreCollider, scene: &mut Scene) -> GameObjectBuilder {
         if self.physics.rigid_body_handle.is_some() {
             let handle = scene.collider_set.insert_with_parent(
                 collider.to_rapier(),

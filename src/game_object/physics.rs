@@ -1,6 +1,6 @@
 use crate::game_object::GameObject;
 use crate::physics::physics_units_to_pixels;
-use crate::physics::FlameCollider;
+use crate::physics::AlcubierreCollider;
 use crate::Scene;
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::{Collider, ColliderHandle, ColliderSet};
@@ -8,10 +8,10 @@ use rapier2d::math::Real;
 use rapier2d::prelude::{RigidBodyHandle, RigidBodySet, Vector};
 
 pub trait PhysicsObject {
-    fn attach_collider(&mut self, collider: FlameCollider, scene: &mut Scene) -> ColliderHandle;
+    fn attach_collider(&mut self, collider: AlcubierreCollider, scene: &mut Scene) -> ColliderHandle;
     fn attach_collider_with_rigid_body(
         &mut self,
-        collider: FlameCollider,
+        collider: AlcubierreCollider,
         scene: &mut Scene,
     ) -> ColliderHandle;
     fn remove_collider(&mut self, scene: &mut Scene);
@@ -27,7 +27,7 @@ pub struct PhysicsData {
 }
 
 impl PhysicsObject for GameObject {
-    fn attach_collider(&mut self, collider: FlameCollider, scene: &mut Scene) -> ColliderHandle {
+    fn attach_collider(&mut self, collider: AlcubierreCollider, scene: &mut Scene) -> ColliderHandle {
         let handle = scene.collider_set.insert(collider.to_rapier());
         self.physics.collider_handle = Some(handle.clone());
         handle
@@ -35,7 +35,7 @@ impl PhysicsObject for GameObject {
 
     fn attach_collider_with_rigid_body(
         &mut self,
-        collider: FlameCollider,
+        collider: AlcubierreCollider,
         scene: &mut Scene,
     ) -> ColliderHandle {
         let handle = scene.collider_set.insert_with_parent(

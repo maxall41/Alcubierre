@@ -3,17 +3,17 @@ use std::fs;
 use std::sync::Arc;
 
 use crate::game_object::{GameObject, GameObjectView};
-use crate::{FlameEngine, FlameEngineView};
+use crate::{Engine, EngineView};
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(
         &mut self,
         game_object_view: GameObjectView,
-        engine_view: FlameEngineView,
+        engine_view: EngineView,
         frame_delta: f32,
     );
-    fn unloaded(&mut self, engine_view: FlameEngineView, game_object_view: GameObjectView) {} // {} Is Optional
-    fn loaded(&mut self, engine_view: FlameEngineView, game_object_view: GameObjectView) {} // {} Is Optional
+    fn unloaded(&mut self, engine_view: EngineView, game_object_view: GameObjectView) {} // {} Is Optional
+    fn loaded(&mut self, engine_view: EngineView, game_object_view: GameObjectView) {} // {} Is Optional
 }
 
 pub trait UserBehaviourClone: 'static {

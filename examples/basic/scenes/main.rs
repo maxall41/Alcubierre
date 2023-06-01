@@ -1,19 +1,19 @@
 use crate::scripts::gateway::GatewayBehaviour;
 use crate::scripts::player::PlayerBehaviour;
-use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
-use flame::game_object::physics::PhysicsObject;
-use flame::game_object::GameObject;
-use flame::physics::screen_units_to_physics_units;
-use flame::physics::{FlameCollider, FlameColliderType};
-use flame::ui::frontend::RGBColor;
-use flame::FlameEngine;
+use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
+use alcubierre::game_object::physics::PhysicsObject;
+use alcubierre::game_object::GameObject;
+use alcubierre::physics::screen_units_to_physics_units;
+use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
+use alcubierre::ui::frontend::RGBColor;
+use alcubierre::Engine;
 use rapier2d::geometry::ColliderBuilder;
 use rapier2d::prelude::{vector, RigidBodyBuilder};
 
-pub fn register_main_scene(flame: &mut FlameEngine) {
+pub fn register_main_scene(flame: &mut Engine) {
     let scene = flame.register_scene("Main".to_string());
 
-    let mut player = GameObject::new(0.0, 0.0);
+    let mut player = GameObject::new(100.0, 0.0);
 
     player.insert_behaviour(PlayerBehaviour { speed: 0.02 });
 
@@ -25,8 +25,8 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
 
     player.attach_rigid_body(player_rigid_body, scene);
 
-    let player_collider = FlameCollider {
-        collider_type: FlameColliderType::Rectangle((1.0, 1.0)),
+    let player_collider = AlcubierreCollider {
+        collider_type: AlcubierreColliderType::Rectangle((1.0, 1.0)),
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
@@ -34,8 +34,9 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
 
     let player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
 
-    player.add_graphics(GraphicsType::Circle(CircleData {
-        radius: 0.002,
+    player.add_graphics(GraphicsType::Rect(RectData {
+        width: 1.0,
+        height: 1.0,
         color: RGBColor {
             red: 255,
             green: 255,
@@ -52,8 +53,8 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
 
     ground.attach_rigid_body(ground_rigid_body, scene);
 
-    let ground_collider = FlameCollider {
-        collider_type: FlameColliderType::Rectangle((10.0, 0.8)),
+    let ground_collider = AlcubierreCollider {
+        collider_type: AlcubierreColliderType::Rectangle((10.0, 0.8)),
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
@@ -61,7 +62,7 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
 
     ground.attach_collider_with_rigid_body(ground_collider, scene);
 
-    ground.add_graphics(GraphicsType::Square(SquareData {
+    ground.add_graphics(GraphicsType::Rect(RectData {
         color: RGBColor {
             red: 235,
             green: 64,

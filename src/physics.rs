@@ -1,14 +1,14 @@
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::vector;
 
-pub enum FlameColliderType {
+pub enum AlcubierreColliderType {
     Rectangle((f32, f32)),
     Circle(f32),
     // Capsule(i32,i32)
 }
 
-pub struct FlameCollider {
-    pub collider_type: FlameColliderType,
+pub struct AlcubierreCollider {
+    pub collider_type: AlcubierreColliderType,
     pub sensor: bool,
     pub restitution: f32,
     pub friction: f32,
@@ -22,10 +22,10 @@ pub fn physics_units_to_pixels(units: f32) -> f32 {
     return units * 50.0;
 }
 
-impl FlameCollider {
+impl AlcubierreCollider {
     pub fn to_rapier(&self) -> Collider {
         match self.collider_type {
-            FlameColliderType::Rectangle((x, y)) => ColliderBuilder::cuboid(
+            AlcubierreColliderType::Rectangle((x, y)) => ColliderBuilder::cuboid(
                 screen_units_to_physics_units(x) / 1.75,
                 screen_units_to_physics_units(y) / 1.75,
             )
@@ -35,7 +35,7 @@ impl FlameCollider {
             .restitution(self.restitution)
             .build(),
 
-            FlameColliderType::Circle(radius) => {
+            AlcubierreColliderType::Circle(radius) => {
                 ColliderBuilder::ball(screen_units_to_physics_units(radius))
                     .sensor(self.sensor)
                     .friction(self.friction)

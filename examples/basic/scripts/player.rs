@@ -1,6 +1,6 @@
-use flame::game_object::behaviours::UserBehaviour;
-use flame::game_object::{GameObject, GameObjectView};
-use flame::FlameEngineView;
+use alcubierre::game_object::behaviours::UserBehaviour;
+use alcubierre::game_object::{GameObject, GameObjectView};
+use alcubierre::EngineView;
 use rapier2d::prelude::{vector, Vector};
 use winit::event::VirtualKeyCode;
 
@@ -13,7 +13,7 @@ impl UserBehaviour for PlayerBehaviour {
     fn game_loop(
         &mut self,
         game_object_view: GameObjectView,
-        mut engine_view: FlameEngineView,
+        mut engine_view: EngineView,
         frame_delta: f32,
     ) {
         let mut x_vel: f32 = 0.0;

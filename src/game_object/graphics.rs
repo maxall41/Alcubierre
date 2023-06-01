@@ -14,7 +14,7 @@ pub struct CircleData {
     pub color: RGBColor,
 }
 #[derive(Clone)]
-pub struct SquareData {
+pub struct RectData {
     pub color: RGBColor,
     pub width: f32,
     pub height: f32,
@@ -28,7 +28,7 @@ pub struct TriangleData {
 pub enum GraphicsType {
     Sprite(SpriteData),
     Circle(CircleData),
-    Square(SquareData),
+    Rect(RectData),
     Triangle(TriangleData),
 }
 
@@ -50,7 +50,7 @@ impl Graphics for GameObject {
                 GraphicsType::Circle(circle) => {
                     buffer.push_circle(self.pos_x,self.pos_y,circle.radius,&circle.color);
                 }
-                GraphicsType::Square(square) => {
+                GraphicsType::Rect(square) => {
                     buffer.push_square(
                         self.pos_x,
                         self.pos_y,

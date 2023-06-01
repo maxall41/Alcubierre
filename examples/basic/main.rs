@@ -1,9 +1,9 @@
 use crate::scenes::main::register_main_scene;
 use crate::scripts::gateway::GatewayBehaviour;
-use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
-use flame::game_object::physics::PhysicsObject;
-use flame::game_object::GameObject;
-use flame::{FlameConfig, FlameEngine};
+use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
+use alcubierre::game_object::physics::PhysicsObject;
+use alcubierre::game_object::GameObject;
+use alcubierre::{EngineConfig, Engine};
 use lazy_static::lazy_static;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
@@ -15,18 +15,16 @@ mod scripts;
 
 use crate::scripts::player::PlayerBehaviour;
 
-fn game_code(engine: &mut FlameEngine) {}
-
 #[tokio::main]
 async fn main() {
-    let mut flame = FlameEngine::new(640, 480);
+    let mut engine = Engine::new(640, 480);
 
-    register_main_scene(&mut flame);
+    register_main_scene(&mut engine);
 
     // register_second_scene(&mut flame);
 
-    flame.set_current_scene("Main".to_string());
+    engine.set_current_scene("Main".to_string());
 
-    flame.start_cycle(game_code, FlameConfig { gravity: -0.8 });
+    engine.start_cycle(EngineConfig { gravity: -0.8 });
     println!("Cycle started");
 }

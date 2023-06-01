@@ -22,15 +22,15 @@ use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEve
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Fullscreen, WindowBuilder};
 
-pub struct FlameEngineView<'a> {
+pub struct EngineView<'a> {
     pub rigid_body_set: &'a mut RigidBodySet,
     pub narrow_phase: &'a mut NarrowPhase,
-    event_tx: &'a mut Sender<FlameEvent>,
+    event_tx: &'a mut Sender<EngineEvent>,
     key_locks: &'a mut HashSet<VirtualKeyCode>,
     keys_pressed: &'a mut HashSet<VirtualKeyCode>,
 }
 
-impl<'a> FlameEngineView<'a> {
+impl<'a> EngineView<'a> {
     pub fn is_colliding_with_sensor(&self, col1: ColliderHandle, col2: ColliderHandle) -> bool {
         if self.narrow_phase.intersection_pair(col1, col2) == Some(true) {
             true
@@ -51,22 +51,22 @@ impl<'a> FlameEngineView<'a> {
     }
     pub fn load_scene(&self, scene_name: String) {
         self.event_tx
-            .send(FlameEvent::SwitchToScene(scene_name))
+            .send(EngineEvent::SwitchToScene(scene_name))
             .unwrap();
     }
     pub fn insert_into_datamap(&self, var: String, val: String) {
         self.event_tx
-            .send(FlameEvent::InsertDatamapValue((var, val)))
+            .send(EngineEvent::InsertDatamapValue((var, val)))
             .unwrap();
     }
     pub fn set_datamap_value(&self, var: String, val: String) {
         self.event_tx
-            .send(FlameEvent::SetDatamapValue((var, val)))
+            .send(EngineEvent::SetDatamapValue((var, val)))
             .unwrap();
     }
     pub fn remove_datamap_value(&self, var: String) {
         self.event_tx
-            .send(FlameEvent::RemoveDatamapValue(var))
+            .send(EngineEvent::RemoveDatamapValue(var))
             .unwrap();
     }
     pub fn is_key_down(&self, key: VirtualKeyCode) -> bool {
@@ -104,7 +104,7 @@ pub struct Scene {
     pub multibody_joint_set: MultibodyJointSet,
     pub ccd_solver: CCDSolver,
     pub ui_ast: Option<HyperFoilAST>,
-    pub function_map: HashMap<String, fn(&mut FlameEngineView)>,
+    pub function_map: HashMap<String, fn(&mut EngineView)>,
     pub data_map: HashMap<String, String>,
 }
 impl Scene {
@@ -117,33 +117,33 @@ impl Scene {
     }
 }
 
-pub enum FlameEvent {
+pub enum EngineEvent {
     SwitchToScene(String),
     SetDatamapValue((String, String)),
     InsertDatamapValue((String, String)),
     RemoveDatamapValue(String),
 }
 
-pub struct FlameEngine {
+pub struct Engine {
     pub scenes: HashMap<String, Scene>,
     active_scene: Option<Scene>,
-    event_rx: Receiver<FlameEvent>,
-    event_tx: Sender<FlameEvent>,
+    event_rx: Receiver<EngineEvent>,
+    event_tx: Sender<EngineEvent>,
     window_width: i32,
     window_height: i32,
     keys_pressed: HashSet<VirtualKeyCode>,
     key_locks: HashSet<VirtualKeyCode>,
 }
 
-pub struct FlameConfig {
+pub struct EngineConfig {
     pub gravity: f32,
 }
 
-impl FlameEngine {
+impl Engine {
     pub fn new(window_width: i32, window_height: i32) -> Self {
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
-        FlameEngine {
+        Engine {
             scenes: HashMap::new(),
             event_tx,
             window_width,
@@ -186,7 +186,7 @@ impl FlameEngine {
         }
     }
 
-    pub fn start_cycle(mut self, game_code: fn(&mut Self), config: FlameConfig) {
+    pub fn start_cycle(mut self, config: EngineConfig) {
         let gravity = vector![0.0, config.gravity];
 
         let mut physics_pipeline = PhysicsPipeline::new();
@@ -269,10 +269,10 @@ impl FlameEngine {
                     let packet = self.event_rx.try_recv();
                     match packet {
                         Ok(event) => match event {
-                            FlameEvent::SwitchToScene(scene) => {
+                            EngineEvent::SwitchToScene(scene) => {
                                 self.set_current_scene(scene);
                             }
-                            FlameEvent::SetDatamapValue((var, val)) => {
+                            EngineEvent::SetDatamapValue((var, val)) => {
                                 *self
                                     .active_scene
                                     .as_mut()
@@ -281,14 +281,14 @@ impl FlameEngine {
                                     .get_mut(&var)
                                     .unwrap() = val;
                             }
-                            FlameEvent::InsertDatamapValue((var, val)) => {
+                            EngineEvent::InsertDatamapValue((var, val)) => {
                                 self.active_scene
                                     .as_mut()
                                     .unwrap()
                                     .data_map
                                     .insert(var, val);
                             }
-                            FlameEvent::RemoveDatamapValue(var) => {
+                            EngineEvent::RemoveDatamapValue(var) => {
                                 self.active_scene.as_mut().unwrap().data_map.remove(&var);
                             }
                         },

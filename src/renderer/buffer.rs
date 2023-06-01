@@ -1,4 +1,4 @@
-use crate::game_object::graphics::SquareData;
+use crate::game_object::graphics::RectData;
 use crate::ui::frontend::RGBColor;
 use bytemuck::{Pod, Zeroable};
 use cgmath::num_traits::Pow;
@@ -185,8 +185,8 @@ impl QuadBufferBuilder {
 
     pub fn push_circle(&mut self,pos_x: f32, pos_y: f32,radius: f32,color: &RGBColor) {
 
-        let width = 1.0;
-        let height = 1.0;
+        let width = 2.0;
+        let height = 2.0;
 
         self.push_circle_quad(
             pos_x - width * 0.5,
@@ -200,13 +200,14 @@ impl QuadBufferBuilder {
 
     }
 
-    pub fn build(self, device: &wgpu::Device) -> (StagingBuffer, StagingBuffer, StagingBuffer , StagingBuffer, u32) {
+    pub fn build(self, device: &wgpu::Device) -> (StagingBuffer, StagingBuffer, StagingBuffer , StagingBuffer, u32,u32) {
         (
             StagingBuffer::new(device, &self.vertex_data, false),
             StagingBuffer::new(device, &self.index_data, true),
             StagingBuffer::new(device, &self.circle_vertex_data, false),
             StagingBuffer::new(device, &self.circle_index_data, true),
             self.index_data.len() as u32,
+            self.circle_index_data.len() as u32
         )
     }
 }

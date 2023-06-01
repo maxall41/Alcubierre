@@ -9,14 +9,19 @@ struct CameraUniform {
 @group(0) @binding(0) // 1.
 var<uniform> camera: CameraUniform;
 
-fn circle(st: vec2<f32>, _radius: f32) -> f32 {
-    var dist = st-vec2(0.303);
+fn circle(dist: vec2<f32>, _radius: f32) -> f32 {
 
-	let df = 1.-smoothstep(_radius-(_radius*0.01),
-                         _radius+(_radius*0.01),
-                         dot(dist,dist)*4.0);
+    let df = sqrt(dot(dist,dist));
 
-    if (df < _radius) {
+//	let df = 1.0-smoothstep(_radius-(_radius*0.01),
+//                         _radius+(_radius*0.01),
+//                         dot(dist,dist)*4.0);
+
+//    if (df < _radius) {
+//            discard;
+//    }
+
+    if (df > _radius) {
         discard;
     }
 
@@ -26,10 +31,10 @@ fn circle(st: vec2<f32>, _radius: f32) -> f32 {
 
 @fragment
 fn fs_main(in: VertexOutput) -> FragmentOutput {
-    let st = vec2<f32>(in.position.x - 100.0,in.position.y - 173.0) / vec2<f32>(1450.0);
+    let dist = vec2<f32>(in.model_pos.x,in.model_pos.y);
 
 //    let cv = circle(st,0.002);
-    let cv = circle(st,in.radius);
+    let cv = circle(in.model_pos,in.radius);
 
     let out = vec4(1.0);
 //
@@ -40,6 +45,7 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) radius: f32,
+    @location(1) model_pos: vec2<f32>,
 };
 
 struct VertexInput {
@@ -52,6 +58,7 @@ struct VertexInput {
 fn vs_main(model: VertexInput) -> VertexOutput {
     var out: VertexOutput;
 //    out.color = model.color;
+    out.model_pos = vec2(model.position.x,model.position.y);
     out.radius = model.radius;
     out.position = camera.view_proj * vec4<f32>(model.position.x, model.position.y,f32(0), f32(1)); // 2.
     return out;

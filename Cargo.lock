@@ -65,6 +65,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "alcubierre"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "cgmath",
+ "flume",
+ "hashbrown 0.13.2",
+ "instant",
+ "lazy_static",
+ "miette",
+ "nalgebra",
+ "nom",
+ "pollster",
+ "pretty_assertions",
+ "rand",
+ "rapier2d",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokio",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
 name = "android-activity"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -509,31 +534,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d329bdeac514ee06249dabc27877490f17f5d371ec693360768b838e19f3ae10"
 dependencies = [
  "simd-adler32",
-]
-
-[[package]]
-name = "flame"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "cgmath",
- "flume",
- "hashbrown 0.13.2",
- "instant",
- "lazy_static",
- "miette",
- "nalgebra",
- "nom",
- "pollster",
- "pretty_assertions",
- "rand",
- "rapier2d",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio",
- "wgpu",
- "winit",
 ]
 
 [[package]]
