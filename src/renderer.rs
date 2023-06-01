@@ -10,6 +10,29 @@ use winit::window::Window;
 use buffer::*;
 use crate::renderer::camera::{Camera, CameraUniform};
 
+const CIRCLE_QUAD: &[Vertex] = &[
+    Vertex {
+        position: [-0.0868241, 0.49240386],
+        color: [0.5, 0.0, 0.5],
+    }, // A
+    Vertex {
+        position: [-0.49513406, 0.06958647],
+        color: [0.5, 0.0, 0.5],
+    }, // B
+    Vertex {
+        position: [-0.21918549, -0.44939706],
+        color: [0.5, 0.0, 0.5],
+    }, // C
+    Vertex {
+        position: [0.35966998, -0.3473291],
+        color: [0.5, 0.0, 0.5],
+    }, // D
+    Vertex {
+        position: [0.44147372, 0.2347359],
+        color: [0.5, 0.0, 0.5],
+    }, // E
+];
+
 pub struct Render {
     surface: wgpu::Surface,
     config: wgpu::SurfaceConfiguration,
@@ -17,14 +40,14 @@ pub struct Render {
     adapter: wgpu::Adapter,
     device: wgpu::Device,
     queue: wgpu::Queue,
-    square_pipeline: wgpu::RenderPipeline,
-    circle_pipeline: wgpu::RenderPipeline,
+    pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
+    color_buffer: wgpu::Buffer,
     staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
-    circle_quad: wgpu::Buffer,
+    circle_buffer: wgpu::Buffer,
     camera: camera::Camera, // UPDATED!
     projection: camera::Projection, // NEW!
     camera_bind_group: wgpu::BindGroup,
@@ -155,7 +178,7 @@ impl Render {
             label: Some("Pipeline Layout"),
         });
 
-        let square_pipeline = create_render_pipeline(
+        let pipeline = create_render_pipeline(
             &device,
             &pipeline_layout,
             config.format,
@@ -163,59 +186,35 @@ impl Render {
             wgpu::include_wgsl!("./renderer/shaders/quad.wgsl"),
         );
 
-        let circle_pipeline = create_render_pipeline(
-            &device,
-            &pipeline_layout,
-            config.format,
-            &[],
-            wgpu::include_wgsl!("./renderer/shaders/circle.wgsl"),
-        );
-
         let vertex_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
-            size: Vertex::SIZE * 4 * 2000, // Allocate 160kb buffer. To fit up to 2000 squares. This may be a scaling issue in the future
+            size: Vertex::SIZE * 4 * 3,
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
         let index_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
-            size: U32_SIZE * 6 * 2000, // Allocate 48KB buffer. To fit up to 2000 squares. This may be a scaling issue in the future
+            size: U32_SIZE * 6 * 3,
             usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
-        const VERTICES: &[Vertex] = &[
-            Vertex {
-                position: [-0.0868241, 0.49240386],
-                color: [0.5, 0.0, 0.5],
-            }, // A
-            Vertex {
-                position: [-0.49513406, 0.06958647],
-                color: [0.5, 0.0, 0.5],
-            }, // B
-            Vertex {
-                position: [-0.21918549, -0.44939706],
-                color: [0.5, 0.0, 0.5],
-            }, // C
-            Vertex {
-                position: [0.35966998, -0.3473291],
-                color: [0.5, 0.0, 0.5],
-            }, // D
-            Vertex {
-                position: [0.44147372, 0.2347359],
-                color: [0.5, 0.0, 0.5],
-            }, // E
-        ];
-
-        let circle_quad = device.create_buffer_init(&BufferInitDescriptor {
-            contents: bytemuck::cast_slice(VERTICES),
-            usage: wgpu::BufferUsages::VERTEX,
-            label: Some("Circle Quad Buffer"),
+        let color_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            size: F32_SIZE * 4 * 20,
+            usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
         });
 
 
         let staging_belt = wgpu::util::StagingBelt::new(1024);
+
+        let circle_buf = device.create_buffer_init(&BufferInitDescriptor {
+            contents: bytemuck::cast_slice(CIRCLE_QUAD),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            label: Some("Staging Buffer"),
+        });
 
         Self {
             surface,
@@ -223,7 +222,7 @@ impl Render {
             device,
             queue,
             config,
-            square_pipeline,
+            pipeline,
             vertex_buffer,
             index_buffer,
             staging_belt,
@@ -232,8 +231,8 @@ impl Render {
             camera_uniform,
             projection,
             camera,
-            circle_pipeline,
-            circle_quad
+            color_buffer,
+            circle_buffer: circle_buf
         }
     }
 
@@ -269,21 +268,15 @@ impl Render {
                     depth_stencil_attachment: None,
                 });
 
-                // Setup
+                // Circles
                 render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
 
                 // Squares
                 render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-                render_pass.set_pipeline(&self.square_pipeline);
+                render_pass.set_pipeline(&self.pipeline);
                 render_pass.draw_indexed(0..num_indices, 0, 0..1);
-
-                // Circles
-
-                // render_pass.set_vertex_buffer(0, self.circle_quad.slice(..));
-                // render_pass.set_pipeline(&self.circle_pipeline);
-                // render_pass.draw_indexed(0..2, 0, 0..1);
 
 
 
