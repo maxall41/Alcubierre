@@ -1,6 +1,6 @@
+use cgmath::{ortho, perspective, InnerSpace, Matrix4, Point2, Point3, Rad, Vector3};
 use std::f32::consts::FRAC_PI_2;
 use std::iter;
-use cgmath::{InnerSpace, Matrix4, ortho, perspective, Point2, Point3, Rad, Vector3};
 
 use wgpu::util::DeviceExt;
 use winit::{
@@ -17,8 +17,6 @@ pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
     0.0, 0.0, 0.5, 1.0,
 );
 
-
-
 #[derive(Debug)]
 pub struct Camera {
     pub(crate) eye: cgmath::Point3<f32>,
@@ -27,9 +25,7 @@ pub struct Camera {
 }
 
 impl Camera {
-
     pub fn calc_matrix(&self) -> Matrix4<f32> {
-
         cgmath::Matrix4::look_at_rh(self.eye, self.target, self.up)
 
         // Matrix4::look_to_rh(
@@ -43,8 +39,6 @@ impl Camera {
         // )
     }
 }
-
-
 
 // We need this for Rust to store our data correctly for the shaders
 #[repr(C)]
@@ -67,12 +61,9 @@ impl CameraUniform {
     pub(crate) fn update_view_proj(&mut self, camera: &Camera, projection: &Projection) {
         // self.view_position = camera.position.to_homogeneous().into();
         let view = camera.calc_matrix();
-        println!("V: {:?}",view);
         self.view_proj = (projection.calc_matrix() * view).into();
     }
 }
-
-
 
 pub struct Projection {
     aspect: f32,
@@ -82,13 +73,7 @@ pub struct Projection {
 }
 
 impl Projection {
-    pub fn new<F: Into<Rad<f32>>>(
-        width: u32,
-        height: u32,
-        fovy: F,
-        znear: f32,
-        zfar: f32,
-    ) -> Self {
+    pub fn new<F: Into<Rad<f32>>>(width: u32, height: u32, fovy: F, znear: f32, zfar: f32) -> Self {
         Self {
             aspect: width as f32 / height as f32,
             fovy: fovy.into(),

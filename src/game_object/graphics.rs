@@ -34,7 +34,7 @@ pub enum GraphicsType {
 
 pub trait Graphics {
     fn add_graphics(&mut self, graphics_type: GraphicsType);
-    fn render(&mut self,buffer: &mut QuadBufferBuilder);
+    fn render(&mut self, buffer: &mut QuadBufferBuilder);
 }
 
 impl Graphics for GameObject {
@@ -48,10 +48,16 @@ impl Graphics for GameObject {
                     todo!()
                 }
                 GraphicsType::Circle(circle) => {
-                   todo!()
+                    buffer.push_circle(self.pos_x,self.pos_y,circle.radius,&circle.color);
                 }
                 GraphicsType::Square(square) => {
-                    buffer.push_square(self.pos_x,self.pos_y,square.width,square.height,&square.color);
+                    buffer.push_square(
+                        self.pos_x,
+                        self.pos_y,
+                        square.width,
+                        square.height,
+                        &square.color,
+                    );
                 }
                 GraphicsType::Triangle(triangle) => {
                     todo!()

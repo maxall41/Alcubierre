@@ -5,10 +5,10 @@ use flame::game_object::physics::PhysicsObject;
 use flame::game_object::GameObject;
 use flame::physics::screen_units_to_physics_units;
 use flame::physics::{FlameCollider, FlameColliderType};
+use flame::ui::frontend::RGBColor;
 use flame::FlameEngine;
 use rapier2d::geometry::ColliderBuilder;
 use rapier2d::prelude::{vector, RigidBodyBuilder};
-use flame::ui::frontend::RGBColor;
 
 pub fn register_main_scene(flame: &mut FlameEngine) {
     let scene = flame.register_scene("Main".to_string());
@@ -26,7 +26,7 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
     player.attach_rigid_body(player_rigid_body, scene);
 
     let player_collider = FlameCollider {
-        collider_type: FlameColliderType::Rectangle((1.0,1.0)),
+        collider_type: FlameColliderType::Rectangle((1.0, 1.0)),
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
@@ -34,9 +34,8 @@ pub fn register_main_scene(flame: &mut FlameEngine) {
 
     let player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
 
-    player.add_graphics(GraphicsType::Square(SquareData {
-        width: 1.0,
-        height: 1.0,
+    player.add_graphics(GraphicsType::Circle(CircleData {
+        radius: 0.002,
         color: RGBColor {
             red: 255,
             green: 255,

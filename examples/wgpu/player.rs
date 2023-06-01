@@ -42,7 +42,6 @@ impl UserBehaviour for PlayerBehaviour {
             .get_mut(game_object_view.physics.rigid_body_handle.unwrap())
             .unwrap();
 
-
         let current_vel = rigid_body.linvel();
         // //
         rigid_body.set_linvel(

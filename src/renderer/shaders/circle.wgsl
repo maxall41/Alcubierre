@@ -28,7 +28,8 @@ fn circle(st: vec2<f32>, _radius: f32) -> f32 {
 fn fs_main(in: VertexOutput) -> FragmentOutput {
     let st = vec2<f32>(in.position.x - 100.0,in.position.y - 173.0) / vec2<f32>(1450.0);
 
-    let cv = circle(st,0.002);
+//    let cv = circle(st,0.002);
+    let cv = circle(st,in.radius);
 
     let out = vec4(1.0);
 //
@@ -38,17 +39,20 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
+    @location(0) radius: f32,
 };
 
 struct VertexInput {
     @location(0) position: vec2<f32>,
     @location(1) color: vec3<f32>,
+    @location(2) radius: f32,
 };
 
 @vertex
 fn vs_main(model: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-//    out.color = vec3<f32>(1.0,1.0,1.0);
+//    out.color = model.color;
+    out.radius = model.radius;
     out.position = camera.view_proj * vec4<f32>(model.position.x, model.position.y,f32(0), f32(1)); // 2.
     return out;
 }

@@ -29,10 +29,7 @@ impl FlameCollider {
                 screen_units_to_physics_units(x) / 1.75,
                 screen_units_to_physics_units(y) / 1.75,
             )
-            .translation(vector![
-                0.0,
-                screen_units_to_physics_units(y) / 2.0
-            ])
+            .translation(vector![0.0, screen_units_to_physics_units(y) / 2.0])
             .sensor(self.sensor)
             .friction(self.friction)
             .restitution(self.restitution)

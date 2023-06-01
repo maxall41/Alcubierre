@@ -1,18 +1,19 @@
 pub mod game_object;
 pub mod physics;
-pub mod ui;
 mod renderer;
+pub mod ui;
 
 use crate::game_object::graphics::Graphics;
 use crate::game_object::GameObject;
+use crate::renderer::buffer::QuadBufferBuilder;
 use crate::ui::frontend::HyperFoilAST;
 use crate::ui::parse_file;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
 use rapier2d::geometry::{ColliderBuilder, ColliderSet};
 use rapier2d::prelude::{
-    BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters, IslandManager,
-    MultibodyJointSet, NarrowPhase, PhysicsPipeline, RigidBodySet, vector,
+    vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
+    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, RigidBodySet,
 };
 use std::thread::sleep;
 use std::time::Duration;
@@ -20,14 +21,13 @@ use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Fullscreen, WindowBuilder};
-use crate::renderer::buffer::QuadBufferBuilder;
 
 pub struct FlameEngineView<'a> {
     pub rigid_body_set: &'a mut RigidBodySet,
     pub narrow_phase: &'a mut NarrowPhase,
     event_tx: &'a mut Sender<FlameEvent>,
     key_locks: &'a mut HashSet<VirtualKeyCode>,
-    keys_pressed: &'a  mut HashSet<VirtualKeyCode>
+    keys_pressed: &'a mut HashSet<VirtualKeyCode>,
 }
 
 impl<'a> FlameEngineView<'a> {
@@ -69,10 +69,10 @@ impl<'a> FlameEngineView<'a> {
             .send(FlameEvent::RemoveDatamapValue(var))
             .unwrap();
     }
-    pub fn is_key_down(&self,key: VirtualKeyCode) -> bool {
+    pub fn is_key_down(&self, key: VirtualKeyCode) -> bool {
         self.keys_pressed.contains(&key)
     }
-    pub fn is_key_up(&self,key: VirtualKeyCode) -> bool {
+    pub fn is_key_up(&self, key: VirtualKeyCode) -> bool {
         !self.keys_pressed.contains(&key)
     }
     pub fn is_key_pressed(&mut self, key: VirtualKeyCode) -> bool {
@@ -132,7 +132,7 @@ pub struct FlameEngine {
     window_width: i32,
     window_height: i32,
     keys_pressed: HashSet<VirtualKeyCode>,
-    key_locks: HashSet<VirtualKeyCode>
+    key_locks: HashSet<VirtualKeyCode>,
 }
 
 pub struct FlameConfig {
@@ -141,7 +141,6 @@ pub struct FlameConfig {
 
 impl FlameEngine {
     pub fn new(window_width: i32, window_height: i32) -> Self {
-
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
         FlameEngine {
@@ -152,7 +151,7 @@ impl FlameEngine {
             active_scene: None,
             window_height,
             key_locks: HashSet::new(),
-            keys_pressed: HashSet::new()
+            keys_pressed: HashSet::new(),
         }
     }
 
@@ -165,7 +164,7 @@ impl FlameEngine {
                     &mut scene.rigid_body_set,
                     &mut self.event_tx,
                     &mut self.keys_pressed,
-                    &mut self.key_locks
+                    &mut self.key_locks,
                 )
             }
         }
@@ -182,13 +181,12 @@ impl FlameEngine {
                 &mut active_scene.rigid_body_set,
                 &mut self.event_tx,
                 &mut self.keys_pressed,
-                &mut self.key_locks
+                &mut self.key_locks,
             )
         }
     }
 
     pub fn start_cycle(mut self, game_code: fn(&mut Self), config: FlameConfig) {
-
         let gravity = vector![0.0, config.gravity];
 
         let mut physics_pipeline = PhysicsPipeline::new();
@@ -199,7 +197,6 @@ impl FlameEngine {
         let mut current_size = PhysicalSize::new(1080, 940);
 
         window.set_inner_size(current_size);
-
 
         let mut render = pollster::block_on(renderer::Render::new(&window, current_size));
 
@@ -221,18 +218,18 @@ impl FlameEngine {
                 WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                 WindowEvent::KeyboardInput {
                     input:
-                    KeyboardInput {
-                        state: element_state,
-                        virtual_keycode: Some(key),
-                        ..
-                    },
+                        KeyboardInput {
+                            state: element_state,
+                            virtual_keycode: Some(key),
+                            ..
+                        },
                     ..
                 } => {
                     // keys_pressed.push(*key);
                     match element_state {
                         ElementState::Released => {
                             self.keys_pressed.remove(key);
-                        },
+                        }
                         ElementState::Pressed => {
                             self.keys_pressed.insert(*key);
                         }
@@ -312,7 +309,7 @@ impl FlameEngine {
                             &mut self.event_tx,
                             &mut buffer,
                             &mut self.keys_pressed,
-                            &mut self.key_locks
+                            &mut self.key_locks,
                         );
                     }
 
@@ -324,7 +321,6 @@ impl FlameEngine {
             }
             _ => {}
         });
-
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {
         let integration_params = IntegrationParameters::default();

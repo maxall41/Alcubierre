@@ -1,19 +1,19 @@
-use miette::{miette};
+use crate::show_compiler_error;
+use crate::ui::frontend::errors::*;
+use crate::ui::frontend::rough::colors::hex_color;
+use crate::ui::frontend::rough::spacing::parse_spacing_units;
+use crate::ui::frontend::{
+    ButtonStyleData, ElementAlignment, RGBColor, SpacingUnit, TextStyleData,
+};
+use miette::miette;
 use miette::LabeledSpan;
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0};
 use nom::combinator::{map, value};
-use nom::IResult;
 use nom::multi::many1;
 use nom::sequence::{delimited, terminated};
-use crate::show_compiler_error;
-use crate::ui::frontend::{
-    ButtonStyleData, ElementAlignment, RGBColor, SpacingUnit, TextStyleData,
-};
-use crate::ui::frontend::errors::*;
-use crate::ui::frontend::rough::colors::hex_color;
-use crate::ui::frontend::rough::spacing::parse_spacing_units;
+use nom::IResult;
 
 pub struct RoughParamsText {
     pub classes: Vec<String>,

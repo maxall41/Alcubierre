@@ -1,24 +1,23 @@
 mod player;
 
+use crate::player::PlayerBehaviour;
 use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
 use flame::game_object::physics::PhysicsObject;
 use flame::game_object::GameObject;
+use flame::physics::{FlameCollider, FlameColliderType};
+use flame::ui::frontend::RGBColor;
 use flame::{FlameConfig, FlameEngine};
 use lazy_static::lazy_static;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
 use std::sync::Arc;
 use std::sync::RwLock;
-use flame::physics::{FlameCollider, FlameColliderType};
-use flame::ui::frontend::RGBColor;
-use crate::player::PlayerBehaviour;
 
 fn game_code(engine: &mut FlameEngine) {}
 
 #[tokio::main]
 async fn main() {
     let mut flame = FlameEngine::new(640, 480);
-
 
     let scene = flame.register_scene("Main".to_string());
 
@@ -35,7 +34,7 @@ async fn main() {
     player.attach_rigid_body(player_rigid_body, scene);
 
     let player_collider = FlameCollider {
-        collider_type: FlameColliderType::Rectangle((1,1)),
+        collider_type: FlameColliderType::Rectangle((1, 1)),
         sensor: false,
         restitution: 0.7,
         friction: 0.0,
@@ -49,11 +48,10 @@ async fn main() {
         color: RGBColor {
             red: 25,
             green: 255,
-            blue: 100
+            blue: 100,
         },
     }));
     scene.register_game_object(player);
-
 
     flame.set_current_scene("Main".to_string());
 

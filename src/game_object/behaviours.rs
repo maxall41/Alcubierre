@@ -2,8 +2,8 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::sync::Arc;
 
-use crate::{FlameEngine, FlameEngineView};
 use crate::game_object::{GameObject, GameObjectView};
+use crate::{FlameEngine, FlameEngineView};
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(

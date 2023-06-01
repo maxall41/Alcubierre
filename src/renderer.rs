@@ -1,5 +1,6 @@
 pub(crate) mod buffer;
 pub mod camera;
+pub mod circle;
 
 use std::iter;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
@@ -7,57 +8,9 @@ use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 
-use buffer::*;
 use crate::renderer::camera::{Camera, CameraUniform};
-
-const CIRCLE_QUAD: &[Vertex] = &[
-    Vertex {
-        position: [
-            -0.49157882,
-            -2.3097796,
-        ],
-        color: [
-            1.0,
-            1.0,
-            1.0,
-        ],
-    },
-    Vertex {
-        position: [
-            0.5084212,
-            -2.3097796,
-        ],
-        color: [
-            1.0,
-            1.0,
-            1.0,
-        ],
-    },
-    Vertex {
-        position: [
-            0.5084212,
-            -1.3097795,
-        ],
-        color: [
-            1.0,
-            1.0,
-            1.0,
-        ],
-    },
-    Vertex {
-        position: [
-            -0.49157882,
-            -1.3097795,
-        ],
-        color: [
-            1.0,
-            1.0,
-            1.0,
-        ],
-    },
-];
-
-const CIRCLE_INDICE : &[u32] = &[0,1,2,0,2,3];
+use crate::renderer::circle::CircleVertex;
+use buffer::*;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -75,7 +28,7 @@ pub struct Render {
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     circle_buffer: wgpu::Buffer,
-    camera: camera::Camera, // UPDATED!
+    camera: camera::Camera,         // UPDATED!
     projection: camera::Projection, // NEW!
     camera_bind_group: wgpu::BindGroup,
 }
@@ -130,7 +83,9 @@ impl Render {
         // Shader code in this tutorial assumes an Srgb surface texture. Using a different
         // one will result all the colors comming out darker. If you want to support non
         // Srgb surfaces, you'll need to account for that when drawing to the frame.
-        let surface_format = surface_caps.formats.iter()
+        let surface_format = surface_caps
+            .formats
+            .iter()
             .copied()
             .find(|f| f.is_srgb())
             .unwrap_or(surface_caps.formats[0]);
@@ -155,47 +110,41 @@ impl Render {
             up: cgmath::Vector3::unit_y(),
         };
 
-        let projection = camera::Projection::new(config.width, config.height, cgmath::Deg(90.0), 0.1, 100.0);
+        let projection =
+            camera::Projection::new(config.width, config.height, cgmath::Deg(90.0), 0.1, 100.0);
 
         camera_uniform.update_view_proj(&camera, &projection);
 
-        let camera_buffer = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Camera Buffer"),
-                contents: bytemuck::cast_slice(&[camera_uniform]),
-                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            }
-        );
+        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Camera Buffer"),
+            contents: bytemuck::cast_slice(&[camera_uniform]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
 
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
                 },
-            ],
+                count: None,
+            }],
             label: Some("bind_group_layout"),
         });
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: camera_buffer.as_entire_binding(),
-                },
-            ],
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.as_entire_binding(),
+            }],
             label: Some("camera_bind_group"),
         });
 
         //
-
 
         surface.configure(&device, &config);
 
@@ -217,37 +166,38 @@ impl Render {
             &device,
             &pipeline_layout,
             config.format,
-            &[Vertex::DESC],
+            &[CircleVertex::DESC],
             wgpu::include_wgsl!("./renderer/shaders/circle.wgsl"),
         );
 
         let vertex_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: None,
-            size: Vertex::SIZE * 4 * 3,
+            label: Some("Vertex Buffer"),
+            size: Vertex::SIZE * 4 * 2000,
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
         let index_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: None,
-            size: U32_SIZE * 6 * 3,
+            label: Some("Vertex Index Buffer"),
+            size: U32_SIZE * 6 * 2000,
             usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
-        let circle_index_buffer = device.create_buffer_init(&BufferInitDescriptor {
-            contents: bytemuck::cast_slice(CIRCLE_INDICE),
-            usage: wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::INDEX,
+        let circle_index_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("Circle Index Buffer"),
+            size: U32_SIZE * 6 * 2000,
+            usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
         });
-
 
         let staging_belt = wgpu::util::StagingBelt::new(1024);
 
-        let circle_buf = device.create_buffer_init(&BufferInitDescriptor {
-            contents: bytemuck::cast_slice(CIRCLE_QUAD),
+        let circle_buf = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Circle Vertex Buffer"),
+            size: CircleVertex::SIZE * 4 * 2000,
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
-            label: Some("Staging Buffer"),
+            mapped_at_creation: false,
         });
 
         Self {
@@ -267,7 +217,7 @@ impl Render {
             camera,
             circle_buffer: circle_buf,
             circle_pipeline,
-            circle_index_buffer
+            circle_index_buffer,
         }
     }
 
@@ -285,10 +235,12 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
+        let (stg_vertex, stg_index, circle_vert, circle_index, num_indices) = buffer.build(&self.device);
 
         stg_vertex.copy_to_buffer(&mut encoder, &self.vertex_buffer);
         stg_index.copy_to_buffer(&mut encoder, &self.index_buffer);
+        circle_vert.copy_to_buffer(&mut encoder, &self.circle_buffer);
+        circle_index.copy_to_buffer(&mut encoder,&self.circle_index_buffer);
 
         match self.surface.get_current_texture() {
             Ok(frame) => {
@@ -315,8 +267,10 @@ impl Render {
 
                 // Circles
                 render_pass.set_vertex_buffer(0, self.circle_buffer.slice(..));
-                render_pass
-                    .set_index_buffer(self.circle_index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+                render_pass.set_index_buffer(
+                    self.circle_index_buffer.slice(..),
+                    wgpu::IndexFormat::Uint32,
+                );
                 render_pass.set_pipeline(&self.circle_pipeline);
                 render_pass.draw_indexed(0..6, 0, 0..1);
 
@@ -325,7 +279,6 @@ impl Render {
                 self.staging_belt.finish();
                 self.queue.submit(iter::once(encoder.finish()));
                 frame.present();
-
             }
             Err(wgpu::SurfaceError::Outdated) => {
                 println!("Outdated surface texture");

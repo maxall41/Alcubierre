@@ -2,14 +2,14 @@ use crate::game_object::behaviours::UserBehaviour;
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::FlameCollider;
+use crate::renderer::buffer::QuadBufferBuilder;
 use crate::{FlameEngineView, FlameEvent, Scene};
 use flume::Sender;
 use hashbrown::HashSet;
 use rapier2d::dynamics::RigidBody;
-use rapier2d::geometry::{NarrowPhase};
-use rapier2d::prelude::{RigidBodySet};
+use rapier2d::geometry::NarrowPhase;
+use rapier2d::prelude::RigidBodySet;
 use winit::event::VirtualKeyCode;
-use crate::renderer::buffer::QuadBufferBuilder;
 
 pub mod behaviours;
 pub mod graphics;
@@ -49,7 +49,7 @@ impl GameObject {
         rigid_body_set: &mut RigidBodySet,
         tx: &mut Sender<FlameEvent>,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
-        key_locks: &mut HashSet<VirtualKeyCode>
+        key_locks: &mut HashSet<VirtualKeyCode>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -58,7 +58,7 @@ impl GameObject {
                     narrow_phase,
                     event_tx: tx,
                     keys_pressed,
-                    key_locks
+                    key_locks,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -74,7 +74,7 @@ impl GameObject {
         rigid_body_set: &mut RigidBodySet,
         tx: &mut Sender<FlameEvent>,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
-        key_locks: &mut HashSet<VirtualKeyCode>
+        key_locks: &mut HashSet<VirtualKeyCode>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -83,7 +83,7 @@ impl GameObject {
                     narrow_phase,
                     event_tx: tx,
                     key_locks,
-                    keys_pressed
+                    keys_pressed,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -100,9 +100,8 @@ impl GameObject {
         event_tx: &mut Sender<FlameEvent>,
         buffer: &mut QuadBufferBuilder,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
-        key_locks: &mut HashSet<VirtualKeyCode>
+        key_locks: &mut HashSet<VirtualKeyCode>,
     ) {
-
         if self.physics.rigid_body_handle.is_some() {
             let new_pos = self.get_updated_physics_position(rigid_body_set);
             self.pos_x = new_pos.0;
@@ -121,7 +120,7 @@ impl GameObject {
                     narrow_phase,
                     event_tx,
                     keys_pressed,
-                    key_locks
+                    key_locks,
                 },
                 0.0, //TODO
             );
