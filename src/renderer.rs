@@ -235,12 +235,13 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        let (stg_vertex, stg_index, circle_vert, circle_index, num_indices, circle_num_indices) = buffer.build(&self.device);
+        let (stg_vertex, stg_index, circle_vert, circle_index, num_indices, circle_num_indices) =
+            buffer.build(&self.device);
 
         stg_vertex.copy_to_buffer(&mut encoder, &self.vertex_buffer);
         stg_index.copy_to_buffer(&mut encoder, &self.index_buffer);
         circle_vert.copy_to_buffer(&mut encoder, &self.circle_buffer);
-        circle_index.copy_to_buffer(&mut encoder,&self.circle_index_buffer);
+        circle_index.copy_to_buffer(&mut encoder, &self.circle_index_buffer);
 
         match self.surface.get_current_texture() {
             Ok(frame) => {

@@ -1,9 +1,9 @@
 use crate::game_object::graphics::RectData;
+use crate::renderer::circle::CircleVertex;
 use crate::ui::frontend::RGBColor;
 use bytemuck::{Pod, Zeroable};
 use cgmath::num_traits::Pow;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
-use crate::renderer::circle::CircleVertex;
 
 pub const U32_SIZE: wgpu::BufferAddress = std::mem::size_of::<u32>() as wgpu::BufferAddress;
 pub const F32_SIZE: wgpu::BufferAddress = std::mem::size_of::<f32>() as wgpu::BufferAddress;
@@ -56,7 +56,7 @@ pub struct QuadBufferBuilder {
     index_data: Vec<u32>,
     circle_index_data: Vec<u32>,
     current_quad: u32,
-    current_circle_quad: u32
+    current_circle_quad: u32,
 }
 
 impl QuadBufferBuilder {
@@ -67,7 +67,7 @@ impl QuadBufferBuilder {
             circle_vertex_data: vec![],
             circle_index_data: vec![],
             current_quad: 0,
-            current_circle_quad: 0
+            current_circle_quad: 0,
         }
     }
 
@@ -117,7 +117,15 @@ impl QuadBufferBuilder {
         self.current_quad += 1;
     }
 
-    pub fn push_circle_quad(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32, color: &RGBColor,radius: f32) {
+    pub fn push_circle_quad(
+        &mut self,
+        min_x: f32,
+        min_y: f32,
+        max_x: f32,
+        max_y: f32,
+        color: &RGBColor,
+        radius: f32,
+    ) {
         let red = ((color.red as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let blue = ((color.blue as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
@@ -126,22 +134,22 @@ impl QuadBufferBuilder {
             CircleVertex {
                 position: [min_x, min_y],
                 color: [red, green, blue],
-                radius
+                radius,
             },
             CircleVertex {
                 position: [max_x, min_y],
                 color: [red, green, blue],
-                radius
+                radius,
             },
             CircleVertex {
                 position: [max_x, max_y],
                 color: [red, green, blue],
-                radius
+                radius,
             },
             CircleVertex {
                 position: [min_x, max_y],
                 color: [red, green, blue],
-                radius
+                radius,
             },
         ];
 
@@ -179,12 +187,9 @@ impl QuadBufferBuilder {
             self.current_circle_quad * 4 + 3,
         ]);
         self.current_circle_quad += 1;
-
-
     }
 
-    pub fn push_circle(&mut self,pos_x: f32, pos_y: f32,radius: f32,color: &RGBColor) {
-
+    pub fn push_circle(&mut self, pos_x: f32, pos_y: f32, radius: f32, color: &RGBColor) {
         let width = 2.0;
         let height = 2.0;
 
@@ -194,20 +199,28 @@ impl QuadBufferBuilder {
             pos_x + width * 0.5,
             pos_y + height * 0.5,
             &color,
-            radius
+            radius,
         );
-
-
     }
 
-    pub fn build(self, device: &wgpu::Device) -> (StagingBuffer, StagingBuffer, StagingBuffer , StagingBuffer, u32,u32) {
+    pub fn build(
+        self,
+        device: &wgpu::Device,
+    ) -> (
+        StagingBuffer,
+        StagingBuffer,
+        StagingBuffer,
+        StagingBuffer,
+        u32,
+        u32,
+    ) {
         (
             StagingBuffer::new(device, &self.vertex_data, false),
             StagingBuffer::new(device, &self.index_data, true),
             StagingBuffer::new(device, &self.circle_vertex_data, false),
             StagingBuffer::new(device, &self.circle_index_data, true),
             self.index_data.len() as u32,
-            self.circle_index_data.len() as u32
+            self.circle_index_data.len() as u32,
         )
     }
 }

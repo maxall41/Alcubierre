@@ -3,12 +3,12 @@ use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
-use crate::{EngineView, EngineEvent, Scene};
+use crate::{EngineEvent, EngineView, Scene};
 use flume::Sender;
 use hashbrown::HashSet;
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::NarrowPhase;
-use rapier2d::prelude::RigidBodySet;
+use rapier2d::prelude::{ColliderSet, QueryPipeline, RigidBodySet};
 use winit::event::VirtualKeyCode;
 
 pub mod behaviours;
@@ -50,6 +50,8 @@ impl GameObject {
         tx: &mut Sender<EngineEvent>,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
         key_locks: &mut HashSet<VirtualKeyCode>,
+        query_pipeline: &mut QueryPipeline,
+        collider_set: &mut ColliderSet,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -59,6 +61,8 @@ impl GameObject {
                     event_tx: tx,
                     keys_pressed,
                     key_locks,
+                    query_pipeline,
+                    collider_set,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -75,6 +79,8 @@ impl GameObject {
         tx: &mut Sender<EngineEvent>,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
         key_locks: &mut HashSet<VirtualKeyCode>,
+        query_pipeline: &mut QueryPipeline,
+        collider_set: &mut ColliderSet,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -84,6 +90,8 @@ impl GameObject {
                     event_tx: tx,
                     key_locks,
                     keys_pressed,
+                    query_pipeline,
+                    collider_set,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -101,6 +109,8 @@ impl GameObject {
         buffer: &mut QuadBufferBuilder,
         keys_pressed: &mut HashSet<VirtualKeyCode>,
         key_locks: &mut HashSet<VirtualKeyCode>,
+        query_pipeline: &mut QueryPipeline,
+        collider_set: &mut ColliderSet,
     ) {
         if self.physics.rigid_body_handle.is_some() {
             let new_pos = self.get_updated_physics_position(rigid_body_set);
@@ -121,6 +131,8 @@ impl GameObject {
                     event_tx,
                     keys_pressed,
                     key_locks,
+                    query_pipeline,
+                    collider_set,
                 },
                 0.0, //TODO
             );
@@ -163,7 +175,11 @@ impl GameObjectBuilder {
         self.behaviours.push(Box::new(behaviour));
         self
     }
-    pub fn collider(mut self, collider: AlcubierreCollider, scene: &mut Scene) -> GameObjectBuilder {
+    pub fn collider(
+        mut self,
+        collider: AlcubierreCollider,
+        scene: &mut Scene,
+    ) -> GameObjectBuilder {
         if self.physics.rigid_body_handle.is_some() {
             let handle = scene.collider_set.insert_with_parent(
                 collider.to_rapier(),

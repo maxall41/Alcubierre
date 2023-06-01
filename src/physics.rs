@@ -12,6 +12,7 @@ pub struct AlcubierreCollider {
     pub sensor: bool,
     pub restitution: f32,
     pub friction: f32,
+    pub user_data: u128,
 }
 
 pub fn screen_units_to_physics_units(pixels: f32) -> f32 {
@@ -33,6 +34,7 @@ impl AlcubierreCollider {
             .sensor(self.sensor)
             .friction(self.friction)
             .restitution(self.restitution)
+            .user_data(self.user_data)
             .build(),
 
             AlcubierreColliderType::Circle(radius) => {
@@ -40,6 +42,7 @@ impl AlcubierreCollider {
                     .sensor(self.sensor)
                     .friction(self.friction)
                     .restitution(self.restitution)
+                    .user_data(self.user_data)
                     .build()
             }
         }

@@ -48,7 +48,7 @@ impl Graphics for GameObject {
                     todo!()
                 }
                 GraphicsType::Circle(circle) => {
-                    buffer.push_circle(self.pos_x,self.pos_y,circle.radius,&circle.color);
+                    buffer.push_circle(self.pos_x, self.pos_y, circle.radius, &circle.color);
                 }
                 GraphicsType::Rect(square) => {
                     buffer.push_square(

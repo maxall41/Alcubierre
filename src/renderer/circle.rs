@@ -23,4 +23,3 @@ impl CircleVertex {
 
 unsafe impl bytemuck::Pod for CircleVertex {}
 unsafe impl bytemuck::Zeroable for CircleVertex {}
-

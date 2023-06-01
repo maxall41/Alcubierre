@@ -2,6 +2,7 @@ pub mod game_object;
 pub mod physics;
 mod renderer;
 pub mod ui;
+pub mod scene;
 
 use crate::game_object::graphics::Graphics;
 use crate::game_object::GameObject;
@@ -10,10 +11,14 @@ use crate::ui::frontend::HyperFoilAST;
 use crate::ui::parse_file;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
-use rapier2d::geometry::{ColliderBuilder, ColliderSet};
+use nalgebra::Vector2;
+use rapier2d::geometry::{ColliderBuilder, ColliderSet, Ray};
+use rapier2d::math::{Point, Real, Vector};
+use rapier2d::pipeline::QueryFilter;
 use rapier2d::prelude::{
     vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, RigidBodySet,
+    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RayIntersection,
+    RigidBodySet,
 };
 use std::thread::sleep;
 use std::time::Duration;
@@ -21,13 +26,17 @@ use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Fullscreen, WindowBuilder};
+use crate::physics::screen_units_to_physics_units;
+use crate::scene::Scene;
 
 pub struct EngineView<'a> {
     pub rigid_body_set: &'a mut RigidBodySet,
     pub narrow_phase: &'a mut NarrowPhase,
+    pub collider_set: &'a mut ColliderSet,
     event_tx: &'a mut Sender<EngineEvent>,
     key_locks: &'a mut HashSet<VirtualKeyCode>,
     keys_pressed: &'a mut HashSet<VirtualKeyCode>,
+    query_pipeline: &'a mut QueryPipeline,
 }
 
 impl<'a> EngineView<'a> {
@@ -89,31 +98,56 @@ impl<'a> EngineView<'a> {
             false
         }
     }
-}
+    pub fn cast_ray(
+        &mut self,
+        direction: Vector<Real>,
+        origin: &[f32],
+        length: Real,
+    ) -> Option<(RayIntersection, ColliderHandle, Ray)> {
+        let x = screen_units_to_physics_units(origin[0]);
+        let y = screen_units_to_physics_units(origin[1]);
+        let ray = Ray::new(Point::from([x,y]), direction);
 
-#[derive(Clone)]
-pub struct Scene {
-    pub game_objects: Vec<GameObject>,
-    pub rigid_body_set: RigidBodySet,
-    pub collider_set: ColliderSet,
-    pub narrow_phase_collision: NarrowPhase,
-    pub island_manager: IslandManager,
-    pub integration_params: IntegrationParameters,
-    pub broad_phase: BroadPhase,
-    pub impulse_joint_set: ImpulseJointSet,
-    pub multibody_joint_set: MultibodyJointSet,
-    pub ccd_solver: CCDSolver,
-    pub ui_ast: Option<HyperFoilAST>,
-    pub function_map: HashMap<String, fn(&mut EngineView)>,
-    pub data_map: HashMap<String, String>,
-}
-impl Scene {
-    pub fn register_game_object(&mut self, game_object: GameObject) {
-        self.game_objects.push(game_object);
+        let filter = QueryFilter::default();
+
+        if let Some((handle, intersection)) = self.query_pipeline.cast_ray_and_get_normal(
+            &self.rigid_body_set,
+            &self.collider_set,
+            &ray,
+            length,
+            true,
+            filter,
+        ) {
+            Some((intersection, handle, ray))
+        } else {
+            None
+        }
     }
-    pub fn register_ui(&mut self, ui_file: String) {
-        let ui_ast = parse_file(&ui_file);
-        self.ui_ast = Some(ui_ast)
+    pub fn cast_ray_with_excluded_collider(
+        &mut self,
+        direction: Vector<Real>,
+        origin: &[f32],
+        length: Real,
+        excluded_collider: ColliderHandle,
+    ) -> Option<(RayIntersection, ColliderHandle, Ray)> {
+        let x = screen_units_to_physics_units(origin[0]);
+        let y = screen_units_to_physics_units(origin[1]);
+        let ray = Ray::new(Point::from([x,y]), direction);
+
+        let filter = QueryFilter::default().exclude_collider(excluded_collider);
+
+        if let Some((handle, intersection)) = self.query_pipeline.cast_ray_and_get_normal(
+            &self.rigid_body_set,
+            &self.collider_set,
+            &ray,
+            length,
+            true,
+            filter,
+        ) {
+            Some((intersection, handle, ray))
+        } else {
+            None
+        }
     }
 }
 
@@ -133,6 +167,7 @@ pub struct Engine {
     window_height: i32,
     keys_pressed: HashSet<VirtualKeyCode>,
     key_locks: HashSet<VirtualKeyCode>,
+    query_pipeline: QueryPipeline,
 }
 
 pub struct EngineConfig {
@@ -143,6 +178,8 @@ impl Engine {
     pub fn new(window_width: i32, window_height: i32) -> Self {
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
+        let mut query_pipeline = QueryPipeline::new();
+
         Engine {
             scenes: HashMap::new(),
             event_tx,
@@ -152,6 +189,7 @@ impl Engine {
             window_height,
             key_locks: HashSet::new(),
             keys_pressed: HashSet::new(),
+            query_pipeline,
         }
     }
 
@@ -165,6 +203,8 @@ impl Engine {
                     &mut self.event_tx,
                     &mut self.keys_pressed,
                     &mut self.key_locks,
+                    &mut self.query_pipeline,
+                    &mut scene.collider_set,
                 )
             }
         }
@@ -182,6 +222,8 @@ impl Engine {
                 &mut self.event_tx,
                 &mut self.keys_pressed,
                 &mut self.key_locks,
+                &mut self.query_pipeline,
+                &mut active_scene.collider_set,
             )
         }
     }
@@ -266,6 +308,11 @@ impl Engine {
                         &(),
                     );
 
+                    self.query_pipeline.update(
+                        &active_scene_unwraped.rigid_body_set,
+                        &active_scene_unwraped.collider_set,
+                    );
+
                     let packet = self.event_rx.try_recv();
                     match packet {
                         Ok(event) => match event {
@@ -310,6 +357,8 @@ impl Engine {
                             &mut buffer,
                             &mut self.keys_pressed,
                             &mut self.key_locks,
+                            &mut self.query_pipeline,
+                            &mut active_scene.collider_set,
                         );
                     }
 

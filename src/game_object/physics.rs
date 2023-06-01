@@ -8,7 +8,11 @@ use rapier2d::math::Real;
 use rapier2d::prelude::{RigidBodyHandle, RigidBodySet, Vector};
 
 pub trait PhysicsObject {
-    fn attach_collider(&mut self, collider: AlcubierreCollider, scene: &mut Scene) -> ColliderHandle;
+    fn attach_collider(
+        &mut self,
+        collider: AlcubierreCollider,
+        scene: &mut Scene,
+    ) -> ColliderHandle;
     fn attach_collider_with_rigid_body(
         &mut self,
         collider: AlcubierreCollider,
@@ -27,7 +31,11 @@ pub struct PhysicsData {
 }
 
 impl PhysicsObject for GameObject {
-    fn attach_collider(&mut self, collider: AlcubierreCollider, scene: &mut Scene) -> ColliderHandle {
+    fn attach_collider(
+        &mut self,
+        collider: AlcubierreCollider,
+        scene: &mut Scene,
+    ) -> ColliderHandle {
         let handle = scene.collider_set.insert(collider.to_rapier());
         self.physics.collider_handle = Some(handle.clone());
         handle

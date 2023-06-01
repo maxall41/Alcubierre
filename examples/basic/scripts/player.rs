@@ -1,8 +1,9 @@
 use alcubierre::game_object::behaviours::UserBehaviour;
 use alcubierre::game_object::{GameObject, GameObjectView};
 use alcubierre::EngineView;
-use rapier2d::prelude::{vector, Vector};
+use rapier2d::prelude::{point, vector, Point, Vector};
 use winit::event::VirtualKeyCode;
+use alcubierre::physics::screen_units_to_physics_units;
 
 #[derive(Clone)]
 pub struct PlayerBehaviour {
@@ -27,8 +28,25 @@ impl UserBehaviour for PlayerBehaviour {
             x_vel -= self.speed;
         }
         if engine_view.is_key_pressed(VirtualKeyCode::Space) {
+            println!("{},{}", game_object_view.pos_x, game_object_view.pos_y);
+            let d = engine_view.cast_ray_with_excluded_collider(
+                vector![0.0, -0.3],
+                &[game_object_view.pos_x.clone(),game_object_view.pos_y.clone()],
+                0.3,
+                game_object_view.physics.collider_handle.unwrap(),
+            );
+            if d.is_none() {
+                println!("Hit nothing!");
+                return;
+            }
+            let (i, h, ray) = d.unwrap();
+            println!("{}",i.toi);
+
+            // If we are on the ground jump
+            if i.toi < 0.01 {
+                y_vel += 0.8;
+            }
             // *view.pos_y -= (self.speed * frame_delta) as i32;
-            y_vel += 0.8;
         }
 
         let rigid_body = engine_view
