@@ -10,6 +10,7 @@ use rapier2d::prelude::{
 };
 
 use winit::event::{VirtualKeyCode};
+use crate::audio::basic::AudioSource;
 
 
 use crate::EngineEvent;
@@ -146,6 +147,9 @@ impl<'a> EngineView<'a> {
         } else {
             None
         }
+    }
+    pub fn play_sound(&mut self,source: AudioSource) {
+        self.event_tx.send(EngineEvent::PlaySound(source)).unwrap();
     }
     pub fn cast_ray_with_excluded_collider(
         &mut self,

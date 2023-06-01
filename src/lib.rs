@@ -4,10 +4,14 @@ mod renderer;
 pub mod ui;
 pub mod scene;
 mod events;
+pub mod audio;
 
 use crate::renderer::buffer::QuadBufferBuilder;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
+use kira::manager::{AudioManager, AudioManagerSettings};
+use kira::manager::backend::DefaultBackend;
+use kira::sound::static_sound::StaticSoundData;
 use rapier2d::geometry::{ColliderSet};
 
 
@@ -20,15 +24,9 @@ use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{WindowBuilder};
+use crate::events::EngineEvent;
 
 use crate::scene::Scene;
-
-pub enum EngineEvent {
-    SwitchToScene(String),
-    SetDatamapValue((String, String)),
-    InsertDatamapValue((String, String)),
-    RemoveDatamapValue(String),
-}
 
 pub struct Engine {
     pub scenes: HashMap<String, Scene>,
@@ -40,6 +38,7 @@ pub struct Engine {
     keys_pressed: HashSet<VirtualKeyCode>,
     key_locks: HashSet<VirtualKeyCode>,
     query_pipeline: QueryPipeline,
+    audio_manager: AudioManager,
 }
 
 pub struct EngineConfig {
@@ -52,6 +51,8 @@ impl Engine {
 
         let query_pipeline = QueryPipeline::new();
 
+        let mut audio_manager = AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
+
         Engine {
             scenes: HashMap::new(),
             event_tx,
@@ -62,6 +63,7 @@ impl Engine {
             key_locks: HashSet::new(),
             keys_pressed: HashSet::new(),
             query_pipeline,
+            audio_manager
         }
     }
 

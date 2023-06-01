@@ -9,6 +9,7 @@ cgmath = "0.18.0"
 flume = "0.10.14"
 hashbrown = "0.13.2"
 instant = "0.1.12"
+kira = "0.8.3"
 lazy_static = "1.4.0"
 miette = { version = "5.9.0", features = ["fancy"] }
 nalgebra = "0.32.2"

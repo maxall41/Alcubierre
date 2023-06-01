@@ -3,6 +3,7 @@ use alcubierre::game_object::{GameObjectView};
 use alcubierre::game_object::behaviours::EngineView;
 use rapier2d::prelude::{vector, Vector};
 use winit::event::VirtualKeyCode;
+use alcubierre::audio::basic::{AudioSourceBuilder};
 
 
 #[derive(Clone)]
@@ -38,10 +39,11 @@ impl UserBehaviour for PlayerBehaviour {
                 return;
             }
             let (i, _h, _ray) = d.unwrap();
-            println!("{}",i.toi);
 
             // If we are on the ground jump
             if i.toi < 0.01 {
+                let file = AudioSourceBuilder::new().path("examples/basic/Jump34.wav").build();
+                engine_view.play_sound(file);
                 y_vel += 0.8;
             }
             // *view.pos_y -= (self.speed * frame_delta) as i32;

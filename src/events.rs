@@ -1,4 +1,13 @@
-use crate::{Engine, EngineEvent};
+use crate::{Engine};
+use crate::audio::basic::AudioSource;
+
+pub enum EngineEvent {
+    SwitchToScene(String),
+    SetDatamapValue((String, String)),
+    InsertDatamapValue((String, String)),
+    RemoveDatamapValue(String),
+    PlaySound(AudioSource),
+}
 
 impl Engine {
     pub(crate) fn handle_events(&mut self) {
@@ -26,7 +35,10 @@ impl Engine {
                 }
                 EngineEvent::RemoveDatamapValue(var) => {
                     self.active_scene.as_mut().unwrap().data_map.remove(&var);
-                }
+                },
+                EngineEvent::PlaySound(source) => {
+                    self.play_audio(source);
+                },
             },
             Err(_e) => {
                 // panic!("{}",e); //TODO: Handle
