@@ -1,19 +1,19 @@
 use crate::scenes::main::register_main_scene;
-use crate::scripts::gateway::GatewayBehaviour;
-use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
-use alcubierre::game_object::physics::PhysicsObject;
-use alcubierre::game_object::GameObject;
+
+
+
+
 use alcubierre::{Engine, EngineConfig};
-use lazy_static::lazy_static;
-use rapier2d::geometry::{Collider, ColliderBuilder};
-use rapier2d::prelude::{vector, RigidBodyBuilder};
-use std::sync::Arc;
-use std::sync::RwLock;
+
+
+
+
+
 
 mod scenes;
 mod scripts;
 
-use crate::scripts::player::PlayerBehaviour;
+
 
 #[tokio::main]
 async fn main() {

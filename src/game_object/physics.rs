@@ -3,9 +3,9 @@ use crate::physics::physics_units_to_pixels;
 use crate::physics::AlcubierreCollider;
 use crate::Scene;
 use rapier2d::dynamics::RigidBody;
-use rapier2d::geometry::{Collider, ColliderHandle, ColliderSet};
+use rapier2d::geometry::{ColliderHandle};
 use rapier2d::math::Real;
-use rapier2d::prelude::{RigidBodyHandle, RigidBodySet, Vector};
+use rapier2d::prelude::{RigidBodyHandle, RigidBodySet};
 
 pub trait PhysicsObject {
     fn attach_collider(

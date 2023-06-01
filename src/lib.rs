@@ -4,15 +4,15 @@ mod renderer;
 pub mod ui;
 pub mod scene;
 
-use crate::game_object::graphics::Graphics;
-use crate::game_object::GameObject;
+
+
 use crate::renderer::buffer::QuadBufferBuilder;
-use crate::ui::frontend::HyperFoilAST;
-use crate::ui::parse_file;
+
+
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
-use nalgebra::Vector2;
-use rapier2d::geometry::{ColliderBuilder, ColliderSet, Ray};
+
+use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
 use rapier2d::pipeline::QueryFilter;
 use rapier2d::prelude::{
@@ -20,12 +20,12 @@ use rapier2d::prelude::{
     IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RayIntersection,
     RigidBodySet,
 };
-use std::thread::sleep;
-use std::time::Duration;
+
+
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Fullscreen, WindowBuilder};
+use winit::window::{WindowBuilder};
 use crate::physics::screen_units_to_physics_units;
 use crate::scene::Scene;
 
@@ -178,7 +178,7 @@ impl Engine {
     pub fn new(window_width: i32, window_height: i32) -> Self {
         let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
 
-        let mut query_pipeline = QueryPipeline::new();
+        let query_pipeline = QueryPipeline::new();
 
         Engine {
             scenes: HashMap::new(),
@@ -236,7 +236,7 @@ impl Engine {
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
 
-        let mut current_size = PhysicalSize::new(1080, 940);
+        let current_size = PhysicalSize::new(1080, 940);
 
         window.set_inner_size(current_size);
 
@@ -339,7 +339,7 @@ impl Engine {
                                 self.active_scene.as_mut().unwrap().data_map.remove(&var);
                             }
                         },
-                        Err(e) => {
+                        Err(_e) => {
                             // panic!("{}",e); //TODO: Handle
                         }
                     }

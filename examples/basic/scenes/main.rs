@@ -1,13 +1,13 @@
-use crate::scripts::gateway::GatewayBehaviour;
+
 use crate::scripts::player::PlayerBehaviour;
-use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
+use alcubierre::game_object::graphics::{Graphics, GraphicsType, RectData};
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
-use alcubierre::physics::screen_units_to_physics_units;
+
 use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
 use alcubierre::ui::frontend::RGBColor;
 use alcubierre::Engine;
-use rapier2d::geometry::ColliderBuilder;
+
 use rapier2d::prelude::{vector, RigidBodyBuilder};
 
 pub fn register_main_scene(flame: &mut Engine) {
@@ -33,7 +33,7 @@ pub fn register_main_scene(flame: &mut Engine) {
         user_data: 100
     };
 
-    let player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
+    let _player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
 
     player.add_graphics(GraphicsType::Rect(RectData {
         width: 1.0,

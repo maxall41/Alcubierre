@@ -1,13 +1,9 @@
-use cgmath::{ortho, perspective, InnerSpace, Matrix4, Point2, Point3, Rad, Vector3};
-use std::f32::consts::FRAC_PI_2;
-use std::iter;
+use cgmath::{perspective, Matrix4, Rad};
 
-use wgpu::util::DeviceExt;
-use winit::{
-    event::*,
-    event_loop::{ControlFlow, EventLoop},
-    window::{Window, WindowBuilder},
-};
+
+
+
+
 
 #[rustfmt::skip]
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(

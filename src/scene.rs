@@ -1,8 +1,8 @@
 use hashbrown::HashMap;
 use rapier2d::geometry::ColliderSet;
 use rapier2d::prelude::{
-    vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RayIntersection,
+    BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters,
+    IslandManager, MultibodyJointSet, NarrowPhase,
     RigidBodySet,
 };
 use crate::EngineView;

@@ -3,7 +3,7 @@ pub mod camera;
 pub mod circle;
 
 use std::iter;
-use wgpu::util::{BufferInitDescriptor, DeviceExt};
+use wgpu::util::{DeviceExt};
 
 use winit::dpi::PhysicalSize;
 use winit::window::Window;

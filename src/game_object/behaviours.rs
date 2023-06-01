@@ -1,9 +1,9 @@
-use std::collections::BTreeMap;
-use std::fs;
-use std::sync::Arc;
+
+
+
 
 use crate::game_object::{GameObject, GameObjectView};
-use crate::{Engine, EngineView};
+use crate::{EngineView};
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(
@@ -12,8 +12,8 @@ pub trait UserBehaviour: UserBehaviourClone {
         engine_view: EngineView,
         frame_delta: f32,
     );
-    fn unloaded(&mut self, engine_view: EngineView, game_object_view: GameObjectView) {} // {} Is Optional
-    fn loaded(&mut self, engine_view: EngineView, game_object_view: GameObjectView) {} // {} Is Optional
+    fn unloaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
+    fn loaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
 }
 
 pub trait UserBehaviourClone: 'static {

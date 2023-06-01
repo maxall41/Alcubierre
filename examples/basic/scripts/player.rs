@@ -1,9 +1,9 @@
 use alcubierre::game_object::behaviours::UserBehaviour;
-use alcubierre::game_object::{GameObject, GameObjectView};
+use alcubierre::game_object::{GameObjectView};
 use alcubierre::EngineView;
-use rapier2d::prelude::{point, vector, Point, Vector};
+use rapier2d::prelude::{vector, Vector};
 use winit::event::VirtualKeyCode;
-use alcubierre::physics::screen_units_to_physics_units;
+
 
 #[derive(Clone)]
 pub struct PlayerBehaviour {
@@ -15,7 +15,7 @@ impl UserBehaviour for PlayerBehaviour {
         &mut self,
         game_object_view: GameObjectView,
         mut engine_view: EngineView,
-        frame_delta: f32,
+        _frame_delta: f32,
     ) {
         let mut x_vel: f32 = 0.0;
         let mut y_vel: f32 = 0.0;
@@ -39,7 +39,7 @@ impl UserBehaviour for PlayerBehaviour {
                 println!("Hit nothing!");
                 return;
             }
-            let (i, h, ray) = d.unwrap();
+            let (i, _h, _ray) = d.unwrap();
             println!("{}",i.toi);
 
             // If we are on the ground jump

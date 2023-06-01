@@ -26,7 +26,7 @@ pub fn hex_color(input: &str) -> IResult<&str, RGBColor> {
     }
 
     let (modified_input, _) = tag("#")(modified_input)?;
-    let (modified_input, (red, green, blue)) =
+    let (_modified_input, (red, green, blue)) =
         tuple((hex_primary, hex_primary, hex_primary))(modified_input)?;
 
     Ok((input, RGBColor { red, green, blue }))

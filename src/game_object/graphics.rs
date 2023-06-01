@@ -41,10 +41,10 @@ impl Graphics for GameObject {
     fn add_graphics(&mut self, graphics_type: GraphicsType) {
         self.graphics = Some(graphics_type);
     }
-    fn render(&mut self, mut buffer: &mut QuadBufferBuilder) {
+    fn render(&mut self, buffer: &mut QuadBufferBuilder) {
         match &self.graphics {
             Some(graphics) => match graphics {
-                GraphicsType::Sprite(sprite) => {
+                GraphicsType::Sprite(_sprite) => {
                     todo!()
                 }
                 GraphicsType::Circle(circle) => {
@@ -59,7 +59,7 @@ impl Graphics for GameObject {
                         &square.color,
                     );
                 }
-                GraphicsType::Triangle(triangle) => {
+                GraphicsType::Triangle(_triangle) => {
                     todo!()
                 }
             },

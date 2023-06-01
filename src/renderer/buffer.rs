@@ -1,7 +1,7 @@
-use crate::game_object::graphics::RectData;
+
 use crate::renderer::circle::CircleVertex;
 use crate::ui::frontend::RGBColor;
-use bytemuck::{Pod, Zeroable};
+
 use cgmath::num_traits::Pow;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 

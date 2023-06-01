@@ -1,7 +1,7 @@
 use alcubierre::game_object::behaviours::UserBehaviour;
-use alcubierre::game_object::{GameObject, GameObjectView};
+use alcubierre::game_object::{GameObjectView};
 use alcubierre::EngineView;
-use rapier2d::prelude::{vector, ColliderHandle, Vector};
+use rapier2d::prelude::{ColliderHandle};
 
 #[derive(Clone)]
 pub struct GatewayBehaviour {
@@ -14,8 +14,8 @@ impl UserBehaviour for GatewayBehaviour {
     fn game_loop(
         &mut self,
         game_object_view: GameObjectView,
-        mut engine_view: EngineView,
-        frame_delta: f32,
+        engine_view: EngineView,
+        _frame_delta: f32,
     ) {
         if engine_view.is_colliding_with_sensor(
             game_object_view.physics.collider_handle.unwrap(),

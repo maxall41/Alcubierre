@@ -1,4 +1,4 @@
-use std::string::ToString;
+
 
 pub const HEX_COLOR_NOT_VALID_ERROR: &str = "Failed to parse Hex color into RGB value.";
 pub const HEX_COLOR_NOT_VALID_HELP: &str = "Make sure to include a # before the color value";
