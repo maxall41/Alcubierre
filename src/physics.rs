@@ -36,7 +36,9 @@ impl AlcubierreCollider {
             .build(),
 
             AlcubierreColliderType::Circle(radius) => {
-                ColliderBuilder::ball(screen_units_to_physics_units(radius))
+                let pr = screen_units_to_physics_units(radius);
+                println!("PR: {}", pr);
+                ColliderBuilder::ball(pr)
                     .sensor(self.sensor)
                     .friction(self.friction)
                     .restitution(self.restitution)

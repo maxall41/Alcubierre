@@ -1,15 +1,14 @@
 pub(crate) mod buffer;
 pub mod camera;
-pub mod circle;
 
+use futures::StreamExt;
 use std::iter;
-use wgpu::util::{DeviceExt};
+use wgpu::util::DeviceExt;
 
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 
 use crate::renderer::camera::{Camera, CameraUniform};
-use crate::renderer::circle::CircleVertex;
 use buffer::*;
 
 pub struct Render {
@@ -20,16 +19,13 @@ pub struct Render {
     device: wgpu::Device,
     queue: wgpu::Queue,
     pipeline: wgpu::RenderPipeline,
-    circle_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
-    circle_index_buffer: wgpu::Buffer,
     staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
-    circle_buffer: wgpu::Buffer,
-    camera: camera::Camera,         // UPDATED!
-    projection: camera::Projection, // NEW!
+    camera: camera::Camera,
+    projection: camera::Projection,
     camera_bind_group: wgpu::BindGroup,
 }
 
@@ -162,14 +158,6 @@ impl Render {
             wgpu::include_wgsl!("./renderer/shaders/quad.wgsl"),
         );
 
-        let circle_pipeline = create_render_pipeline(
-            &device,
-            &pipeline_layout,
-            config.format,
-            &[CircleVertex::DESC],
-            wgpu::include_wgsl!("./renderer/shaders/circle.wgsl"),
-        );
-
         let vertex_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("Vertex Buffer"),
             size: Vertex::SIZE * 4 * 2000,
@@ -184,21 +172,7 @@ impl Render {
             mapped_at_creation: false,
         });
 
-        let circle_index_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Circle Index Buffer"),
-            size: U32_SIZE * 6 * 2000,
-            usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-
         let staging_belt = wgpu::util::StagingBelt::new(1024);
-
-        let circle_buf = device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Circle Vertex Buffer"),
-            size: CircleVertex::SIZE * 4 * 2000,
-            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
 
         Self {
             surface,
@@ -215,9 +189,6 @@ impl Render {
             camera_uniform,
             projection,
             camera,
-            circle_buffer: circle_buf,
-            circle_pipeline,
-            circle_index_buffer,
         }
     }
 
@@ -235,13 +206,10 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        let (stg_vertex, stg_index, circle_vert, circle_index, num_indices, circle_num_indices) =
-            buffer.build(&self.device);
+        let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
 
         stg_vertex.copy_to_buffer(&mut encoder, &self.vertex_buffer);
         stg_index.copy_to_buffer(&mut encoder, &self.index_buffer);
-        circle_vert.copy_to_buffer(&mut encoder, &self.circle_buffer);
-        circle_index.copy_to_buffer(&mut encoder, &self.circle_index_buffer);
 
         match self.surface.get_current_texture() {
             Ok(frame) => {
@@ -265,15 +233,6 @@ impl Render {
                     .set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
                 render_pass.set_pipeline(&self.pipeline);
                 render_pass.draw_indexed(0..num_indices, 0, 0..1);
-
-                // Circles
-                render_pass.set_vertex_buffer(0, self.circle_buffer.slice(..));
-                render_pass.set_index_buffer(
-                    self.circle_index_buffer.slice(..),
-                    wgpu::IndexFormat::Uint32,
-                );
-                render_pass.set_pipeline(&self.circle_pipeline);
-                render_pass.draw_indexed(0..circle_num_indices, 0, 0..1);
 
                 drop(render_pass);
 

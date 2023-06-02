@@ -1,35 +1,33 @@
+pub mod audio;
+mod events;
 pub mod game_object;
 pub mod physics;
 mod renderer;
-pub mod ui;
 pub mod scene;
-mod events;
-pub mod audio;
+pub mod ui;
 
-use std::ops::Add;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
 use crate::renderer::buffer::QuadBufferBuilder;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
-use kira::manager::{AudioManager, AudioManagerSettings};
 use kira::manager::backend::DefaultBackend;
+use kira::manager::{AudioManager, AudioManagerSettings};
 use kira::sound::static_sound::StaticSoundData;
 use nalgebra::SMatrix;
-use rapier2d::geometry::{ColliderSet};
+use rapier2d::geometry::ColliderSet;
+use std::ops::Add;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
-
+use crate::events::EngineEvent;
+use crate::renderer::Render;
 use rapier2d::prelude::{
-    vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline,
-    RigidBodySet,
+    vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager,
+    MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet,
 };
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};
-use crate::events::EngineEvent;
-use crate::renderer::Render;
 
 use crate::scene::Scene;
 
@@ -44,9 +42,9 @@ pub struct Engine {
     key_locks: HashSet<VirtualKeyCode>,
     query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
-    gravity: SMatrix<f32,2,1>,
+    gravity: SMatrix<f32, 2, 1>,
     audio_manager: AudioManager,
-    renderer: Option<Render>
+    renderer: Option<Render>,
 }
 
 pub struct EngineConfig {
@@ -63,7 +61,8 @@ impl Engine {
 
         let gravity = vector![0.0, config.gravity];
 
-        let mut audio_manager = AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
+        let mut audio_manager =
+            AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
 
         Engine {
             scenes: HashMap::new(),
@@ -118,7 +117,6 @@ impl Engine {
     }
 
     pub fn start_cycle(mut self) {
-
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
 
@@ -128,11 +126,14 @@ impl Engine {
 
         let fps = 60;
 
-        let mut next_redraw : Instant = Instant::now();
+        let mut next_redraw: Instant = Instant::now();
 
         let till_next = Duration::from_millis(1000 / fps);
 
-        self.renderer = Some(futures::executor::block_on(renderer::Render::new(&window, current_size)));
+        self.renderer = Some(futures::executor::block_on(renderer::Render::new(
+            &window,
+            current_size,
+        )));
 
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
@@ -171,7 +172,7 @@ impl Engine {
             Event::RedrawRequested(window_id) if window_id == window.id() => {
                 self.draw();
             }
-            Event::MainEventsCleared  => {
+            Event::MainEventsCleared => {
                 let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
                 self.physics_pipeline.step(
                     &self.gravity,
@@ -199,16 +200,15 @@ impl Engine {
                     self.draw();
                 }
                 next_redraw = Instant::now() + till_next;
-            },
+            }
             _ => *control_flow = ControlFlow::WaitUntil(Instant::now().add(till_next)),
         });
     }
-    fn draw(&mut self,) {
+    fn draw(&mut self) {
         let active_scene = self.active_scene.as_mut();
         let mut buffer = QuadBufferBuilder::new();
 
         if active_scene.is_some() {
-
             self.handle_events();
 
             let active_scene = self.active_scene.as_mut().unwrap();

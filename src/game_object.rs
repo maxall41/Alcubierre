@@ -127,7 +127,7 @@ impl GameObject {
                     key_locks,
                     query_pipeline,
                     collider_set,
-                }
+                },
             );
         }
 
