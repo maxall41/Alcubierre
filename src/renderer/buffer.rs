@@ -1,5 +1,3 @@
-
-use crate::renderer::circle::CircleVertex;
 use crate::ui::frontend::RGBColor;
 
 use cgmath::num_traits::Pow;
@@ -51,11 +49,8 @@ impl Vertex {
 
 pub struct QuadBufferBuilder {
     vertex_data: Vec<Vertex>,
-    circle_vertex_data: Vec<CircleVertex>,
     index_data: Vec<u32>,
-    circle_index_data: Vec<u32>,
-    current_quad: u32,
-    current_circle_quad: u32,
+    current_vert: u32,
 }
 
 impl QuadBufferBuilder {
@@ -63,10 +58,7 @@ impl QuadBufferBuilder {
         Self {
             vertex_data: vec![],
             index_data: vec![],
-            circle_vertex_data: vec![],
-            circle_index_data: vec![],
-            current_quad: 0,
-            current_circle_quad: 0,
+            current_vert: 0,
         }
     }
 
@@ -106,84 +98,43 @@ impl QuadBufferBuilder {
         self.vertex_data.extend(vertices);
 
         self.index_data.extend(&[
-            self.current_quad * 4 + 0,
-            self.current_quad * 4 + 1,
-            self.current_quad * 4 + 2,
-            self.current_quad * 4 + 0,
-            self.current_quad * 4 + 2,
-            self.current_quad * 4 + 3,
+            self.current_vert + 0,
+            self.current_vert + 1,
+            self.current_vert + 2,
+            self.current_vert + 0,
+            self.current_vert + 2,
+            self.current_vert + 3,
         ]);
-        self.current_quad += 1;
+        self.current_vert += 4;
     }
 
-    pub fn push_circle_quad(
-        &mut self,
-        model_matrix: [f32; 2],
-        color: &RGBColor,
-        radius: f32,
-        min_x: f32,
-        min_y: f32,
-        max_x: f32,
-        max_y: f32,
-    ) {
+    pub fn push_circle(&mut self, pos_x: f32, pos_y: f32, mut radius: f32, color: &RGBColor,sides: u8) {
+        // Convert color to sRGB
         let red = ((color.red as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let blue = ((color.blue as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
 
-        let vertices: &[CircleVertex] = &[
-            CircleVertex {
-                position: [min_x,min_y],
-                color: [1.0, 1.0, 1.0],
-                radius: 0.002,
-                model_matrix,
-            },
-            CircleVertex {
-                position: [max_x,min_y],
-                color: [1.0, 1.0, 1.0],
-                radius: 0.002,
-                model_matrix,
-            },
-            CircleVertex {
-                position: [max_x, max_y],
-                color: [1.0, 1.0, 1.0],
-                radius: 0.002,
-                model_matrix,
-            },
-            CircleVertex {
-                position: [min_x, max_y],
-                color: [1.0, 1.0, 1.0],
-                radius: 0.002,
-                model_matrix,
-            },
-        ];
+        let mut rot : f32 = 0.0;
 
-        self.circle_vertex_data.extend(vertices);
+        self.vertex_data.push(Vertex {
+            position: [pos_x,pos_y],
+            color: [red,green,blue],
+        });
+        self.current_vert += 1;
 
-        self.circle_index_data.extend(&[
-            self.current_circle_quad * 4 + 0,
-            self.current_circle_quad * 4 + 1,
-            self.current_circle_quad * 4 + 2,
-            self.current_circle_quad * 4 + 0,
-            self.current_circle_quad * 4 + 2,
-            self.current_circle_quad * 4 + 3,
-        ]);
-        self.current_circle_quad += 1;
-    }
+        for i in 0..=sides {
+            let rx = (i as f32 / sides as f32 * std::f32::consts::PI * 2. + rot).cos();
+            let ry = (i as f32 / sides as f32 * std::f32::consts::PI * 2. + rot).sin();
+            self.vertex_data.push(Vertex {
+                position: [pos_x + radius * rx,pos_y + radius * ry],
+                color: [red,green,blue],
+            });
+            self.current_vert += 1;
 
-    pub fn push_circle(&mut self, pos_x: f32, pos_y: f32, radius: f32, color: &RGBColor) {
-
-        let width = 5.0;
-        let height = 5.0;
-
-        self.push_circle_quad(
-            [1.0,1.0],
-            &color,
-            radius,
-            0.0 - width * 0.5,
-            0.0 - height * 0.5,
-            0.0 + width * 0.5,
-            0.0 + height * 0.5,
-        );
+            if i != sides {
+                self.index_data.extend_from_slice(&[0, i as u32 + 1, i as u32 + 2]);
+            }
+        }
     }
 
     pub fn build(
@@ -192,18 +143,12 @@ impl QuadBufferBuilder {
     ) -> (
         StagingBuffer,
         StagingBuffer,
-        StagingBuffer,
-        StagingBuffer,
-        u32,
         u32,
     ) {
         (
             StagingBuffer::new(device, &self.vertex_data, false),
             StagingBuffer::new(device, &self.index_data, true),
-            StagingBuffer::new(device, &self.circle_vertex_data, false),
-            StagingBuffer::new(device, &self.circle_index_data, true),
             self.index_data.len() as u32,
-            self.circle_index_data.len() as u32,
         )
     }
 }
