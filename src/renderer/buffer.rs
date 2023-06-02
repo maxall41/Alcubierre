@@ -121,6 +121,10 @@ impl QuadBufferBuilder {
         model_matrix: [f32; 2],
         color: &RGBColor,
         radius: f32,
+        min_x: f32,
+        min_y: f32,
+        max_x: f32,
+        max_y: f32,
     ) {
         let red = ((color.red as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
