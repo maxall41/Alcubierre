@@ -172,10 +172,17 @@ impl QuadBufferBuilder {
 
     pub fn push_circle(&mut self, pos_x: f32, pos_y: f32, radius: f32, color: &RGBColor) {
 
+        let width = 5.0;
+        let height = 5.0;
+
         self.push_circle_quad(
-            [0.0,0.0],
+            [1.0,1.0],
             &color,
             radius,
+            0.0 - width * 0.5,
+            0.0 - height * 0.5,
+            0.0 + width * 0.5,
+            0.0 + height * 0.5,
         );
     }
 

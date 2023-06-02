@@ -34,7 +34,7 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
     let dist = vec2<f32>(in.model_pos.x,in.model_pos.y);
 
 //    let cv = circle(st,0.002);
-    let cv = circle(in.model_pos,in.radius);
+    let cv = circle(dist,in.radius);
 
     let out = vec4(1.0);
 //
@@ -46,6 +46,7 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) radius: f32,
     @location(1) model_pos: vec2<f32>,
+    @location(2) model_matrix: vec2<f32>
 };
 
 struct VertexInput {
@@ -63,6 +64,7 @@ fn vs_main(model: VertexInput) -> VertexOutput {
 //    out.color = model.color;
     out.model_pos = vec2(model.position.x,model.position.y);
     out.radius = model.radius;
+    out.model_matrix = model.model_matrix;
     out.position = camera.view_proj * vec4<f32>(model.position.x, model.position.y,f32(0), f32(1)); // 2.
     return out;
 }
