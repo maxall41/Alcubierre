@@ -118,10 +118,7 @@ impl QuadBufferBuilder {
 
     pub fn push_circle_quad(
         &mut self,
-        min_x: f32,
-        min_y: f32,
-        max_x: f32,
-        max_y: f32,
+        model_matrix: [f32; 2],
         color: &RGBColor,
         radius: f32,
     ) {
@@ -129,51 +126,32 @@ impl QuadBufferBuilder {
         let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let blue = ((color.blue as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
 
-        let vertices = &[
+        let vertices: &[CircleVertex] = &[
             CircleVertex {
-                position: [min_x, min_y],
-                color: [red, green, blue],
-                radius,
+                position: [-100.0, 0.0],
+                color: [1.0, 1.0, 1.0],
+                radius: 0.002,
+                model_matrix,
             },
             CircleVertex {
-                position: [max_x, min_y],
-                color: [red, green, blue],
-                radius,
+                position: [100.0, 0.0],
+                color: [1.0, 1.0, 1.0],
+                radius: 0.002,
+                model_matrix,
             },
             CircleVertex {
-                position: [max_x, max_y],
-                color: [red, green, blue],
-                radius,
+                position: [0.0, -100.0],
+                color: [1.0, 1.0, 1.0],
+                radius: 0.002,
+                model_matrix,
             },
             CircleVertex {
-                position: [min_x, max_y],
-                color: [red, green, blue],
-                radius,
+                position: [0.0, 100.0],
+                color: [1.0, 1.0, 1.0],
+                radius: 0.002,
+                model_matrix,
             },
         ];
-
-        // let vertices: &[CircleVertex] = &[
-        //     CircleVertex {
-        //         position: [-0.49157882, -2.3097796],
-        //         color: [1.0, 1.0, 1.0],
-        //         radius: 0.002,
-        //     },
-        //     CircleVertex {
-        //         position: [0.5084212, -2.3097796],
-        //         color: [1.0, 1.0, 1.0],
-        //         radius: 0.002,
-        //     },
-        //     CircleVertex {
-        //         position: [0.5084212, -1.3097795],
-        //         color: [1.0, 1.0, 1.0],
-        //         radius: 0.002,
-        //     },
-        //     CircleVertex {
-        //         position: [-0.49157882, -1.3097795],
-        //         color: [1.0, 1.0, 1.0],
-        //         radius: 0.002,
-        //     },
-        // ];
 
         self.circle_vertex_data.extend(vertices);
 
@@ -189,14 +167,9 @@ impl QuadBufferBuilder {
     }
 
     pub fn push_circle(&mut self, pos_x: f32, pos_y: f32, radius: f32, color: &RGBColor) {
-        let width = 2.0;
-        let height = 2.0;
 
         self.push_circle_quad(
-            pos_x - width * 0.5,
-            pos_y - height * 0.5,
-            pos_x + width * 0.5,
-            pos_y + height * 0.5,
+            [0.0,0.0],
             &color,
             radius,
         );
