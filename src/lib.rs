@@ -1,6 +1,5 @@
 pub mod game_object;
 pub mod physics;
-mod renderer;
 pub mod ui;
 pub mod scene;
 mod events;
@@ -9,12 +8,13 @@ pub mod audio;
 use std::ops::Add;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-use crate::renderer::buffer::QuadBufferBuilder;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
 use kira::manager::{AudioManager, AudioManagerSettings};
 use kira::manager::backend::DefaultBackend;
 use kira::sound::static_sound::StaticSoundData;
+use macroquad::color::{BLUE, DARKGRAY, GREEN, RED, YELLOW};
+use macroquad::prelude::{clear_background, draw_circle, draw_line, draw_rectangle, draw_text, next_frame, screen_height, screen_width};
 use nalgebra::SMatrix;
 use rapier2d::geometry::{ColliderSet};
 
@@ -24,12 +24,7 @@ use rapier2d::prelude::{
     IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline,
     RigidBodySet,
 };
-use winit::dpi::PhysicalSize;
-use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Window, WindowBuilder};
 use crate::events::EngineEvent;
-use crate::renderer::Render;
 
 use crate::scene::Scene;
 
@@ -46,7 +41,6 @@ pub struct Engine {
     physics_pipeline: PhysicsPipeline,
     gravity: SMatrix<f32,2,1>,
     audio_manager: AudioManager,
-    renderer: Option<Render>
 }
 
 pub struct EngineConfig {
@@ -78,7 +72,6 @@ impl Engine {
             audio_manager,
             physics_pipeline,
             gravity,
-            renderer: None,
         }
     }
 
@@ -119,90 +112,25 @@ impl Engine {
 
     pub fn start_cycle(mut self) {
 
-        let event_loop = EventLoop::new();
-        let window = WindowBuilder::new().build(&event_loop).unwrap();
+        // macroquad::Window::new("Engine", self.m_primary());
 
-        let current_size = PhysicalSize::new(1080, 940);
 
-        window.set_inner_size(current_size);
 
-        let fps = 60;
 
-        let mut next_redraw : Instant = Instant::now();
-
-        let till_next = Duration::from_millis(1000 / fps);
-
-        self.renderer = Some(futures::executor::block_on(renderer::Render::new(&window, current_size)));
-
-        event_loop.run(move |event, _, control_flow| match event {
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == window.id() => match event {
-                WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                WindowEvent::KeyboardInput {
-                    input:
-                        KeyboardInput {
-                            state: element_state,
-                            virtual_keycode: Some(key),
-                            ..
-                        },
-                    ..
-                } => {
-                    // keys_pressed.push(*key);
-                    match element_state {
-                        ElementState::Released => {
-                            self.keys_pressed.remove(key);
-                        }
-                        ElementState::Pressed => {
-                            self.keys_pressed.insert(*key);
-                        }
-                    }
-                }
-                WindowEvent::Resized(physical_size) => {
-                    self.renderer.as_mut().unwrap().resize(*physical_size);
-                }
-                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    // new_inner_size is &mut so w have to dereference it twice
-                    self.renderer.as_mut().unwrap().resize(**new_inner_size);
-                }
-                _ => {}
-            },
-            Event::RedrawRequested(window_id) if window_id == window.id() => {
-                self.draw();
-            }
-            Event::MainEventsCleared  => {
-                let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
-                self.physics_pipeline.step(
-                    &self.gravity,
-                    &active_scene_unwrapped.integration_params,
-                    &mut active_scene_unwrapped.island_manager,
-                    &mut active_scene_unwrapped.broad_phase,
-                    &mut active_scene_unwrapped.narrow_phase_collision,
-                    &mut active_scene_unwrapped.rigid_body_set,
-                    &mut active_scene_unwrapped.collider_set,
-                    &mut active_scene_unwrapped.impulse_joint_set,
-                    &mut active_scene_unwrapped.multibody_joint_set,
-                    &mut active_scene_unwrapped.ccd_solver,
-                    None,
-                    &(),
-                    &(),
-                );
-
-                self.query_pipeline.update(
-                    &active_scene_unwrapped.rigid_body_set,
-                    &active_scene_unwrapped.collider_set,
-                );
-
-                let current = Instant::now();
-                if current >= next_redraw {
-                    self.draw();
-                }
-                next_redraw = Instant::now() + till_next;
-            },
-            _ => *control_flow = ControlFlow::WaitUntil(Instant::now().add(till_next)),
-        });
     }
+    // async fn m_primary() {
+    //     loop {
+    //         clear_background(RED);
+    //
+    //         draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
+    //         draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+    //         draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
+    //
+    //         draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
+    //
+    //         next_frame().await
+    //     }
+    // }
     fn draw(&mut self,) {
         let active_scene = self.active_scene.as_mut();
         let mut buffer = QuadBufferBuilder::new();
