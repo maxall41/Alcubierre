@@ -1,10 +1,9 @@
 pub(crate) mod buffer;
 pub mod camera;
-pub mod circle;
 
-use std::iter;
 use futures::StreamExt;
-use wgpu::util::{DeviceExt};
+use std::iter;
+use wgpu::util::DeviceExt;
 
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
@@ -207,8 +206,7 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        let (stg_vertex, stg_index,  num_indices) =
-            buffer.build(&self.device);
+        let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
 
         stg_vertex.copy_to_buffer(&mut encoder, &self.vertex_buffer);
         stg_index.copy_to_buffer(&mut encoder, &self.index_buffer);

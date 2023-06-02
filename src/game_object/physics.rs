@@ -3,7 +3,7 @@ use crate::physics::physics_units_to_pixels;
 use crate::physics::AlcubierreCollider;
 use crate::Scene;
 use rapier2d::dynamics::RigidBody;
-use rapier2d::geometry::{ColliderHandle};
+use rapier2d::geometry::ColliderHandle;
 use rapier2d::math::Real;
 use rapier2d::prelude::{RigidBodyHandle, RigidBodySet};
 

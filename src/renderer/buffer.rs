@@ -108,17 +108,24 @@ impl QuadBufferBuilder {
         self.current_vert += 4;
     }
 
-    pub fn push_circle(&mut self, pos_x: f32, pos_y: f32, mut radius: f32, color: &RGBColor,sides: u8) {
+    pub fn push_circle(
+        &mut self,
+        pos_x: f32,
+        pos_y: f32,
+        mut radius: f32,
+        color: &RGBColor,
+        sides: u8,
+    ) {
         // Convert color to sRGB
         let red = ((color.red as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let green = ((color.green as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
         let blue = ((color.blue as f32 / 255.0 + 0.055) / 1.055).pow(2.4);
 
-        let mut rot : f32 = 0.0;
+        let mut rot: f32 = 0.0;
 
         self.vertex_data.push(Vertex {
-            position: [pos_x,pos_y],
-            color: [red,green,blue],
+            position: [pos_x, pos_y],
+            color: [red, green, blue],
         });
         self.current_vert += 1;
 
@@ -126,25 +133,19 @@ impl QuadBufferBuilder {
             let rx = (i as f32 / sides as f32 * std::f32::consts::PI * 2. + rot).cos();
             let ry = (i as f32 / sides as f32 * std::f32::consts::PI * 2. + rot).sin();
             self.vertex_data.push(Vertex {
-                position: [pos_x + radius * rx,pos_y + radius * ry],
-                color: [red,green,blue],
+                position: [pos_x + radius * rx, pos_y + radius * ry],
+                color: [red, green, blue],
             });
             self.current_vert += 1;
 
             if i != sides {
-                self.index_data.extend_from_slice(&[0, i as u32 + 1, i as u32 + 2]);
+                self.index_data
+                    .extend_from_slice(&[0, i as u32 + 1, i as u32 + 2]);
             }
         }
     }
 
-    pub fn build(
-        self,
-        device: &wgpu::Device,
-    ) -> (
-        StagingBuffer,
-        StagingBuffer,
-        u32,
-    ) {
+    pub fn build(self, device: &wgpu::Device) -> (StagingBuffer, StagingBuffer, u32) {
         (
             StagingBuffer::new(device, &self.vertex_data, false),
             StagingBuffer::new(device, &self.index_data, true),

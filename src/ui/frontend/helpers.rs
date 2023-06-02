@@ -1,7 +1,3 @@
-
-
-
-
 #[macro_export]
 macro_rules! show_compiler_error {
     // `()` indicates that the macro takes no argument.

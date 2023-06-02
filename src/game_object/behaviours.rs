@@ -1,29 +1,21 @@
-
-use flume::{Sender};
-use hashbrown::{HashSet};
+use flume::Sender;
+use hashbrown::HashSet;
 use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
 use rapier2d::pipeline::QueryFilter;
 use rapier2d::prelude::{
-    ColliderHandle, NarrowPhase, QueryPipeline, RayIntersection,
-    RigidBodySet,
+    ColliderHandle, NarrowPhase, QueryPipeline, RayIntersection, RigidBodySet,
 };
 
-use winit::event::{VirtualKeyCode};
 use crate::audio::basic::AudioSource;
+use winit::event::VirtualKeyCode;
 
-
-use crate::EngineEvent;
 use crate::game_object::{GameObject, GameObjectView};
 use crate::physics::screen_units_to_physics_units;
-
+use crate::EngineEvent;
 
 pub trait UserBehaviour: UserBehaviourClone {
-    fn game_loop(
-        &mut self,
-        game_object_view: GameObjectView,
-        engine_view: EngineView,
-    );
+    fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView);
     fn unloaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
     fn loaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
 }
@@ -130,7 +122,7 @@ impl<'a> EngineView<'a> {
     ) -> Option<(RayIntersection, ColliderHandle, Ray)> {
         let x = screen_units_to_physics_units(origin[0]);
         let y = screen_units_to_physics_units(origin[1]);
-        let ray = Ray::new(Point::from([x,y]), direction);
+        let ray = Ray::new(Point::from([x, y]), direction);
 
         let filter = QueryFilter::default();
 
@@ -147,7 +139,7 @@ impl<'a> EngineView<'a> {
             None
         }
     }
-    pub fn play_sound(&mut self,source: AudioSource) {
+    pub fn play_sound(&mut self, source: AudioSource) {
         self.event_tx.send(EngineEvent::PlaySound(source)).unwrap();
     }
     pub fn cast_ray_with_excluded_collider(
@@ -159,7 +151,7 @@ impl<'a> EngineView<'a> {
     ) -> Option<(RayIntersection, ColliderHandle, Ray)> {
         let x = screen_units_to_physics_units(origin[0]);
         let y = screen_units_to_physics_units(origin[1]);
-        let ray = Ray::new(Point::from([x,y]), direction);
+        let ray = Ray::new(Point::from([x, y]), direction);
 
         let filter = QueryFilter::default().exclude_collider(excluded_collider);
 

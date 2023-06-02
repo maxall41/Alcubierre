@@ -1,8 +1,8 @@
-use std::f32::consts::PI;
 use crate::scripts::player::PlayerBehaviour;
 use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
+use std::f32::consts::PI;
 
 use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
 use alcubierre::ui::frontend::RGBColor;
