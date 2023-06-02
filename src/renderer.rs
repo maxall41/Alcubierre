@@ -24,8 +24,8 @@ pub struct Render {
     staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
-    camera: camera::Camera,         // UPDATED!
-    projection: camera::Projection, // NEW!
+    camera: camera::Camera,
+    projection: camera::Projection,
     camera_bind_group: wgpu::BindGroup,
 }
 

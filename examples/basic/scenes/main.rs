@@ -26,7 +26,7 @@ pub fn register_main_scene(flame: &mut Engine) {
     player.attach_rigid_body(player_rigid_body, scene);
 
     let player_collider = AlcubierreCollider {
-        collider_type: AlcubierreColliderType::Circle(0.4),
+        collider_type: AlcubierreColliderType::Circle(0.01),
         sensor: false,
         restitution: 0.0,
         friction: 0.1,
