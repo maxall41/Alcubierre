@@ -128,25 +128,25 @@ impl QuadBufferBuilder {
 
         let vertices: &[CircleVertex] = &[
             CircleVertex {
-                position: [-100.0, 0.0],
+                position: [min_x,min_y],
                 color: [1.0, 1.0, 1.0],
                 radius: 0.002,
                 model_matrix,
             },
             CircleVertex {
-                position: [100.0, 0.0],
+                position: [max_x,min_y],
                 color: [1.0, 1.0, 1.0],
                 radius: 0.002,
                 model_matrix,
             },
             CircleVertex {
-                position: [0.0, -100.0],
+                position: [max_x, max_y],
                 color: [1.0, 1.0, 1.0],
                 radius: 0.002,
                 model_matrix,
             },
             CircleVertex {
-                position: [0.0, 100.0],
+                position: [min_x, max_y],
                 color: [1.0, 1.0, 1.0],
                 radius: 0.002,
                 model_matrix,
