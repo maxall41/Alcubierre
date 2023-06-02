@@ -1,14 +1,13 @@
+use crate::game_object::behaviours::EngineView;
+use crate::game_object::GameObject;
+use crate::ui::frontend::HyperFoilAST;
+use crate::ui::parse_file;
 use hashbrown::HashMap;
 use rapier2d::geometry::ColliderSet;
 use rapier2d::prelude::{
-    BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters,
-    IslandManager, MultibodyJointSet, NarrowPhase,
-    RigidBodySet,
+    BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager,
+    MultibodyJointSet, NarrowPhase, RigidBodySet,
 };
-use crate::game_object::GameObject;
-use crate::ui::frontend::HyperFoilAST;
-use crate::game_object::behaviours::EngineView;
-use crate::ui::parse_file;
 
 #[derive(Clone)]
 pub struct Scene {

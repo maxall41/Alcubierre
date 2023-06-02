@@ -1,6 +1,7 @@
 use crate::game_object::GameObject;
 use crate::renderer::buffer::QuadBufferBuilder;
 use crate::ui::frontend::RGBColor;
+use std::f32::consts::PI;
 
 #[derive(Clone)]
 pub struct SpriteData {
@@ -48,7 +49,8 @@ impl Graphics for GameObject {
                     todo!()
                 }
                 GraphicsType::Circle(circle) => {
-                    buffer.push_circle(self.pos_x, self.pos_y, circle.radius, &circle.color);
+                    // 1.55 here is to match physics scaling
+                    buffer.push_circle(self.pos_x, self.pos_y, circle.radius, &circle.color, 60);
                 }
                 GraphicsType::Rect(square) => {
                     buffer.push_square(

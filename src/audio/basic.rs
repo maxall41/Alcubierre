@@ -1,6 +1,6 @@
-use kira::manager::{AudioManagerSettings};
-use kira::sound::static_sound::{StaticSoundData, StaticSoundSettings};
 use crate::Engine;
+use kira::manager::AudioManagerSettings;
+use kira::sound::static_sound::{StaticSoundData, StaticSoundSettings};
 
 #[derive(Clone)]
 pub struct AudioSource {
@@ -9,7 +9,6 @@ pub struct AudioSource {
     panning: f64,
     path: String,
 }
-
 
 pub struct AudioSourceBuilder {
     volume: f64,
@@ -31,11 +30,11 @@ impl AudioSourceBuilder {
         self.volume = volume;
         self
     }
-    pub fn rate(mut self,rate: f64) -> Self {
+    pub fn rate(mut self, rate: f64) -> Self {
         self.playback_rate = rate;
         self
     }
-    pub fn pan(mut self,panning: f64) -> Self {
+    pub fn pan(mut self, panning: f64) -> Self {
         self.panning = panning;
         self
     }
@@ -48,14 +47,17 @@ impl AudioSourceBuilder {
             volume: self.volume,
             playback_rate: self.playback_rate,
             panning: self.panning,
-            path: self.path
+            path: self.path,
         }
     }
 }
 
 impl Engine {
-    pub fn play_audio(&mut self,source: AudioSource) {
-        let settings = StaticSoundSettings::default().volume(source.volume).panning(source.panning).playback_rate(source.playback_rate);
+    pub fn play_audio(&mut self, source: AudioSource) {
+        let settings = StaticSoundSettings::default()
+            .volume(source.volume)
+            .panning(source.panning)
+            .playback_rate(source.playback_rate);
         let sound_data = StaticSoundData::from_file(source.path, settings).unwrap();
         self.audio_manager.play(sound_data).unwrap();
     }

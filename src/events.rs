@@ -1,5 +1,5 @@
-use crate::{Engine};
 use crate::audio::basic::AudioSource;
+use crate::Engine;
 
 pub enum EngineEvent {
     SwitchToScene(String),
@@ -35,10 +35,10 @@ impl Engine {
                 }
                 EngineEvent::RemoveDatamapValue(var) => {
                     self.active_scene.as_mut().unwrap().data_map.remove(&var);
-                },
+                }
                 EngineEvent::PlaySound(source) => {
                     self.play_audio(source);
-                },
+                }
             },
             Err(_e) => {
                 // panic!("{}",e); //TODO: Handle
