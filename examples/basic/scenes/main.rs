@@ -1,6 +1,6 @@
 
 use crate::scripts::player::PlayerBehaviour;
-use alcubierre::game_object::graphics::{Graphics, GraphicsType, RectData};
+use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
 
@@ -26,7 +26,7 @@ pub fn register_main_scene(flame: &mut Engine) {
     player.attach_rigid_body(player_rigid_body, scene);
 
     let player_collider = AlcubierreCollider {
-        collider_type: AlcubierreColliderType::Rectangle((1.0, 1.0)),
+        collider_type: AlcubierreColliderType::Circle((0.5)),
         sensor: false,
         restitution: 0.0,
         friction: 1.0,
@@ -34,9 +34,8 @@ pub fn register_main_scene(flame: &mut Engine) {
 
     let _player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
 
-    player.add_graphics(GraphicsType::Rect(RectData {
-        width: 1.0,
-        height: 1.0,
+    player.add_graphics(GraphicsType::Circle(CircleData {
+        radius: 0.5,
         color: RGBColor {
             red: 255,
             green: 255,

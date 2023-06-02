@@ -6,6 +6,8 @@ pub struct CircleVertex {
     pub(crate) color: [f32; 3],
     #[allow(dead_code)]
     pub(crate) radius: f32,
+    #[allow(dead_code)]
+    pub(crate) model_matrix: [f32; 2]
 }
 
 impl CircleVertex {

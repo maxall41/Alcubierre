@@ -52,6 +52,7 @@ struct VertexInput {
     @location(0) position: vec2<f32>,
     @location(1) color: vec3<f32>,
     @location(2) radius: f32,
+    @location(3) model_matrix: vec2<f32>
 };
 
 @vertex
@@ -60,6 +61,6 @@ fn vs_main(model: VertexInput) -> VertexOutput {
 //    out.color = model.color;
     out.model_pos = vec2(model.position.x,model.position.y);
     out.radius = model.radius;
-    out.position = camera.view_proj * vec4<f32>(model.position.x, model.position.y,f32(0), f32(1)); // 2.
+    out.position = camera.view_proj * vec4<f32>(model.position.x * model.model_matrix, model.position.y * model.model_matrix,f32(0), f32(1)); // 2.
     return out;
 }
