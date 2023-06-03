@@ -21,7 +21,8 @@ pub(crate) fn draw_button(
     font: &FontArc,
     buffer: &mut QuadBufferBuilder,
     glyph: &mut GlyphBrush<()>,
-    uniform: &CameraUniform
+    uniform: &CameraUniform,
+    raw_window_pos: (f32,f32),
 ) -> bool {
     // d.draw_rectangle(x, y, width, height, bg_color);
     // println!("{:?}",uniform.view_proj);
@@ -131,7 +132,8 @@ pub fn draw_button_handler(
                 font,
                 buffer,
                 glyph,
-                uniform
+                uniform,
+                (((window_width / 2.0) - width / 2.0) + left_margin - right_margin,)
             );
         }
         ElementAlignment::TopRight => {
