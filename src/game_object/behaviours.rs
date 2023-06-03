@@ -1,3 +1,4 @@
+use std::time::Duration;
 use flume::Sender;
 use hashbrown::HashSet;
 use rapier2d::geometry::{ColliderSet, Ray};
@@ -53,6 +54,7 @@ pub struct EngineView<'a> {
     pub(crate) key_locks: &'a mut HashSet<VirtualKeyCode>,
     pub(crate) keys_pressed: &'a mut HashSet<VirtualKeyCode>,
     pub(crate) query_pipeline: &'a mut QueryPipeline,
+    pub frame_delta: &'a Duration
 }
 
 impl<'a> EngineView<'a> {

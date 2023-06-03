@@ -3,6 +3,7 @@ pub mod camera;
 
 use hashbrown::HashMap;
 use std::iter;
+use log::warn;
 use wgpu::util::DeviceExt;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
@@ -71,6 +72,7 @@ impl Render {
             })
             .await
             .unwrap();
+        warn!("Using adapter: {:?}",adapter.get_info());
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {

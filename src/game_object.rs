@@ -1,3 +1,4 @@
+use std::time::Duration;
 use crate::game_object::behaviours::{EngineView, UserBehaviour};
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
@@ -52,6 +53,7 @@ impl GameObject {
         key_locks: &mut HashSet<VirtualKeyCode>,
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
+        frame_delta: &mut Duration
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -63,6 +65,7 @@ impl GameObject {
                     key_locks,
                     query_pipeline,
                     collider_set,
+                    frame_delta
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -81,6 +84,7 @@ impl GameObject {
         key_locks: &mut HashSet<VirtualKeyCode>,
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
+        frame_delta: &mut Duration
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -92,6 +96,7 @@ impl GameObject {
                     keys_pressed,
                     query_pipeline,
                     collider_set,
+                    frame_delta
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -111,6 +116,7 @@ impl GameObject {
         key_locks: &mut HashSet<VirtualKeyCode>,
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
+        frame_delta: &mut Duration
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.game_loop(
@@ -127,6 +133,7 @@ impl GameObject {
                     key_locks,
                     query_pipeline,
                     collider_set,
+                    frame_delta
                 },
             );
         }

@@ -60,6 +60,8 @@ pub struct Engine {
     gravity: SMatrix<f32, 2, 1>,
     audio_manager: AudioManager,
     renderer: Option<Render>,
+    last_delta: Duration,
+    last_frame_end: Instant
 }
 
 pub struct EngineConfig {
@@ -100,6 +102,8 @@ impl Engine {
                 is_middle_pressed: false,
                 mouse_position: Vector2::new(0.0, 0.0),
             },
+            last_delta: Duration::from_millis(0),
+            last_frame_end: Instant::now()
         }
     }
 
@@ -115,6 +119,7 @@ impl Engine {
                     &mut self.key_locks,
                     &mut self.query_pipeline,
                     &mut scene.collider_set,
+                    &mut self.last_delta
                 )
             }
         }
@@ -134,6 +139,7 @@ impl Engine {
                 &mut self.key_locks,
                 &mut self.query_pipeline,
                 &mut active_scene.collider_set,
+                &mut self.last_delta
             )
         }
     }
@@ -172,9 +178,6 @@ impl Engine {
             &window,
             current_size,
         )));
-
-        let mut last_delta : Duration = Duration::from_millis(0);
-        let mut last_frame_end : Instant = Instant::now();
 
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
@@ -234,18 +237,16 @@ impl Engine {
                 }
                 _ => {}
             },
-            Event::RedrawRequested(window_id) if window_id == window.id() => {
-                self.draw();
-            }
+            Event::RedrawRequested(window_id) if window_id == window.id() => {}
             Event::MainEventsCleared => {
                 let tf_start = Instant::now();
 
                 // Cap FPS at 60FPS. With practically no minimum
                 // sleep(last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)));
 
-                let clamped_delta = last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100));
+                let clamped_delta = self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100));
 
-                if tf_start - last_frame_end > clamped_delta {
+                if tf_start - self.last_frame_end > clamped_delta {
                     let start = Instant::now();
 
                     let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
@@ -272,9 +273,9 @@ impl Engine {
 
                     self.draw();
 
-                    last_frame_end = Instant::now();
+                    self.last_frame_end = Instant::now();
 
-                    last_delta = last_frame_end - start;
+                    self.last_delta = self.last_frame_end - start;
 
                     //
                     // warn!("FPS: {:?}",1000.0 / clamped_delta.as_millis() as f32);
@@ -303,6 +304,7 @@ impl Engine {
                     &mut self.key_locks,
                     &mut self.query_pipeline,
                     &mut active_scene.collider_set,
+                    &mut self.last_delta
                 );
             }
 
@@ -319,6 +321,7 @@ impl Engine {
                     key_locks: &mut self.key_locks,
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
+                    frame_delta: &mut self.last_delta
                 },
                 &self.mouse_data
             );
