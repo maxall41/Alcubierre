@@ -1,3 +1,4 @@
+use rand::thread_rng;
 use crate::scripts::ai::AIBehaviour;
 use crate::scripts::ball::BallBehaviour;
 use crate::scripts::fail::FailBehaviour;
@@ -11,6 +12,7 @@ use alcubierre::ui::frontend::RGBColor;
 use alcubierre::Engine;
 use rapier2d::geometry::ColliderBuilder;
 use rapier2d::prelude::{vector, Ball, RigidBodyBuilder};
+use crate::scripts::barrier::BarrierBehaviour;
 
 pub fn register_main_scene(mut flame: &mut Engine) {
     let scene = flame.register_scene("Main".to_string());
@@ -148,10 +150,16 @@ pub fn register_main_scene(mut flame: &mut Engine) {
 
     top_wall.attach_rigid_body(top_wall_rigid_body, scene);
 
+    top_wall.insert_behaviour(BarrierBehaviour {
+        ball_handle: ball_c_handle,
+        ball_rigid_handle: ball_r_handle,
+        rng: thread_rng(),
+    });
+
     let top_wall_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
         sensor: false,
-        restitution: 1.1,
+        restitution: 1.05,
         friction: 0.0,
     };
 
@@ -170,12 +178,18 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .ccd_enabled(true)
         .build();
 
+    bottom_wall.insert_behaviour(BarrierBehaviour {
+        ball_handle: ball_c_handle,
+        ball_rigid_handle: ball_r_handle,
+        rng: thread_rng(),
+    });
+
     bottom_wall.attach_rigid_body(bottom_wall_rigid_body, scene);
 
     let bottom_wall_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
         sensor: false,
-        restitution: 1.1,
+        restitution: 1.05,
         friction: 0.0,
     };
 

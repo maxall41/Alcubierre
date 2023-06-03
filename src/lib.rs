@@ -141,10 +141,6 @@ impl Engine {
 
         let fps = 60;
 
-        let mut next_redraw: Instant = Instant::now();
-
-        let till_next = Duration::from_millis(1000 / fps);
-
         self.renderer = Some(futures::executor::block_on(renderer::Render::new(
             &window,
             current_size,
@@ -212,35 +208,31 @@ impl Engine {
                 self.draw();
             }
             Event::MainEventsCleared => {
-                let current = Instant::now();
-                if current >= next_redraw {
-                    let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
-                    self.physics_pipeline.step(
-                        &self.gravity,
-                        &active_scene_unwrapped.integration_params,
-                        &mut active_scene_unwrapped.island_manager,
-                        &mut active_scene_unwrapped.broad_phase,
-                        &mut active_scene_unwrapped.narrow_phase_collision,
-                        &mut active_scene_unwrapped.rigid_body_set,
-                        &mut active_scene_unwrapped.collider_set,
-                        &mut active_scene_unwrapped.impulse_joint_set,
-                        &mut active_scene_unwrapped.multibody_joint_set,
-                        &mut active_scene_unwrapped.ccd_solver,
-                        None,
-                        &(),
-                        &(),
-                    );
+                let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
+                self.physics_pipeline.step(
+                    &self.gravity,
+                    &active_scene_unwrapped.integration_params,
+                    &mut active_scene_unwrapped.island_manager,
+                    &mut active_scene_unwrapped.broad_phase,
+                    &mut active_scene_unwrapped.narrow_phase_collision,
+                    &mut active_scene_unwrapped.rigid_body_set,
+                    &mut active_scene_unwrapped.collider_set,
+                    &mut active_scene_unwrapped.impulse_joint_set,
+                    &mut active_scene_unwrapped.multibody_joint_set,
+                    &mut active_scene_unwrapped.ccd_solver,
+                    None,
+                    &(),
+                    &(),
+                );
 
-                    self.query_pipeline.update(
-                        &active_scene_unwrapped.rigid_body_set,
-                        &active_scene_unwrapped.collider_set,
-                    );
+                self.query_pipeline.update(
+                    &active_scene_unwrapped.rigid_body_set,
+                    &active_scene_unwrapped.collider_set,
+                );
 
-                    self.draw();
-                }
-                next_redraw = Instant::now() + till_next;
+                self.draw();
             }
-            _ => *control_flow = ControlFlow::WaitUntil(Instant::now().add(till_next)),
+            _ => *control_flow = ControlFlow::Poll,
         });
     }
     fn draw(&mut self) {
