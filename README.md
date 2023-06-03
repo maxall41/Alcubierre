@@ -19,11 +19,11 @@ It is no where near ready for that use case though. As what it supports is still
 
 ## Coming Soon:
 * Sprites
-* Return GameObject from collison checks
+* Return GameObject from collision checks
 * Camera System
 * Animations
 * Error Handling
-* Collison Layers
+* Collision Layers
 * GameObject Tags
 * LDTK Support
 * Prefabs
