@@ -10,7 +10,7 @@ use miette::LabeledSpan;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-pub mod backends;
+pub mod backend;
 pub mod frontend;
 
 fn parse_rough_line(line: &str) -> Option<Element> {

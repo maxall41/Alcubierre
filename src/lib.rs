@@ -11,11 +11,9 @@ use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
 use kira::manager::backend::DefaultBackend;
 use kira::manager::{AudioManager, AudioManagerSettings};
-use kira::sound::static_sound::StaticSoundData;
 use nalgebra::SMatrix;
 use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
-use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 use crate::events::EngineEvent;
@@ -27,7 +25,7 @@ use rapier2d::prelude::{
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Window, WindowBuilder};
+use winit::window::WindowBuilder;
 
 use crate::scene::Scene;
 
@@ -173,7 +171,6 @@ impl Engine {
                 self.draw();
             }
             Event::MainEventsCleared => {
-
                 let current = Instant::now();
                 if current >= next_redraw {
                     let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
