@@ -1,6 +1,7 @@
 use crate::ui::backend::helpers::{measure_text, spacing_unit_to_pixels};
 use crate::ui::frontend::{ElementAlignment, RGBColor, SpacingUnit, TextElement, ValueOrVar};
 use hashbrown::HashMap;
+use log::warn;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{GlyphBrush, Layout, Section, Text};
 

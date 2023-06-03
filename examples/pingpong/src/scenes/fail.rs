@@ -14,5 +14,6 @@ pub fn register_fail_scene(mut flame: &mut Engine) {
 
     scene.function_map.insert("retry".to_string(), retry);
 
-    // scene.register_ui("examples/pingpong/ui/failed.html".to_string());
+    // scene.register_ui(FAILED_UI);
+    // scene.register_ui(include_str!("ui/failed.html"));
 }

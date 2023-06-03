@@ -15,6 +15,7 @@ use nalgebra::{SMatrix, Vector2};
 use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
 use std::time::{Duration, Instant};
+use log::warn;
 
 use crate::events::EngineEvent;
 use crate::game_object::behaviours::EngineView;
@@ -144,7 +145,7 @@ impl Engine {
             // Winit prevents sizing with CSS, so we have to set
             // the size manually when on web.
             use winit::dpi::PhysicalSize;
-            window.set_inner_size(PhysicalSize::new(450, 400));
+            window.set_inner_size(PhysicalSize::new(940, 640));
 
             use winit::platform::web::WindowExtWebSys;
             web_sys::window()
@@ -152,6 +153,7 @@ impl Engine {
                 .and_then(|doc| {
                     let dst = doc.get_element_by_id("wasm-example")?;
                     let canvas = web_sys::Element::from(window.canvas());
+                    canvas.set_id("game-canvas");
                     dst.append_child(&canvas).ok()?;
                     Some(())
                 })

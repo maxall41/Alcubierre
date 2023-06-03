@@ -9,6 +9,7 @@ use crate::ui::frontend::{ButtonElement, Element, HyperFoilAST, TextElement};
 use miette::LabeledSpan;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use log::warn;
 
 pub mod backend;
 pub mod frontend;
@@ -51,16 +52,13 @@ fn parse_rough_line(line: &str) -> Option<Element> {
     }
 }
 
-pub fn parse_file(file: &str) -> HyperFoilAST {
-    let file = File::open(file).unwrap();
-    let reader = BufReader::new(file);
+pub fn parse_ui_blob(blob: &str) -> HyperFoilAST {
 
     let mut ast = HyperFoilAST { elements: vec![] };
 
-    for line in reader.lines() {
-        let l = line.unwrap();
-        if !l.starts_with("#") {
-            let res = starts_with_open_angle_bracket(l.as_str());
+    for line in blob.lines() {
+        if !line.starts_with("#") {
+            let res = starts_with_open_angle_bracket(line);
             match res {
                 Ok(r) => {
                     let x = parse_rough_line(r.1);

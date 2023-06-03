@@ -1,7 +1,7 @@
 use crate::game_object::behaviours::EngineView;
 use crate::game_object::GameObject;
 use crate::ui::frontend::HyperFoilAST;
-use crate::ui::parse_file;
+use crate::ui::parse_ui_blob;
 use hashbrown::HashMap;
 use rapier2d::geometry::ColliderSet;
 use rapier2d::prelude::{
@@ -29,8 +29,8 @@ impl Scene {
     pub fn register_game_object(&mut self, game_object: GameObject) {
         self.game_objects.push(game_object);
     }
-    pub fn register_ui(&mut self, ui_file: String) {
-        let ui_ast = parse_file(&ui_file);
+    pub fn register_ui(&mut self, blob: &str) {
+        let ui_ast = parse_ui_blob(blob);
         self.ui_ast = Some(ui_ast)
     }
 }

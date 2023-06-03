@@ -1,6 +1,7 @@
 use crate::ui::frontend::RGBColor;
 
 use cgmath::num_traits::Pow;
+use log::{info, warn};
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 
 pub const U32_SIZE: wgpu::BufferAddress = std::mem::size_of::<u32>() as wgpu::BufferAddress;

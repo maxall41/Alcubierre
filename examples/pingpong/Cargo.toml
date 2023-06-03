@@ -23,7 +23,13 @@ console_log = "1.0.0"
 wasm-bindgen-futures = "0.4.30"
 web-sys = { version = "0.3.63", features = ["Window","Document","Element","Headers", "Request", "RequestInit","RequestMode","Response","AudioContext","AudioBuffer"] }
 winit = "0.28.6"
+cfg-if = "1.0.0"
 
 [[bin]]
 name = "pingpong"
 path = "src/lib.rs"
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
