@@ -4,19 +4,21 @@ use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, Rect
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
 use alcubierre::{Engine, EngineConfig};
-use lazy_static::lazy_static;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
 use std::sync::Arc;
 use std::sync::RwLock;
+use wasm_bindgen::JsValue;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 mod scenes;
 mod scripts;
 
 use crate::scripts::player::PlayerBehaviour;
 
-#[tokio::main]
-async fn main() {
+
+#[wasm_bindgen(start)]
+pub fn main() -> Result<(), JsValue> {
     let mut flame = Engine::new(
         640,
         480,
@@ -34,4 +36,6 @@ async fn main() {
 
     flame.start_cycle();
     println!("Cycle started");
+
+    Ok(())
 }
