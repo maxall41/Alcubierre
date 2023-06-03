@@ -1,4 +1,6 @@
-use cgmath::{perspective, Matrix4, Rad};
+use cgmath::{ortho, perspective, vec2, vec4, Angle, Matrix4, Rad, SquareMatrix};
+use wgpu_glyph::orthographic_projection;
+use winit::dpi::PhysicalSize;
 
 #[rustfmt::skip]
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
@@ -58,8 +60,8 @@ impl CameraUniform {
 }
 
 pub struct Projection {
-    aspect: f32,
-    fovy: Rad<f32>,
+    pub(crate) aspect: f32,
+    pub(crate) fovy: Rad<f32>,
     znear: f32,
     zfar: f32,
 }
@@ -79,6 +81,37 @@ impl Projection {
     }
 
     pub fn calc_matrix(&self) -> Matrix4<f32> {
-        OPENGL_TO_WGPU_MATRIX * perspective(self.fovy, self.aspect, self.znear, self.zfar)
+        // OPENGL_TO_WGPU_MATRIX * perspective(self.fovy, self.aspect, self.znear, self.zfar)
+        OPENGL_TO_WGPU_MATRIX * ortho(-7.0, 7.0, -7.0, 7.0, 0.001, 1000.0)
     }
+}
+
+pub fn screen_space_to_ndc_space(
+    x: u32,
+    y: u32,
+    window_width: f32,
+    window_height: f32,
+) -> (f32, f32) {
+    let new_x = ((x as f32 / window_width as f32) - 0.5) * 2.0;
+    let new_y = ((y as f32 / window_height as f32) - 0.5) * 2.0;
+
+    (new_x, new_y)
+}
+
+pub fn screen_space_to_view_space(
+    x: u32,
+    y: u32,
+    window_width: f32,
+    window_height: f32,
+    proj_matrix: Matrix4<f32>,
+) -> (f32, f32) {
+    // Based off of https://stackoverflow.com/questions/46749675/opengl-mouse-coordinates-to-space-coordinates/46752492#46752492
+
+    let (ndc_x, ndc_y) = screen_space_to_ndc_space(x, y, window_width, window_height);
+
+    let inverted_proj_matrix = proj_matrix.invert().unwrap();
+
+    let projected = inverted_proj_matrix * vec4(ndc_x, ndc_y, 0.0, 1.0);
+
+    (projected.x, -projected.y)
 }
