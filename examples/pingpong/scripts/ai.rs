@@ -31,7 +31,12 @@ impl UserBehaviour for AIBehaviour {
                     .get_mut(self.ball_rigid_handle)
                     .unwrap();
                 // ball_rigid_body.reset_forces(true);
-                // ball_rigid_body.apply_impulse(vector![0.0, 0.1], true);
+                let x = self.rng.gen_range(0..100);
+                if x > 50 {
+                    ball_rigid_body.apply_impulse(vector![0.0, 0.00003], true);
+                } else {
+                    ball_rigid_body.apply_impulse(vector![0.0, -0.00003], true);
+                }
             }
         }
 

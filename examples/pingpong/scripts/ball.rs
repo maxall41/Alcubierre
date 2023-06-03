@@ -22,6 +22,6 @@ impl UserBehaviour for BallBehaviour {
             .rigid_body_set
             .get_mut(game_object_view.physics.rigid_body_handle.unwrap())
             .unwrap();
-        rigid_body.set_linvel(Vector::new(-0.2, 0.0), true);
+        rigid_body.set_linvel(Vector::new(-0.5, 0.0), true);
     }
 }

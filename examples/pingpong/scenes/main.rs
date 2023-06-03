@@ -135,81 +135,81 @@ pub fn register_main_scene(mut flame: &mut Engine) {
     }));
 
     scene.register_game_object(ai);
-    //
-    // let mut top_wall = GameObject::new(0.0, 0.0);
-    //
-    // let top_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
-    //     .translation(vector![0.0, 0.0])
-    //     .linear_damping(5.5)
-    //     .angular_damping(2.0)
-    //     .can_sleep(false)
-    //     .ccd_enabled(true)
-    //     .build();
-    //
-    // top_wall.attach_rigid_body(top_wall_rigid_body, scene);
-    //
-    // let top_wall_collider = AlcubierreCollider {
-    //     collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
-    //     sensor: false,
-    //     restitution: 1.05,
-    //     friction: 100.0,
-    // };
-    //
-    // let top_wall_collider_handle =
-    //     top_wall.attach_collider_with_rigid_body(top_wall_collider, scene);
-    //
-    // scene.register_game_object(top_wall);
-    //
-    // let mut bottom_wall = GameObject::new(0.0, 0.0);
-    //
-    // let bottom_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
-    //     .translation(vector![0.0, 10.0])
-    //     .linear_damping(5.5)
-    //     .angular_damping(2.0)
-    //     .can_sleep(false)
-    //     .ccd_enabled(true)
-    //     .build();
-    //
-    // bottom_wall.attach_rigid_body(bottom_wall_rigid_body, scene);
-    //
-    // let bottom_wall_collider = AlcubierreCollider {
-    //     collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
-    //     sensor: false,
-    //     restitution: 1.05,
-    //     friction: 100.0,
-    // };
-    //
-    // let bottom_wall_collider_handle =
-    //     bottom_wall.attach_collider_with_rigid_body(bottom_wall_collider, scene);
-    //
-    // scene.register_game_object(bottom_wall);
-    //
-    // let mut fail_barrier = GameObject::new(0.0, 0.0);
-    //
-    // fail_barrier.insert_behaviour(FailBehaviour {
-    //     speed: 0.0,
-    //     ball_handle: ball_c_handle,
-    // });
-    //
-    // let fail_barrier_rigid_body = RigidBodyBuilder::kinematic_position_based()
-    //     .translation(vector![0.0, 0.0])
-    //     .linear_damping(5.5)
-    //     .angular_damping(2.0)
-    //     .can_sleep(false)
-    //     .ccd_enabled(true)
-    //     .build();
-    //
-    // fail_barrier.attach_rigid_body(fail_barrier_rigid_body, scene);
-    //
-    // let fail_barrier_collider = AlcubierreCollider {
-    //     collider_type: AlcubierreColliderType::Rectangle((0.5, 30.0)),
-    //     sensor: true,
-    //     restitution: 1.0,
-    //     friction: 100.0,
-    // };
-    //
-    // let fail_barrier_collider_handle =
-    //     fail_barrier.attach_collider_with_rigid_body(fail_barrier_collider, scene);
-    //
-    // scene.register_game_object(fail_barrier);
+
+    let mut top_wall = GameObject::new(0.0, 0.0);
+
+    let top_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
+        .translation(vector![0.0, 0.15])
+        .linear_damping(5.5)
+        .angular_damping(2.0)
+        .can_sleep(false)
+        .ccd_enabled(true)
+        .build();
+
+    top_wall.attach_rigid_body(top_wall_rigid_body, scene);
+
+    let top_wall_collider = AlcubierreCollider {
+        collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
+        sensor: false,
+        restitution: 1.1,
+        friction: 0.0,
+    };
+
+    let top_wall_collider_handle =
+        top_wall.attach_collider_with_rigid_body(top_wall_collider, scene);
+
+    scene.register_game_object(top_wall);
+
+    let mut bottom_wall = GameObject::new(0.0, 0.0);
+
+    let bottom_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
+        .translation(vector![0.0, -0.15])
+        .linear_damping(5.5)
+        .angular_damping(2.0)
+        .can_sleep(false)
+        .ccd_enabled(true)
+        .build();
+
+    bottom_wall.attach_rigid_body(bottom_wall_rigid_body, scene);
+
+    let bottom_wall_collider = AlcubierreCollider {
+        collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
+        sensor: false,
+        restitution: 1.1,
+        friction: 0.0,
+    };
+
+    let bottom_wall_collider_handle =
+        bottom_wall.attach_collider_with_rigid_body(bottom_wall_collider, scene);
+
+    scene.register_game_object(bottom_wall);
+
+    let mut fail_barrier = GameObject::new(0.0, 0.0);
+
+    fail_barrier.insert_behaviour(FailBehaviour {
+        speed: 0.0,
+        ball_handle: ball_c_handle,
+    });
+
+    let fail_barrier_rigid_body = RigidBodyBuilder::kinematic_position_based()
+        .translation(vector![-0.2, 0.0])
+        .linear_damping(5.5)
+        .angular_damping(2.0)
+        .can_sleep(false)
+        .ccd_enabled(true)
+        .build();
+
+    fail_barrier.attach_rigid_body(fail_barrier_rigid_body, scene);
+
+    let fail_barrier_collider = AlcubierreCollider {
+        collider_type: AlcubierreColliderType::Rectangle((0.5, 30.0)),
+        sensor: true,
+        restitution: 1.0,
+        friction: 100.0,
+    };
+
+    let fail_barrier_collider_handle =
+        fail_barrier.attach_collider_with_rigid_body(fail_barrier_collider, scene);
+
+    scene.register_game_object(fail_barrier);
 }
