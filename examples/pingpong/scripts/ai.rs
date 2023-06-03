@@ -1,14 +1,11 @@
-use flame::game_object::behaviours::UserBehaviour;
-use flame::game_object::{GameObject, GameObjectView};
-use flame::keyboard::{is_key_down, is_key_pressed};
-use flame::FlameEngineView;
+use alcubierre::game_object::behaviours::{EngineView, UserBehaviour};
+use alcubierre::game_object::{GameObject, GameObjectView};
+use alcubierre::Engine;
 use nalgebra::abs;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use rapier2d::math::{Isometry, Real};
 use rapier2d::prelude::{vector, ColliderHandle, RigidBodyHandle, Vector};
-use raylib::ffi::GetFrameTime;
-use raylib::ffi::KeyboardKey::{KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_UP};
 
 #[derive(Clone)]
 pub struct AIBehaviour {
@@ -22,8 +19,7 @@ impl UserBehaviour for AIBehaviour {
     fn game_loop(
         &mut self,
         game_object_view: GameObjectView,
-        engine_view: FlameEngineView,
-        frame_delta: f32,
+        engine_view: EngineView,
     ) {
         {
             if engine_view.is_colliding(
@@ -34,8 +30,8 @@ impl UserBehaviour for AIBehaviour {
                     .rigid_body_set
                     .get_mut(self.ball_rigid_handle)
                     .unwrap();
-                ball_rigid_body.reset_forces(true);
-                ball_rigid_body.apply_impulse(vector![0.0, self.rng.gen_range(-7.0..7.0)], true);
+                // ball_rigid_body.reset_forces(true);
+                // ball_rigid_body.apply_impulse(vector![0.0, 0.1], true);
             }
         }
 

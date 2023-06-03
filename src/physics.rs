@@ -26,10 +26,9 @@ impl AlcubierreCollider {
     pub fn to_rapier(&self) -> Collider {
         match self.collider_type {
             AlcubierreColliderType::Rectangle((x, y)) => ColliderBuilder::cuboid(
-                screen_units_to_physics_units(x) / 1.75,
-                screen_units_to_physics_units(y) / 1.75,
+                screen_units_to_physics_units(x) / 2.0,
+                screen_units_to_physics_units(y) / 2.0,
             )
-            .translation(vector![0.0, screen_units_to_physics_units(y) / 2.0])
             .sensor(self.sensor)
             .friction(self.friction)
             .restitution(self.restitution)

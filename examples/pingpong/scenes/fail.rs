@@ -1,22 +1,15 @@
-use crate::scripts::ai::AIBehaviour;
-use crate::scripts::ball::BallBehaviour;
-use crate::scripts::player::PlayerBehaviour;
-use flame::game_object::graphics::{CircleData, Graphics, GraphicsType, SquareData};
-use flame::game_object::physics::PhysicsObject;
-use flame::game_object::GameObject;
-use flame::physics::screen_units_to_physics_units;
-use flame::physics::{FlameCollider, FlameColliderType};
-use flame::{FlameEngine, FlameEngineView, Scene};
-use rapier2d::geometry::ColliderBuilder;
+use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType};
+use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
+use alcubierre::{Engine};
 use rapier2d::prelude::{vector, Ball, RigidBodyBuilder};
-use raylib::color::Color;
+use alcubierre::game_object::behaviours::EngineView;
 
-fn retry(flame: &mut FlameEngineView) {
+fn retry(flame: &mut EngineView) {
     flame.load_scene("Main".to_string());
     println!("RETRY!");
 }
 
-pub fn register_fail_scene(mut flame: &mut FlameEngine) {
+pub fn register_fail_scene(mut flame: &mut Engine) {
     let scene = flame.register_scene("Fail".to_string());
 
     scene.function_map.insert("retry".to_string(), retry);
