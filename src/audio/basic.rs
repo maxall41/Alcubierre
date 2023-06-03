@@ -54,11 +54,11 @@ impl AudioSourceBuilder {
 
 impl Engine {
     pub fn play_audio(&mut self, source: AudioSource) {
-        let settings = StaticSoundSettings::default()
-            .volume(source.volume)
-            .panning(source.panning)
-            .playback_rate(source.playback_rate);
-        let sound_data = StaticSoundData::from_file(source.path, settings).unwrap();
-        self.audio_manager.play(sound_data).unwrap();
+        // let settings = StaticSoundSettings::default()
+        //     .volume(source.volume)
+        //     .panning(source.panning)
+        //     .playback_rate(source.playback_rate);
+        // let sound_data = StaticSoundData::from_file(source.path, settings).unwrap();
+        // self.audio_manager.play(sound_data).unwrap();
     }
 }

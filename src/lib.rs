@@ -32,6 +32,9 @@ use winit::window::WindowBuilder;
 
 use crate::scene::Scene;
 
+#[cfg(target_arch="wasm32")]
+use wasm_bindgen::prelude::*;
+
 pub struct MouseData {
     is_middle_pressed: bool,
     is_left_pressed: bool,
@@ -72,6 +75,7 @@ impl Engine {
 
         let mut audio_manager =
             AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
+
 
         Engine {
             scenes: HashMap::new(),
@@ -135,13 +139,32 @@ impl Engine {
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
 
+        #[cfg(target_arch = "wasm32")]
+        {
+            // Winit prevents sizing with CSS, so we have to set
+            // the size manually when on web.
+            use winit::dpi::PhysicalSize;
+            window.set_inner_size(PhysicalSize::new(450, 400));
+
+            use winit::platform::web::WindowExtWebSys;
+            web_sys::window()
+                .and_then(|win| win.document())
+                .and_then(|doc| {
+                    let dst = doc.get_element_by_id("wasm-example")?;
+                    let canvas = web_sys::Element::from(window.canvas());
+                    dst.append_child(&canvas).ok()?;
+                    Some(())
+                })
+                .expect("Couldn't append canvas to document body.");
+        }
+
         let current_size = PhysicalSize::new(1080, 940);
 
         window.set_inner_size(current_size);
 
         let fps = 60;
 
-        self.renderer = Some(futures::executor::block_on(renderer::Render::new(
+        self.renderer = Some(pollster::block_on(renderer::Render::new(
             &window,
             current_size,
         )));

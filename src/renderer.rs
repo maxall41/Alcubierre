@@ -1,7 +1,6 @@
 pub(crate) mod buffer;
 pub mod camera;
 
-use futures::StreamExt;
 use hashbrown::HashMap;
 use std::iter;
 use wgpu::util::DeviceExt;
