@@ -13,7 +13,11 @@ pub struct FailBehaviour {
 }
 
 impl UserBehaviour for FailBehaviour {
-    fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {
+    fn game_loop(
+        &mut self,
+        game_object_view: GameObjectView,
+        engine_view: EngineView,
+    ) {
         if engine_view.is_colliding_with_sensor(
             game_object_view.physics.collider_handle.unwrap(),
             self.ball_handle,

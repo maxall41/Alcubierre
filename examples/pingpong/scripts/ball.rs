@@ -1,8 +1,8 @@
-use alcubierre::game_object::behaviours::EngineView;
 use alcubierre::game_object::behaviours::UserBehaviour;
-use alcubierre::game_object::GameObject;
-use alcubierre::game_object::GameObjectView;
+use alcubierre::game_object::{GameObject};
+use alcubierre::game_object::behaviours::EngineView;
 use rapier2d::prelude::{vector, Vector};
+use alcubierre::game_object::GameObjectView;
 
 #[derive(Clone)]
 pub struct BallBehaviour {
@@ -10,7 +10,12 @@ pub struct BallBehaviour {
 }
 
 impl UserBehaviour for BallBehaviour {
-    fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {}
+    fn game_loop(
+        &mut self,
+        game_object_view: GameObjectView,
+        engine_view: EngineView,
+    ) {
+    }
 
     fn loaded(&mut self, engine_view: EngineView, game_object_view: GameObjectView) {
         let rigid_body = engine_view

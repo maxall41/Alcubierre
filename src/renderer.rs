@@ -2,21 +2,20 @@ pub(crate) mod buffer;
 pub mod camera;
 
 use futures::StreamExt;
-use hashbrown::HashMap;
 use std::iter;
+use hashbrown::HashMap;
 use wgpu::util::DeviceExt;
-use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
+use wgpu_glyph::ab_glyph::FontArc;
 
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 
-use crate::game_object::behaviours::EngineView;
 use crate::renderer::camera::{Camera, CameraUniform};
+use buffer::*;
+use crate::game_object::behaviours::EngineView;
 use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::HyperFoilAST;
-use buffer::*;
-use crate::MouseData;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -36,7 +35,7 @@ pub struct Render {
     camera_bind_group: wgpu::BindGroup,
     glyph_brush: GlyphBrush<()>,
     size: PhysicalSize<u32>,
-    font: FontArc,
+    font: FontArc
 }
 
 impl Render {
@@ -184,11 +183,13 @@ impl Render {
 
         let staging_belt = wgpu::util::StagingBelt::new(1024);
 
-        let font =
-            ab_glyph::FontArc::try_from_slice(include_bytes!("./assets/monogram-default-font.ttf"))
-                .unwrap();
+        let font = ab_glyph::FontArc::try_from_slice(include_bytes!(
+            "./assets/monogram-default-font.ttf"
+        )).unwrap();
 
-        let glyph_brush = GlyphBrushBuilder::using_font(font.clone()).build(&device, config.format);
+        let glyph_brush = GlyphBrushBuilder::using_font(font.clone())
+            .build(&device, config.format);
+
 
         Self {
             surface,
@@ -207,7 +208,7 @@ impl Render {
             camera,
             glyph_brush,
             size,
-            font,
+            font
         }
     }
 
@@ -220,32 +221,13 @@ impl Render {
             .update_view_proj(&self.camera, &self.projection);
     }
 
-    pub fn render_buffer(
-        &mut self,
-        mut buffer: QuadBufferBuilder,
-        ast: &Option<HyperFoilAST>,
-        data_map: &HashMap<String, String>,
-        function_map: &HashMap<String, fn(&mut EngineView)>,
-        engine_view: &mut EngineView,
-        mouse_data: &MouseData
-    ) {
+    pub fn render_buffer(&mut self, mut buffer: QuadBufferBuilder, ast: &Option<HyperFoilAST>, data_map: &HashMap<String,String>, function_map: &HashMap<String, fn(&mut EngineView)>, engine_view: &mut EngineView) {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         if ast.is_some() {
-            render_from_hyperfoil_ast(
-                ast.as_ref().unwrap(),
-                &mut self.glyph_brush,
-                self.size,
-                &self.font,
-                data_map,
-                function_map,
-                &mut buffer,
-                engine_view,
-                &self.projection,
-                mouse_data
-            );
+            render_from_hyperfoil_ast(ast.as_ref().unwrap(),&mut self.glyph_brush,self.size,&self.font,data_map,function_map,&mut buffer,engine_view,&self.camera_uniform);
         }
 
         let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
@@ -255,6 +237,7 @@ impl Render {
 
         match self.surface.get_current_texture() {
             Ok(frame) => {
+
                 let view = frame.texture.create_view(&Default::default());
 
                 let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -266,6 +249,7 @@ impl Render {
                     })],
                     depth_stencil_attachment: None,
                 });
+
 
                 // Setup
                 render_pass.set_bind_group(0, &self.camera_bind_group, &[]);

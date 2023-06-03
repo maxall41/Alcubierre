@@ -1,8 +1,8 @@
-use alcubierre::game_object::behaviours::EngineView;
 use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType};
 use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
-use alcubierre::Engine;
+use alcubierre::{Engine};
 use rapier2d::prelude::{vector, Ball, RigidBodyBuilder};
+use alcubierre::game_object::behaviours::EngineView;
 
 fn retry(flame: &mut EngineView) {
     flame.load_scene("Main".to_string());

@@ -1,5 +1,5 @@
-use crate::ui::frontend::SpacingUnit;
 use wgpu_glyph::ab_glyph::{Font, FontArc};
+use crate::ui::frontend::SpacingUnit;
 
 pub(crate) fn spacing_unit_to_pixels(
     unit: SpacingUnit,
@@ -19,7 +19,7 @@ pub(crate) fn spacing_unit_to_pixels(
     }
 }
 
-pub(crate) fn measure_text(font: &FontArc, text: &str, font_size: f32) -> (f32, f32) {
+pub(crate) fn measure_text(font: &FontArc,text: &str, font_size: f32) -> (f32,f32) {
     let mut text_width = 0.0;
     let mut glyph_heights = 0.0;
     let glyph_count = text.len();
@@ -35,5 +35,5 @@ pub(crate) fn measure_text(font: &FontArc, text: &str, font_size: f32) -> (f32, 
 
     let average_text_height = glyph_heights / glyph_count as f32;
 
-    (text_width / 2.2, average_text_height / 2.2)
+    (text_width / 2.2,average_text_height / 2.2)
 }

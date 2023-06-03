@@ -16,7 +16,11 @@ pub struct AIBehaviour {
 }
 
 impl UserBehaviour for AIBehaviour {
-    fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {
+    fn game_loop(
+        &mut self,
+        game_object_view: GameObjectView,
+        engine_view: EngineView,
+    ) {
         {
             if engine_view.is_colliding(
                 game_object_view.physics.collider_handle.unwrap(),

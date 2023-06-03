@@ -3,7 +3,7 @@ use crate::scenes::main::register_main_scene;
 use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
-use alcubierre::{Engine, EngineConfig};
+use alcubierre::{EngineConfig, Engine};
 use lazy_static::lazy_static;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
@@ -15,16 +15,13 @@ mod scripts;
 
 use crate::scripts::player::PlayerBehaviour;
 
+
 #[tokio::main]
 async fn main() {
-    let mut flame = Engine::new(
-        640,
-        480,
-        EngineConfig {
-            gravity: 0.0,
-            // clear_color: Color::BLACK,
-        },
-    );
+    let mut flame = Engine::new(640, 480,EngineConfig {
+        gravity: 0.0,
+        // clear_color: Color::BLACK,
+    });
 
     register_main_scene(&mut flame);
 

@@ -14,7 +14,11 @@ pub struct PlayerBehaviour {
 }
 
 impl UserBehaviour for PlayerBehaviour {
-    fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {
+    fn game_loop(
+        &mut self,
+        game_object_view: GameObjectView,
+        engine_view: EngineView,
+    ) {
         let mut y_vel: f32 = 0.0;
         if engine_view.is_key_down(VirtualKeyCode::Up) {
             y_vel += self.speed;
