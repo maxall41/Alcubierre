@@ -1,4 +1,4 @@
-use cgmath::{perspective, Matrix4, Rad, Angle, SquareMatrix, vec2, vec4, ortho};
+use cgmath::{ortho, perspective, vec2, vec4, Angle, Matrix4, Rad, SquareMatrix};
 use wgpu_glyph::orthographic_projection;
 use winit::dpi::PhysicalSize;
 
@@ -82,37 +82,36 @@ impl Projection {
 
     pub fn calc_matrix(&self) -> Matrix4<f32> {
         // OPENGL_TO_WGPU_MATRIX * perspective(self.fovy, self.aspect, self.znear, self.zfar)
-        OPENGL_TO_WGPU_MATRIX * ortho(-7.0,7.0,-7.0,7.0,0.001,1000.0)
+        OPENGL_TO_WGPU_MATRIX * ortho(-7.0, 7.0, -7.0, 7.0, 0.001, 1000.0)
     }
 }
 
-pub fn screen_space_to_ndc_space(x: u32,y: u32,window_width: f32,window_height: f32) -> (f32,f32) {
+pub fn screen_space_to_ndc_space(
+    x: u32,
+    y: u32,
+    window_width: f32,
+    window_height: f32,
+) -> (f32, f32) {
     let new_x = ((x as f32 / window_width as f32) - 0.5) * 2.0;
     let new_y = ((y as f32 / window_height as f32) - 0.5) * 2.0;
 
-    (new_x,new_y)
+    (new_x, new_y)
 }
 
-pub fn screen_space_to_view_space(x: u32,y: u32,window_width: f32,window_height: f32, proj_matrix: Matrix4<f32>,view_matrix: Matrix4<f32>) -> (f32,f32) {
+pub fn screen_space_to_view_space(
+    x: u32,
+    y: u32,
+    window_width: f32,
+    window_height: f32,
+    proj_matrix: Matrix4<f32>,
+) -> (f32, f32) {
     // Based off of https://stackoverflow.com/questions/46749675/opengl-mouse-coordinates-to-space-coordinates/46752492#46752492
 
-    // let depth = 6.0; // Might supposed to be 6.0?
-    //
-    let (ndc_x,ndc_y) = screen_space_to_ndc_space(x,y,window_width,window_height);
-    //
+    let (ndc_x, ndc_y) = screen_space_to_ndc_space(x, y, window_width, window_height);
+
     let inverted_proj_matrix = proj_matrix.invert().unwrap();
-    // let inverted_view_matrix = view_matrix.invert().unwrap();
 
+    let projected = inverted_proj_matrix * vec4(ndc_x, ndc_y, 0.0, 1.0);
 
-    // let x = (inverted_proj_matrix.x.x * ndc_x) + (inverted_proj_matrix.x.y * ndc_x) + (inverted_proj_matrix.x.z * ndc_x) + (inverted_proj_matrix.x.w * ndc_x);
-    // let y = (inverted_proj_matrix.y.x * ndc_y) + (inverted_proj_matrix.y.y * ndc_y) + (inverted_proj_matrix.y.z * ndc_y) + (inverted_proj_matrix.y.w * ndc_y);
-
-    let projected = inverted_proj_matrix * vec4(ndc_x,ndc_y,0.0,1.0);
-    // let tan_fov = 1.0;
-    //
-    //
-    // let view_x = z_eye * ndc_x * aspect * tan_fov;
-    // let view_y = -(z_eye * ndc_y * tan_fov);
-    //
-    (projected.x,-projected.y)
+    (projected.x, -projected.y)
 }

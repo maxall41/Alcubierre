@@ -1,3 +1,7 @@
+use crate::game_object::behaviours::EngineView;
+use crate::renderer::buffer::QuadBufferBuilder;
+use crate::renderer::camera::{screen_space_to_view_space, Camera, Projection};
+use crate::ui::backend::helpers::{measure_text, spacing_unit_to_pixels};
 use crate::ui::frontend::{
     ButtonElement, ElementAlignment, RGBColor, SpacingUnit, TextElement, ValueOrVar,
 };
@@ -5,10 +9,6 @@ use hashbrown::HashMap;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{GlyphBrush, Section, Text};
 use winit::dpi::PhysicalSize;
-use crate::game_object::behaviours::EngineView;
-use crate::renderer::buffer::QuadBufferBuilder;
-use crate::renderer::camera::{Camera, Projection, screen_space_to_view_space};
-use crate::ui::backend::helpers::{measure_text, spacing_unit_to_pixels};
 
 pub(crate) fn draw_button(
     x: f32,
@@ -25,23 +25,46 @@ pub(crate) fn draw_button(
     window_width: f32,
     window_height: f32,
     projection: &Projection,
-    camera: &Camera
 ) -> bool {
     // d.draw_rectangle(x, y, width, height, bg_color);
 
-    let rect_space = screen_space_to_view_space(x as u32,y as u32,window_width,window_height,projection.calc_matrix(),camera.calc_matrix());
+    let rect_space = screen_space_to_view_space(
+        x as u32,
+        y as u32,
+        window_width,
+        window_height,
+        projection.calc_matrix(),
+    );
 
-    println!("RECT X: {}, Y: {}, W: {}, H: {}",rect_space.0,rect_space.1,width,height);
+    println!(
+        "RECT X: {}, Y: {}, W: {}, H: {}",
+        rect_space.0, rect_space.1, width, height
+    );
 
-    buffer.push_rect(rect_space.0,rect_space.1,width / 10.0,height / 10.0,&bg_color);
+    buffer.push_rect(
+        rect_space.0,
+        rect_space.1,
+        width / 10.0,
+        height / 10.0,
+        &bg_color,
+    );
 
-    let text_size = measure_text(font,&text,font_size * 2.0);
+    let text_size = measure_text(font, &text, font_size * 2.0);
+
+    // Magic Numbers. Do not touch
+    let text_x = x + ((width / 2.0) as f32 - text_size.0 * 1.4);
+    let text_y = y + ((height / 2.0) as f32 - text_size.1 * 1.6);
 
     glyph.queue(Section {
-        screen_position: (x + ((width / 2.0) - text_size.0),y + ((height / 2.0) as f32 - text_size.1 * 2.2)),
-        bounds: (1000.0,1000.0),
+        screen_position: (text_x, text_y),
+        bounds: (1000.0, 1000.0),
         text: vec![Text::new(&text)
-            .with_color([color.red as f32 / 255.0, color.green as f32 / 255.0, color.blue as f32 / 255.0, 1.0])
+            .with_color([
+                color.red as f32 / 255.0,
+                color.green as f32 / 255.0,
+                color.blue as f32 / 255.0,
+                1.0,
+            ])
             .with_scale(font_size as f32 * 2.0)],
         ..Section::default()
     });
@@ -90,7 +113,6 @@ pub fn draw_button_handler(
     buffer: &mut QuadBufferBuilder,
     view: &mut EngineView,
     projection: &Projection,
-    camera: &Camera
 ) {
     let left_margin =
         spacing_unit_to_pixels(b.styles.margin_left.clone(), window_width, window_height) as f32;
@@ -102,7 +124,8 @@ pub fn draw_button_handler(
         spacing_unit_to_pixels(b.styles.margin_bottom.clone(), window_width, window_height) as f32;
 
     let width = spacing_unit_to_pixels(b.styles.width.clone(), window_width, window_height) as f32;
-    let height = spacing_unit_to_pixels(b.styles.height.clone(), window_width, window_height) as f32;
+    let height =
+        spacing_unit_to_pixels(b.styles.height.clone(), window_width, window_height) as f32;
 
     let font_size = 18.0;
 
@@ -113,7 +136,7 @@ pub fn draw_button_handler(
         }
     };
 
-    let mut button_pressed ;
+    let mut button_pressed;
 
     match b.styles.alignment {
         ElementAlignment::TopLeft => {
@@ -132,7 +155,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
         ElementAlignment::TopRight => {
@@ -151,7 +173,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
         ElementAlignment::BottomRight => {
@@ -170,7 +191,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
         ElementAlignment::BottomLeft => {
@@ -189,7 +209,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
         ElementAlignment::CenterHorizontal => {
@@ -208,7 +227,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
         ElementAlignment::CenterVertical => {
@@ -227,7 +245,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
         ElementAlignment::CenterVerticalAndHorizontal => {
@@ -246,7 +263,6 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
-                camera
             );
         }
     }

@@ -17,6 +17,7 @@ use std::ops::Add;
 use std::time::{Duration, Instant};
 
 use crate::events::EngineEvent;
+use crate::game_object::behaviours::EngineView;
 use crate::renderer::Render;
 use rapier2d::prelude::{
     vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager,
@@ -26,7 +27,6 @@ use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
-use crate::game_object::behaviours::EngineView;
 
 use crate::scene::Scene;
 
@@ -212,7 +212,6 @@ impl Engine {
 
             let active_scene = self.active_scene.as_mut().unwrap();
 
-
             for object in &mut active_scene.game_objects {
                 object.execute(
                     &mut active_scene.rigid_body_set,
@@ -226,15 +225,21 @@ impl Engine {
                 );
             }
 
-            self.renderer.as_mut().unwrap().render_buffer(buffer,&active_scene.ui_ast,&active_scene.data_map,&active_scene.function_map,&mut EngineView {
-                rigid_body_set: &mut active_scene.rigid_body_set,
-                narrow_phase: &mut active_scene.narrow_phase_collision,
-                collider_set: &mut active_scene.collider_set,
-                event_tx: &mut self.event_tx,
-                key_locks: &mut self.key_locks,
-                keys_pressed: &mut self.keys_pressed,
-                query_pipeline: &mut self.query_pipeline,
-            });
+            self.renderer.as_mut().unwrap().render_buffer(
+                buffer,
+                &active_scene.ui_ast,
+                &active_scene.data_map,
+                &active_scene.function_map,
+                &mut EngineView {
+                    rigid_body_set: &mut active_scene.rigid_body_set,
+                    narrow_phase: &mut active_scene.narrow_phase_collision,
+                    collider_set: &mut active_scene.collider_set,
+                    event_tx: &mut self.event_tx,
+                    key_locks: &mut self.key_locks,
+                    keys_pressed: &mut self.keys_pressed,
+                    query_pipeline: &mut self.query_pipeline,
+                },
+            );
         }
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {

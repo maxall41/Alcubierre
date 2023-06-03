@@ -7,10 +7,10 @@ use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::{GameObject, GameObjectBuilder};
 use alcubierre::physics::screen_units_to_physics_units;
 use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
+use alcubierre::ui::frontend::RGBColor;
 use alcubierre::Engine;
 use rapier2d::geometry::ColliderBuilder;
 use rapier2d::prelude::{vector, Ball, RigidBodyBuilder};
-use alcubierre::ui::frontend::RGBColor;
 
 pub fn register_main_scene(mut flame: &mut Engine) {
     let scene = flame.register_scene("Main".to_string());
@@ -21,7 +21,7 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .data_map
         .insert("ScoreValue".to_string(), "0".to_string());
 
-    let mut ball = GameObject::new(0.0,0.0);
+    let mut ball = GameObject::new(0.0, 0.0);
 
     let ball_rigid_body = RigidBodyBuilder::dynamic()
         .translation(vector![0.0, 0.0])
@@ -47,7 +47,7 @@ pub fn register_main_scene(mut flame: &mut Engine) {
             color: RGBColor {
                 red: 255,
                 green: 255,
-                blue: 255
+                blue: 255,
             },
         }))
         .build();
@@ -91,7 +91,7 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         color: RGBColor {
             red: 255,
             green: 255,
-            blue: 255
+            blue: 255,
         },
     }));
 
@@ -130,7 +130,7 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         color: RGBColor {
             red: 255,
             green: 255,
-            blue: 255
+            blue: 255,
         },
     }));
 
