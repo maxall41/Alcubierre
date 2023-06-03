@@ -11,7 +11,7 @@ use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
 use kira::manager::backend::DefaultBackend;
 use kira::manager::{AudioManager, AudioManagerSettings};
-use nalgebra::SMatrix;
+use nalgebra::{SMatrix, Vector2};
 use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
 use std::time::{Duration, Instant};
@@ -24,11 +24,19 @@ use rapier2d::prelude::{
     MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet,
 };
 use winit::dpi::PhysicalSize;
-use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
+use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 
 use crate::scene::Scene;
+
+
+pub struct MouseData {
+    is_middle_pressed: bool,
+    is_left_pressed: bool,
+    is_right_pressed: bool,
+    mouse_position: Vector2<f64>
+}
 
 pub struct Engine {
     pub scenes: HashMap<String, Scene>,
@@ -39,6 +47,7 @@ pub struct Engine {
     window_height: i32,
     keys_pressed: HashSet<VirtualKeyCode>,
     key_locks: HashSet<VirtualKeyCode>,
+    mouse_data: MouseData,
     query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
     gravity: SMatrix<f32, 2, 1>,
@@ -77,6 +86,12 @@ impl Engine {
             physics_pipeline,
             gravity,
             renderer: None,
+            mouse_data: MouseData {
+                is_left_pressed: false,
+                is_right_pressed: false,
+                is_middle_pressed: false,
+                mouse_position: Vector2::new(0.0,0.0)
+            }
         }
     }
 
@@ -165,6 +180,32 @@ impl Engine {
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                     // new_inner_size is &mut so w have to dereference it twice
                     self.renderer.as_mut().unwrap().resize(**new_inner_size);
+                }
+                WindowEvent::MouseInput {
+                    button: MouseButton::Left,
+                    state,
+                    ..
+                } => {
+                    self.mouse_data.is_left_pressed = *state == ElementState::Pressed;
+                }
+                WindowEvent::MouseInput {
+                    button: MouseButton::Right,
+                    state,
+                    ..
+                } => {
+                    self.mouse_data.is_right_pressed = *state == ElementState::Pressed;
+                }
+                WindowEvent::CursorMoved {
+                    position,..
+                } => {
+                    self.mouse_data.mouse_position = Vector2::new(position.x,position.y);
+                }
+                WindowEvent::MouseInput {
+                    button: MouseButton::Middle,
+                    state,
+                    ..
+                } => {
+                    self.mouse_data.is_middle_pressed = *state == ElementState::Pressed;
                 }
                 _ => {}
             },

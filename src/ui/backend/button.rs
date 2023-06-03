@@ -9,6 +9,7 @@ use hashbrown::HashMap;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{GlyphBrush, Section, Text};
 use winit::dpi::PhysicalSize;
+use crate::game_object::graphics::RectData;
 
 pub(crate) fn draw_button(
     x: f32,
@@ -78,7 +79,7 @@ pub(crate) fn draw_button(
     //     color,
     // );
 
-    // let btn_bounds = Rectangle {
+    // let btn_bounds = RectData {
     //     x: x as f32,
     //     y: y as f32,
     //     width: width as f32,
