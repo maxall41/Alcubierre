@@ -4,8 +4,10 @@ use crate::ui::frontend::{
 use hashbrown::HashMap;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{GlyphBrush, Section, Text};
+use winit::dpi::PhysicalSize;
 use crate::game_object::behaviours::EngineView;
 use crate::renderer::buffer::QuadBufferBuilder;
+use crate::renderer::camera::{Camera, Projection, screen_space_to_view_space};
 use crate::ui::backend::helpers::{measure_text, spacing_unit_to_pixels};
 
 pub(crate) fn draw_button(
@@ -19,11 +21,19 @@ pub(crate) fn draw_button(
     text: &str,
     font: &FontArc,
     buffer: &mut QuadBufferBuilder,
-    glyph: &mut GlyphBrush<()>
+    glyph: &mut GlyphBrush<()>,
+    window_width: f32,
+    window_height: f32,
+    projection: &Projection,
+    camera: &Camera
 ) -> bool {
     // d.draw_rectangle(x, y, width, height, bg_color);
-    println!("RECT X: {}, Y: {}, W: {}, H: {}",x,y,width,height);
-    buffer.push_rect(0.0,0.0,width / 10.0,height / 10.0,&bg_color);
+
+    let rect_space = screen_space_to_view_space(x as u32,y as u32,window_width,window_height,projection.calc_matrix(),camera.calc_matrix());
+
+    println!("RECT X: {}, Y: {}, W: {}, H: {}",rect_space.0,rect_space.1,width,height);
+
+    buffer.push_rect(rect_space.0,rect_space.1,width / 10.0,height / 10.0,&bg_color);
 
     let text_size = measure_text(font,&text,font_size * 2.0);
 
@@ -78,7 +88,9 @@ pub fn draw_button_handler(
     data_hashmap: &HashMap<String, String>,
     function_map: &HashMap<String, fn(&mut EngineView)>,
     buffer: &mut QuadBufferBuilder,
-    view: &mut EngineView
+    view: &mut EngineView,
+    projection: &Projection,
+    camera: &Camera
 ) {
     let left_margin =
         spacing_unit_to_pixels(b.styles.margin_left.clone(), window_width, window_height) as f32;
@@ -116,7 +128,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
         ElementAlignment::TopRight => {
@@ -131,7 +147,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
         ElementAlignment::BottomRight => {
@@ -146,7 +166,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
         ElementAlignment::BottomLeft => {
@@ -161,7 +185,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
         ElementAlignment::CenterHorizontal => {
@@ -176,7 +204,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
         ElementAlignment::CenterVertical => {
@@ -191,7 +223,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
         ElementAlignment::CenterVerticalAndHorizontal => {
@@ -206,7 +242,11 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                window_width,
+                window_height,
+                projection,
+                camera
             );
         }
     }
