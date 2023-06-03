@@ -9,7 +9,7 @@ It is no where near ready for that use case though. As what it supports is still
 ---
 
 ## What Works:
-* Physics (Mostly)
+* Physics
 * Drawing Squares
 * Playing Sounds
 * Scenes
