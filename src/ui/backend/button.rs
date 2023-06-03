@@ -6,6 +6,7 @@ use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{GlyphBrush, Section, Text};
 use crate::game_object::behaviours::EngineView;
 use crate::renderer::buffer::QuadBufferBuilder;
+use crate::renderer::camera::CameraUniform;
 use crate::ui::backend::helpers::{measure_text, spacing_unit_to_pixels};
 
 pub(crate) fn draw_button(
@@ -19,19 +20,31 @@ pub(crate) fn draw_button(
     text: &str,
     font: &FontArc,
     buffer: &mut QuadBufferBuilder,
-    glyph: &mut GlyphBrush<()>
+    glyph: &mut GlyphBrush<()>,
+    uniform: &CameraUniform
 ) -> bool {
     // d.draw_rectangle(x, y, width, height, bg_color);
-    println!("RECT X: {}, Y: {}, W: {}, H: {}",x,y,width,height);
-    buffer.push_rect(0.0,0.0,width / 10.0,height / 10.0,&bg_color);
+    // println!("{:?}",uniform.view_proj);
+    // println!("{:?},{:?}",uniform.view_proj[0][0],uniform.view_proj[1][1]);
+    let rect_x = x / 100.0;
+    let rect_y = y / 100.0;
+
+    // println!("RECT X: {:?}, Y: {:?}, W: {}, H: {}",rect_x,rect_y,width,height);
+
+    buffer.push_rect(rect_x,rect_y,width / 10.0,height / 10.0,&bg_color);
 
     let text_size = measure_text(font,&text,font_size * 2.0);
 
+    let text_y = y + ((height / 2.0) as f32 - text_size.1 * 2.2);
+    let text_x = x + ((width / 2.0) - text_size.0);
+
+    println!("{},{}",text_x,text_y);
+
     glyph.queue(Section {
-        screen_position: (x + ((width / 2.0) - text_size.0),y + ((height / 2.0) as f32 - text_size.1 * 2.2)),
+        screen_position: (text_x,text_y),
         bounds: (1000.0,1000.0),
         text: vec![Text::new(&text)
-            .with_color([color.red as f32 / 255.0, color.green as f32 / 255.0, color.blue as f32 / 255.0, 1.0])
+            .with_color([1.0, 1.0, 1.0, 1.0])
             .with_scale(font_size as f32 * 2.0)],
         ..Section::default()
     });
@@ -78,7 +91,8 @@ pub fn draw_button_handler(
     data_hashmap: &HashMap<String, String>,
     function_map: &HashMap<String, fn(&mut EngineView)>,
     buffer: &mut QuadBufferBuilder,
-    view: &mut EngineView
+    view: &mut EngineView,
+    uniform: &CameraUniform
 ) {
     let left_margin =
         spacing_unit_to_pixels(b.styles.margin_left.clone(), window_width, window_height) as f32;
@@ -107,7 +121,7 @@ pub fn draw_button_handler(
         ElementAlignment::TopLeft => {
             button_pressed = draw_button(
                 0.0 + left_margin - right_margin,
-                0.0 + top_margin - bottom_margin,
+                0.0 - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -116,13 +130,14 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
         ElementAlignment::TopRight => {
             button_pressed = draw_button(
                 window_width + left_margin - right_margin,
-                0.0 + top_margin - bottom_margin,
+                0.0 - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -131,13 +146,14 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
         ElementAlignment::BottomRight => {
             button_pressed = draw_button(
                 window_width + left_margin - right_margin,
-                window_height + top_margin - bottom_margin,
+                window_height - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -146,13 +162,14 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
         ElementAlignment::BottomLeft => {
             button_pressed = draw_button(
                 0.0 + left_margin - right_margin,
-                window_height + top_margin - bottom_margin,
+                window_height - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -161,13 +178,14 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
         ElementAlignment::CenterHorizontal => {
             button_pressed = draw_button(
-                ((window_width / 2.0) - width / 2.0) + left_margin - right_margin,
-                0.0 + top_margin - bottom_margin,
+                0.0 + left_margin - right_margin,
+                0.0 - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -176,13 +194,14 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
         ElementAlignment::CenterVertical => {
             button_pressed = draw_button(
                 0.0,
-                ((window_height / 2.0) - height) + top_margin - bottom_margin,
+                0.0 - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -191,13 +210,14 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
         ElementAlignment::CenterVerticalAndHorizontal => {
             button_pressed = draw_button(
-                ((window_width / 2.0) - width / 2.0) + left_margin - right_margin,
-                ((window_height / 2.0) - height) + top_margin - bottom_margin,
+                0.0 + left_margin - right_margin,
+                0.0 - top_margin + bottom_margin,
                 width,
                 height,
                 b.styles.background_color.clone(),
@@ -206,7 +226,8 @@ pub fn draw_button_handler(
                 &value,
                 font,
                 buffer,
-                glyph
+                glyph,
+                uniform
             );
         }
     }

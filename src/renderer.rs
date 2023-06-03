@@ -28,7 +28,7 @@ pub struct Render {
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     staging_belt: wgpu::util::StagingBelt,
-    camera_uniform: CameraUniform,
+    pub camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera: camera::Camera,
     projection: camera::Projection,
@@ -227,7 +227,7 @@ impl Render {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         if ast.is_some() {
-            render_from_hyperfoil_ast(ast.as_ref().unwrap(),&mut self.glyph_brush,self.size,&self.font,data_map,function_map,&mut buffer,engine_view);
+            render_from_hyperfoil_ast(ast.as_ref().unwrap(),&mut self.glyph_brush,self.size,&self.font,data_map,function_map,&mut buffer,engine_view,&self.camera_uniform);
         }
 
         let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
