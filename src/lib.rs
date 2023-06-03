@@ -14,6 +14,7 @@ use kira::manager::{AudioManager, AudioManagerSettings};
 use nalgebra::{SMatrix, Vector2};
 use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
+use std::thread::sleep;
 use std::time::{Duration, Instant};
 use log::warn;
 
@@ -171,6 +172,8 @@ impl Engine {
             current_size,
         )));
 
+        let mut last_delta : Duration = Duration::from_millis(0);
+
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
                 ref event,
@@ -233,6 +236,13 @@ impl Engine {
                 self.draw();
             }
             Event::MainEventsCleared => {
+                // let tf_start = Instant::now();
+
+                // Cap FPS at 60FPS. With practically no minimum
+                sleep(last_delta.clamp(Duration::from_millis(17),Duration::from_secs(100)));
+
+                let start = Instant::now();
+
                 let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
                 self.physics_pipeline.step(
                     &self.gravity,
@@ -256,6 +266,14 @@ impl Engine {
                 );
 
                 self.draw();
+
+                let end = Instant::now();
+
+                last_delta = end - start;
+
+                // let actual_delta = end - tf_start;
+                //
+                // println!("FPS: {:?}",1000.0 / actual_delta.as_millis() as f32);
             }
             _ => *control_flow = ControlFlow::Poll,
         });

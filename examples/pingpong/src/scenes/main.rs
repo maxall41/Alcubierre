@@ -17,8 +17,7 @@ use crate::scripts::barrier::BarrierBehaviour;
 pub fn register_main_scene(mut flame: &mut Engine) {
     let scene = flame.register_scene("Main".to_string());
 
-    // scene.register_ui(MAIN_UI);
-    // scene.register_ui(include_str!("ui/scene1.html"));
+    scene.register_ui(include_str!("ui/scene1.html"));
 
     scene
         .data_map
