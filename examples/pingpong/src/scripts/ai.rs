@@ -37,12 +37,14 @@ impl UserBehaviour for AIBehaviour {
         }
 
         let mut ball_y: Real;
+        let mut ball_vel: Vector<Real>;
         {
             let ball_rigid_body = engine_view
                 .rigid_body_set
                 .get_mut(self.ball_rigid_handle)
                 .unwrap();
             ball_y = ball_rigid_body.translation().y;
+            ball_vel = ball_rigid_body.linvel().clone();
         }
 
         let rigid_body = engine_view
@@ -57,7 +59,7 @@ impl UserBehaviour for AIBehaviour {
         let y_range = upper_edge - lower_edge;
         // println!("YR: {}",y_range);
 
-        if ball_y > lower_edge || ball_y > upper_edge {
+        if ball_y > lower_edge || ball_y > upper_edge && ball_vel.x > 0.0 {
             rigid_body.set_position(Isometry::new(vector![pos.translation.x, ball_y], 0.0), true);
         }
     }
