@@ -13,6 +13,7 @@ use winit::window::Window;
 
 use crate::renderer::camera::{Camera, CameraUniform};
 use buffer::*;
+use crate::game_object::behaviours::EngineView;
 use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::HyperFoilAST;
 
@@ -220,10 +221,14 @@ impl Render {
             .update_view_proj(&self.camera, &self.projection);
     }
 
-    pub fn render_buffer(&mut self, buffer: QuadBufferBuilder,ast: &Option<HyperFoilAST>,data_map: &HashMap<String,String>) {
+    pub fn render_buffer(&mut self, mut buffer: QuadBufferBuilder, ast: &Option<HyperFoilAST>, data_map: &HashMap<String,String>, function_map: &HashMap<String, fn(&mut EngineView)>, engine_view: &mut EngineView) {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+        if ast.is_some() {
+            render_from_hyperfoil_ast(ast.as_ref().unwrap(),&mut self.glyph_brush,self.size,&self.font,data_map,function_map,&mut buffer,engine_view);
+        }
 
         let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
 
@@ -258,9 +263,6 @@ impl Render {
 
                 drop(render_pass);
 
-                if ast.is_some() {
-                    render_from_hyperfoil_ast(ast.as_ref().unwrap(),&mut self.glyph_brush,self.size,&self.font,data_map);
-                }
                 // Draw the text!
                 self.glyph_brush
                     .draw_queued(

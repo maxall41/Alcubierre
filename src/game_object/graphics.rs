@@ -53,7 +53,7 @@ impl Graphics for GameObject {
                     buffer.push_circle(self.pos_x, self.pos_y, circle.radius, &circle.color, 60);
                 }
                 GraphicsType::Rect(square) => {
-                    buffer.push_square(
+                    buffer.push_rect(
                         self.pos_x,
                         self.pos_y,
                         square.width,

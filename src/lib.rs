@@ -26,6 +26,7 @@ use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
+use crate::game_object::behaviours::EngineView;
 
 use crate::scene::Scene;
 
@@ -225,7 +226,15 @@ impl Engine {
                 );
             }
 
-            self.renderer.as_mut().unwrap().render_buffer(buffer,&active_scene.ui_ast,&active_scene.data_map);
+            self.renderer.as_mut().unwrap().render_buffer(buffer,&active_scene.ui_ast,&active_scene.data_map,&active_scene.function_map,&mut EngineView {
+                rigid_body_set: &mut active_scene.rigid_body_set,
+                narrow_phase: &mut active_scene.narrow_phase_collision,
+                collider_set: &mut active_scene.collider_set,
+                event_tx: &mut self.event_tx,
+                key_locks: &mut self.key_locks,
+                keys_pressed: &mut self.keys_pressed,
+                query_pipeline: &mut self.query_pipeline,
+            });
         }
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {

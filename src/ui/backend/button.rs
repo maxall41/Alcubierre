@@ -1,90 +1,98 @@
-use crate::ui::backends::raylib::raylib::spacing_unit_to_pixels;
 use crate::ui::frontend::{
     ButtonElement, ElementAlignment, RGBColor, SpacingUnit, TextElement, ValueOrVar,
 };
-use crate::FlameEngineView;
 use hashbrown::HashMap;
-use raylib::color::Color;
-use raylib::drawing::{RaylibDraw, RaylibDrawHandle};
-use raylib::ffi::MouseButton::MOUSE_LEFT_BUTTON;
-use raylib::ffi::{CheckCollisionPointRec, GetMousePosition, Rectangle};
-use raylib::text::measure_text_ex;
+use wgpu_glyph::ab_glyph::FontArc;
+use wgpu_glyph::{GlyphBrush, Section, Text};
+use crate::game_object::behaviours::EngineView;
+use crate::renderer::buffer::QuadBufferBuilder;
+use crate::ui::backend::helpers::{measure_text, spacing_unit_to_pixels};
 
 pub(crate) fn draw_button(
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
-    bg_color: Color,
-    color: Color,
-    font_size: i32,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    bg_color: RGBColor,
+    color: RGBColor,
+    font_size: f32,
     text: &str,
-    d: &mut RaylibDrawHandle,
+    font: &FontArc,
+    buffer: &mut QuadBufferBuilder,
+    glyph: &mut GlyphBrush<()>
 ) -> bool {
-    d.draw_rectangle(x, y, width, height, bg_color);
+    // d.draw_rectangle(x, y, width, height, bg_color);
+    println!("RECT X: {}, Y: {}, W: {}, H: {}",x,y,width,height);
+    buffer.push_rect(0.0,0.0,width / 10.0,height / 10.0,&bg_color);
 
-    let text_size = measure_text_ex(d.get_font_default(), &text, font_size as f32, 0 as f32);
-    d.draw_text(
-        text,
-        x + ((width / 2) as f32 - text_size.x / 2.0) as i32,
-        y + ((height / 2) as f32 - text_size.y / 2.0) as i32,
-        font_size,
-        color,
-    );
+    let text_size = measure_text(font,&text,font_size * 2.0);
 
-    let btn_bounds = Rectangle {
-        x: x as f32,
-        y: y as f32,
-        width: width as f32,
-        height: height as f32,
-    };
+    glyph.queue(Section {
+        screen_position: (x + ((width / 2.0) - text_size.0),y + ((height / 2.0) as f32 - text_size.1 * 2.2)),
+        bounds: (1000.0,1000.0),
+        text: vec![Text::new(&text)
+            .with_color([color.red as f32 / 255.0, color.green as f32 / 255.0, color.blue as f32 / 255.0, 1.0])
+            .with_scale(font_size as f32 * 2.0)],
+        ..Section::default()
+    });
 
-    // Check button state
-    unsafe {
-        let mouse_point = GetMousePosition();
-        if CheckCollisionPointRec(mouse_point, btn_bounds) {
-            if d.is_mouse_button_pressed(MOUSE_LEFT_BUTTON) {
-                true
-            } else {
-                false
-            }
-        } else {
-            false
-        }
-    }
-}
+    // let text_size = measure_text_ex(d.get_font_default(), &text, font_size as f32, 0 as f32);
+    // d.draw_text(
+    //     text,
+    //     x + ((width / 2) as f32 - text_size.x / 2.0) as i32,
+    //     y + ((height / 2) as f32 - text_size.y / 2.0) as i32,
+    //     font_size,
+    //     color,
+    // );
 
-pub fn rgb_color_to_raylib_color(color: RGBColor) -> Color {
-    Color {
-        r: color.red,
-        g: color.green,
-        b: color.blue,
-        a: 250,
-    }
+    // let btn_bounds = Rectangle {
+    //     x: x as f32,
+    //     y: y as f32,
+    //     width: width as f32,
+    //     height: height as f32,
+    // };
+    //
+    // // Check button state
+    // unsafe {
+    //     let mouse_point = GetMousePosition();
+    //     if CheckCollisionPointRec(mouse_point, btn_bounds) {
+    //         if d.is_mouse_button_pressed(MOUSE_LEFT_BUTTON) {
+    //             true
+    //         } else {
+    //             false
+    //         }
+    //     } else {
+    //         false
+    //     }
+    // }
+
+    false
 }
 
 pub fn draw_button_handler(
     b: &ButtonElement,
-    window_width: i32,
-    window_height: i32,
-    d: &mut RaylibDrawHandle,
+    window_width: f32,
+    window_height: f32,
+    glyph: &mut GlyphBrush<()>,
+    font: &FontArc,
     data_hashmap: &HashMap<String, String>,
-    function_map: &HashMap<String, fn(&mut FlameEngineView)>,
-    flame_view: &mut FlameEngineView,
+    function_map: &HashMap<String, fn(&mut EngineView)>,
+    buffer: &mut QuadBufferBuilder,
+    view: &mut EngineView
 ) {
     let left_margin =
-        spacing_unit_to_pixels(b.styles.margin_left.clone(), window_width, window_height);
+        spacing_unit_to_pixels(b.styles.margin_left.clone(), window_width, window_height) as f32;
     let right_margin =
-        spacing_unit_to_pixels(b.styles.margin_right.clone(), window_width, window_height);
+        spacing_unit_to_pixels(b.styles.margin_right.clone(), window_width, window_height) as f32;
     let top_margin =
-        spacing_unit_to_pixels(b.styles.margin_top.clone(), window_width, window_height);
+        spacing_unit_to_pixels(b.styles.margin_top.clone(), window_width, window_height) as f32;
     let bottom_margin =
-        spacing_unit_to_pixels(b.styles.margin_bottom.clone(), window_width, window_height);
+        spacing_unit_to_pixels(b.styles.margin_bottom.clone(), window_width, window_height) as f32;
 
-    let width = spacing_unit_to_pixels(b.styles.width.clone(), window_width, window_height);
-    let height = spacing_unit_to_pixels(b.styles.height.clone(), window_width, window_height);
+    let width = spacing_unit_to_pixels(b.styles.width.clone(), window_width, window_height) as f32;
+    let height = spacing_unit_to_pixels(b.styles.height.clone(), window_width, window_height) as f32;
 
-    let font_size = 18;
+    let font_size = 18.0;
 
     let value = match &b.content {
         ValueOrVar::Value(value) => value.to_string(),
@@ -98,28 +106,32 @@ pub fn draw_button_handler(
     match b.styles.alignment {
         ElementAlignment::TopLeft => {
             button_pressed = draw_button(
-                0 + left_margin - right_margin,
-                0 + top_margin - bottom_margin,
+                0.0 + left_margin - right_margin,
+                0.0 + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
         ElementAlignment::TopRight => {
             button_pressed = draw_button(
                 window_width + left_margin - right_margin,
-                0 + top_margin - bottom_margin,
+                0.0 + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
         ElementAlignment::BottomRight => {
@@ -128,69 +140,79 @@ pub fn draw_button_handler(
                 window_height + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
         ElementAlignment::BottomLeft => {
             button_pressed = draw_button(
-                0 + left_margin - right_margin,
+                0.0 + left_margin - right_margin,
                 window_height + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
         ElementAlignment::CenterHorizontal => {
             button_pressed = draw_button(
-                ((window_width / 2) - width / 2) + left_margin - right_margin,
-                0 + top_margin - bottom_margin,
+                ((window_width / 2.0) - width / 2.0) + left_margin - right_margin,
+                0.0 + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
         ElementAlignment::CenterVertical => {
             button_pressed = draw_button(
-                0 + left_margin - right_margin,
-                ((window_height / 2) - height) + top_margin - bottom_margin,
+                0.0,
+                ((window_height / 2.0) - height) + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
         ElementAlignment::CenterVerticalAndHorizontal => {
             button_pressed = draw_button(
-                ((window_width / 2) - width / 2) + left_margin - right_margin,
-                ((window_height / 2) - height) + top_margin - bottom_margin,
+                ((window_width / 2.0) - width / 2.0) + left_margin - right_margin,
+                ((window_height / 2.0) - height) + top_margin - bottom_margin,
                 width,
                 height,
-                rgb_color_to_raylib_color(b.styles.background_color.clone()),
-                rgb_color_to_raylib_color(b.styles.color.clone()),
+                b.styles.background_color.clone(),
+                b.styles.color.clone(),
                 font_size,
                 &value,
-                d,
+                font,
+                buffer,
+                glyph
             );
         }
     }
 
     if button_pressed {
         let action = function_map.get(&b.binding).unwrap();
-        action(flame_view);
+        action(view);
     }
 }

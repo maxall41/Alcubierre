@@ -62,7 +62,7 @@ impl QuadBufferBuilder {
         }
     }
 
-    pub fn push_square(&mut self, x: f32, y: f32, width: f32, height: f32, color: &RGBColor) {
+    pub fn push_rect(&mut self, x: f32, y: f32, width: f32, height: f32, color: &RGBColor) {
         self.push_quad(
             x - width * 0.5,
             y - height * 0.5,
