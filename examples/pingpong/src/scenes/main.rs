@@ -1,6 +1,6 @@
-use rand::thread_rng;
 use crate::scripts::ai::AIBehaviour;
 use crate::scripts::ball::BallBehaviour;
+use crate::scripts::barrier::BarrierBehaviour;
 use crate::scripts::fail::FailBehaviour;
 use crate::scripts::player::PlayerBehaviour;
 use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
@@ -10,9 +10,9 @@ use alcubierre::physics::screen_units_to_physics_units;
 use alcubierre::physics::{AlcubierreCollider, AlcubierreColliderType};
 use alcubierre::ui::frontend::RGBColor;
 use alcubierre::Engine;
+use rand::thread_rng;
 use rapier2d::geometry::ColliderBuilder;
 use rapier2d::prelude::{vector, Ball, RigidBodyBuilder};
-use crate::scripts::barrier::BarrierBehaviour;
 
 pub fn register_main_scene(mut flame: &mut Engine) {
     let scene = flame.register_scene("Main".to_string());

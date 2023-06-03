@@ -4,31 +4,29 @@ use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, Rect
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
 use alcubierre::{Engine, EngineConfig};
+use log::warn;
 use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
 use std::sync::Arc;
 use std::sync::RwLock;
-use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::wasm_bindgen;
-use log::{warn};
+use wasm_bindgen::JsValue;
 
 mod scenes;
 mod scripts;
 
 use crate::scripts::player::PlayerBehaviour;
 
-
-#[cfg_attr(target_arch="wasm32", wasm_bindgen(start))]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub fn main() -> Result<(), JsValue> {
     cfg_if::cfg_if! {
-    if #[cfg(target_arch = "wasm32")] {
-        std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
-    } else {
-        env_logger::init();
+        if #[cfg(target_arch = "wasm32")] {
+            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+            console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
+        } else {
+            env_logger::init();
+        }
     }
-}
-
 
     warn!("Started");
 

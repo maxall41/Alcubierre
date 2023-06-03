@@ -15,7 +15,7 @@ use nalgebra::{SMatrix, Vector2};
 use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
 use std::thread::sleep;
-use std::time::Duration;
+use std::time::{Duration};
 use instant::Instant;
 use log::warn;
 
@@ -174,6 +174,7 @@ impl Engine {
         )));
 
         let mut last_delta : Duration = Duration::from_millis(0);
+        let mut last_frame_end : Instant = Instant::now();
 
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
@@ -240,43 +241,45 @@ impl Engine {
                 let tf_start = Instant::now();
 
                 // Cap FPS at 60FPS. With practically no minimum
-                // sleep(last_delta.clamp(Duration::from_millis(17),Duration::from_secs(100)));
+                // sleep(last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)));
 
-                if 
+                let clamped_delta = last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100));
 
-                let start = Instant::now();
+                if tf_start - last_frame_end > clamped_delta {
+                    let start = Instant::now();
 
-                let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
-                self.physics_pipeline.step(
-                    &self.gravity,
-                    &active_scene_unwrapped.integration_params,
-                    &mut active_scene_unwrapped.island_manager,
-                    &mut active_scene_unwrapped.broad_phase,
-                    &mut active_scene_unwrapped.narrow_phase_collision,
-                    &mut active_scene_unwrapped.rigid_body_set,
-                    &mut active_scene_unwrapped.collider_set,
-                    &mut active_scene_unwrapped.impulse_joint_set,
-                    &mut active_scene_unwrapped.multibody_joint_set,
-                    &mut active_scene_unwrapped.ccd_solver,
-                    None,
-                    &(),
-                    &(),
-                );
+                    let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
+                    self.physics_pipeline.step(
+                        &self.gravity,
+                        &active_scene_unwrapped.integration_params,
+                        &mut active_scene_unwrapped.island_manager,
+                        &mut active_scene_unwrapped.broad_phase,
+                        &mut active_scene_unwrapped.narrow_phase_collision,
+                        &mut active_scene_unwrapped.rigid_body_set,
+                        &mut active_scene_unwrapped.collider_set,
+                        &mut active_scene_unwrapped.impulse_joint_set,
+                        &mut active_scene_unwrapped.multibody_joint_set,
+                        &mut active_scene_unwrapped.ccd_solver,
+                        None,
+                        &(),
+                        &(),
+                    );
 
-                self.query_pipeline.update(
-                    &active_scene_unwrapped.rigid_body_set,
-                    &active_scene_unwrapped.collider_set,
-                );
+                    self.query_pipeline.update(
+                        &active_scene_unwrapped.rigid_body_set,
+                        &active_scene_unwrapped.collider_set,
+                    );
 
-                self.draw();
+                    self.draw();
 
-                let end = Instant::now();
+                    last_frame_end = Instant::now();
 
-                last_delta = end - start;
+                    last_delta = last_frame_end - start;
 
-                let actual_delta = end - tf_start;
+                    //
+                    // warn!("FPS: {:?}",1000.0 / clamped_delta.as_millis() as f32);
+                }
 
-                warn!("FPS: {:?}",1000.0 / actual_delta.as_millis() as f32);
             }
             _ => *control_flow = ControlFlow::Poll,
         });
