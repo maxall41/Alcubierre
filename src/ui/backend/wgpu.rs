@@ -8,6 +8,7 @@ use hashbrown::HashMap;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::GlyphBrush;
 use winit::dpi::PhysicalSize;
+use crate::MouseData;
 
 pub fn render_from_hyperfoil_ast(
     ast: &HyperFoilAST,
@@ -19,6 +20,7 @@ pub fn render_from_hyperfoil_ast(
     buffer: &mut QuadBufferBuilder,
     view: &mut EngineView,
     projection: &Projection,
+    mouse_data: &MouseData
 ) {
     for element in &ast.elements {
         match element {
@@ -44,6 +46,7 @@ pub fn render_from_hyperfoil_ast(
                     buffer,
                     view,
                     projection,
+                    mouse_data
                 );
             }
         }

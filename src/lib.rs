@@ -24,18 +24,19 @@ use rapier2d::prelude::{
     MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet,
 };
 use winit::dpi::PhysicalSize;
-use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent};
+use winit::event::{
+    DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent,
+};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 
 use crate::scene::Scene;
 
-
 pub struct MouseData {
     is_middle_pressed: bool,
     is_left_pressed: bool,
     is_right_pressed: bool,
-    mouse_position: Vector2<f64>
+    mouse_position: Vector2<f64>,
 }
 
 pub struct Engine {
@@ -90,8 +91,8 @@ impl Engine {
                 is_left_pressed: false,
                 is_right_pressed: false,
                 is_middle_pressed: false,
-                mouse_position: Vector2::new(0.0,0.0)
-            }
+                mouse_position: Vector2::new(0.0, 0.0),
+            },
         }
     }
 
@@ -195,10 +196,8 @@ impl Engine {
                 } => {
                     self.mouse_data.is_right_pressed = *state == ElementState::Pressed;
                 }
-                WindowEvent::CursorMoved {
-                    position,..
-                } => {
-                    self.mouse_data.mouse_position = Vector2::new(position.x,position.y);
+                WindowEvent::CursorMoved { position, .. } => {
+                    self.mouse_data.mouse_position = Vector2::new(position.x, position.y);
                 }
                 WindowEvent::MouseInput {
                     button: MouseButton::Middle,
@@ -280,6 +279,7 @@ impl Engine {
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
                 },
+                &self.mouse_data
             );
         }
     }

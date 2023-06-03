@@ -16,6 +16,7 @@ use crate::renderer::camera::{Camera, CameraUniform};
 use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::HyperFoilAST;
 use buffer::*;
+use crate::MouseData;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -226,6 +227,7 @@ impl Render {
         data_map: &HashMap<String, String>,
         function_map: &HashMap<String, fn(&mut EngineView)>,
         engine_view: &mut EngineView,
+        mouse_data: &MouseData
     ) {
         let mut encoder = self
             .device
@@ -242,6 +244,7 @@ impl Render {
                 &mut buffer,
                 engine_view,
                 &self.projection,
+                mouse_data
             );
         }
 

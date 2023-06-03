@@ -10,6 +10,7 @@ use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{GlyphBrush, Section, Text};
 use winit::dpi::PhysicalSize;
 use crate::game_object::graphics::RectData;
+use crate::MouseData;
 
 pub(crate) fn draw_button(
     x: f32,
@@ -26,8 +27,10 @@ pub(crate) fn draw_button(
     window_width: f32,
     window_height: f32,
     projection: &Projection,
+    mouse_data: &MouseData
 ) -> bool {
     // d.draw_rectangle(x, y, width, height, bg_color);
+    // println!("RS: {},{}",x,y);
 
     let rect_space = screen_space_to_view_space(
         x as u32,
@@ -35,11 +38,6 @@ pub(crate) fn draw_button(
         window_width,
         window_height,
         projection.calc_matrix(),
-    );
-
-    println!(
-        "RECT X: {}, Y: {}, W: {}, H: {}",
-        rect_space.0, rect_space.1, width, height
     );
 
     buffer.push_rect(
@@ -70,35 +68,14 @@ pub(crate) fn draw_button(
         ..Section::default()
     });
 
-    // let text_size = measure_text_ex(d.get_font_default(), &text, font_size as f32, 0 as f32);
-    // d.draw_text(
-    //     text,
-    //     x + ((width / 2) as f32 - text_size.x / 2.0) as i32,
-    //     y + ((height / 2) as f32 - text_size.y / 2.0) as i32,
-    //     font_size,
-    //     color,
-    // );
-
-    // let btn_bounds = RectData {
-    //     x: x as f32,
-    //     y: y as f32,
-    //     width: width as f32,
-    //     height: height as f32,
-    // };
-    //
-    // // Check button state
-    // unsafe {
-    //     let mouse_point = GetMousePosition();
-    //     if CheckCollisionPointRec(mouse_point, btn_bounds) {
-    //         if d.is_mouse_button_pressed(MOUSE_LEFT_BUTTON) {
-    //             true
-    //         } else {
-    //             false
-    //         }
-    //     } else {
-    //         false
-    //     }
-    // }
+    // More magic numbers. Do not touch
+    if mouse_data.is_left_pressed {
+        if mouse_data.mouse_position.x > x as f64 / 1.4 && mouse_data.mouse_position.x < (x+width * 5.0) as f64 {
+            if mouse_data.mouse_position.y > y as f64 / 1.05 && mouse_data.mouse_position.y < (y+height * 2.0) as f64 {
+                return true;
+            }
+        }
+    }
 
     false
 }
@@ -114,6 +91,7 @@ pub fn draw_button_handler(
     buffer: &mut QuadBufferBuilder,
     view: &mut EngineView,
     projection: &Projection,
+    mouse_data: &MouseData
 ) {
     let left_margin =
         spacing_unit_to_pixels(b.styles.margin_left.clone(), window_width, window_height) as f32;
@@ -156,6 +134,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
         ElementAlignment::TopRight => {
@@ -174,6 +153,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
         ElementAlignment::BottomRight => {
@@ -192,6 +172,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
         ElementAlignment::BottomLeft => {
@@ -210,6 +191,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
         ElementAlignment::CenterHorizontal => {
@@ -228,6 +210,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
         ElementAlignment::CenterVertical => {
@@ -246,6 +229,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
         ElementAlignment::CenterVerticalAndHorizontal => {
@@ -264,6 +248,7 @@ pub fn draw_button_handler(
                 window_width,
                 window_height,
                 projection,
+                mouse_data
             );
         }
     }
