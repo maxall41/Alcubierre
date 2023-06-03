@@ -13,12 +13,12 @@ It is no where near ready for that use case though. As what it supports is still
 * Drawing Squares
 * Playing Sounds
 * Scenes
+* Circles (Except for the physics scaling)
 
 ---
 
 ## Coming Soon:
 * Sprites
-* Circles
 * Return GameObject from collison checks
 * Camera System
 * Animations
