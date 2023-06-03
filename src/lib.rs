@@ -211,8 +211,6 @@ impl Engine {
 
             let active_scene = self.active_scene.as_mut().unwrap();
 
-            // if active_scene.ui_ast.is_some() {
-            // }
 
             for object in &mut active_scene.game_objects {
                 object.execute(
@@ -227,10 +225,8 @@ impl Engine {
                 );
             }
 
-            // d.clear_background(config.clear_color);
+            self.renderer.as_mut().unwrap().render_buffer(buffer,&active_scene.ui_ast,&active_scene.data_map);
         }
-
-        self.renderer.as_mut().unwrap().render_buffer(buffer);
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {
         let integration_params = IntegrationParameters::default();

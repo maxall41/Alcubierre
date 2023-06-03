@@ -3,6 +3,7 @@ pub mod camera;
 
 use futures::StreamExt;
 use std::iter;
+use hashbrown::HashMap;
 use wgpu::util::DeviceExt;
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
 use wgpu_glyph::ab_glyph::FontArc;
@@ -12,6 +13,8 @@ use winit::window::Window;
 
 use crate::renderer::camera::{Camera, CameraUniform};
 use buffer::*;
+use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
+use crate::ui::frontend::HyperFoilAST;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -30,7 +33,8 @@ pub struct Render {
     projection: camera::Projection,
     camera_bind_group: wgpu::BindGroup,
     glyph_brush: GlyphBrush<()>,
-    size: PhysicalSize<u32>
+    size: PhysicalSize<u32>,
+    font: FontArc
 }
 
 impl Render {
@@ -178,12 +182,13 @@ impl Render {
 
         let staging_belt = wgpu::util::StagingBelt::new(1024);
 
-        let default_font = ab_glyph::FontArc::try_from_slice(include_bytes!(
+        let font = ab_glyph::FontArc::try_from_slice(include_bytes!(
             "./assets/monogram-default-font.ttf"
         )).unwrap();
 
-        let glyph_brush = GlyphBrushBuilder::using_font(default_font)
+        let glyph_brush = GlyphBrushBuilder::using_font(font.clone())
             .build(&device, config.format);
+
 
         Self {
             surface,
@@ -201,7 +206,8 @@ impl Render {
             projection,
             camera,
             glyph_brush,
-            size
+            size,
+            font
         }
     }
 
@@ -214,7 +220,7 @@ impl Render {
             .update_view_proj(&self.camera, &self.projection);
     }
 
-    pub fn render_buffer(&mut self, buffer: QuadBufferBuilder) {
+    pub fn render_buffer(&mut self, buffer: QuadBufferBuilder,ast: &Option<HyperFoilAST>,data_map: &HashMap<String,String>) {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -252,15 +258,9 @@ impl Render {
 
                 drop(render_pass);
 
-                self.glyph_brush.queue(Section {
-                    screen_position: (30.0, 90.0),
-                    bounds: (self.size.width as f32, self.size.height as f32),
-                    text: vec![Text::new("Hello wgpu_glyph!")
-                        .with_color([1.0, 1.0, 1.0, 1.0])
-                        .with_scale(40.0)],
-                    ..Section::default()
-                });
-
+                if ast.is_some() {
+                    render_from_hyperfoil_ast(ast.as_ref().unwrap(),&mut self.glyph_brush,self.size,&self.font,data_map);
+                }
                 // Draw the text!
                 self.glyph_brush
                     .draw_queued(
