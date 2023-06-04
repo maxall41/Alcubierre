@@ -21,7 +21,7 @@ It is no where near ready for that use case though. As what it supports is still
 ## Coming Soon:
 * Sprites
 * Return GameObject from collision checks
-* Camera System
+* Exposed Camera System
 * Animations
 * Error Handling
 * Collision Layers
@@ -33,5 +33,4 @@ It is no where near ready for that use case though. As what it supports is still
 * Particle System
 * Better ease of use
 * Animations
-* Window Resizing That doesn't break horribly
 * Level Manager
