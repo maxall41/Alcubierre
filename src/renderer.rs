@@ -128,19 +128,20 @@ impl Render {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-            label: Some("bind_group_layout"),
-        });
+        let bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+                label: Some("bind_group_layout"),
+            });
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
@@ -212,13 +213,14 @@ impl Render {
         }
     }
 
-    pub fn resize(&mut self, size: PhysicalSize<u32>) {
-        self.config.width = size.width;
-        self.config.height = size.height;
-        self.surface.configure(&self.device, &self.config);
-        self.projection.resize(size.width, size.height);
-        self.camera_uniform
-            .update_view_proj(&self.camera, &self.projection);
+    pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
+        if new_size.width > 0 && new_size.height > 0 {
+            self.projection.resize(new_size.width, new_size.height);
+            self.size = new_size;
+            self.config.width = new_size.width;
+            self.config.height = new_size.height;
+            self.surface.configure(&self.device, &self.config);
+        }
     }
 
     pub fn render_buffer(
@@ -230,6 +232,14 @@ impl Render {
         engine_view: &mut EngineView,
         mouse_data: &MouseData
     ) {
+        self.camera_uniform
+            .update_view_proj(&self.camera, &self.projection);
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_uniform]),
+        );
+
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
