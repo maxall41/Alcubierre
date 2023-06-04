@@ -38,14 +38,18 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let mut ball_builder = GameObjectBuilder::new().behaviour(BallBehaviour {}).rigid_body(ball_rigid_body).collider(ball_collider).graphics(GraphicsType::Circle(CircleData {
-        radius: 0.6,
-        color: RGBColor {
-            red: 255,
-            green: 255,
-            blue: 255,
-        },
-    }));
+    let mut ball_builder = GameObjectBuilder::new()
+        .behaviour(BallBehaviour {})
+        .rigid_body(ball_rigid_body)
+        .collider(ball_collider)
+        .graphics(GraphicsType::Circle(CircleData {
+            radius: 0.6,
+            color: RGBColor {
+                red: 255,
+                green: 255,
+                blue: 255,
+            },
+        }));
 
     let ball = scene.register_game_object(ball_builder);
 
@@ -67,23 +71,26 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let mut player_builder = GameObjectBuilder::new().behaviour(PlayerBehaviour {
-        speed: 0.01,
-        decay: 50.5,
-        ball_handle: ball_c_handle,
-        score: 0,
-    }).rigid_body(player_rigid_body).collider(player_collider).graphics(GraphicsType::Rect(RectData {
-        width: 0.5,
-        height: 6.0,
-        color: RGBColor {
-            red: 255,
-            green: 255,
-            blue: 255,
-        },
-    }));
+    let mut player_builder = GameObjectBuilder::new()
+        .behaviour(PlayerBehaviour {
+            speed: 0.01,
+            decay: 50.5,
+            ball_handle: ball_c_handle,
+            score: 0,
+        })
+        .rigid_body(player_rigid_body)
+        .collider(player_collider)
+        .graphics(GraphicsType::Rect(RectData {
+            width: 0.5,
+            height: 6.0,
+            color: RGBColor {
+                red: 255,
+                green: 255,
+                blue: 255,
+            },
+        }));
 
     let player = scene.register_game_object(player_builder);
-
 
     let ai_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.1, 0.0])
@@ -99,23 +106,26 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let mut ai_builder = GameObjectBuilder::new().behaviour(AIBehaviour {
-        speed: 1.0,
-        ball_handle: ball_c_handle,
-        ball_rigid_handle: ball_r_handle,
-        rng: rand::thread_rng(),
-    }).rigid_body(ai_rigid_body).collider(ai_collider).graphics(GraphicsType::Rect(RectData {
-        width: 0.5,
-        height: 6.0,
-        color: RGBColor {
-            red: 255,
-            green: 255,
-            blue: 255,
-        },
-    }));
+    let mut ai_builder = GameObjectBuilder::new()
+        .behaviour(AIBehaviour {
+            speed: 1.0,
+            ball_handle: ball_c_handle,
+            ball_rigid_handle: ball_r_handle,
+            rng: rand::thread_rng(),
+        })
+        .rigid_body(ai_rigid_body)
+        .collider(ai_collider)
+        .graphics(GraphicsType::Rect(RectData {
+            width: 0.5,
+            height: 6.0,
+            color: RGBColor {
+                red: 255,
+                green: 255,
+                blue: 255,
+            },
+        }));
 
     let ai = scene.register_game_object(ai_builder);
-
 
     let top_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.0, 0.15])
@@ -132,16 +142,18 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let mut top_wall_builder = GameObjectBuilder::new().rigid_body(top_wall_rigid_body).behaviour(BarrierBehaviour {
-        ball_handle: ball_c_handle,
-        ball_rigid_handle: ball_r_handle,
-        rng: thread_rng(),
-    }).collider(top_wall_collider);
+    let mut top_wall_builder = GameObjectBuilder::new()
+        .rigid_body(top_wall_rigid_body)
+        .behaviour(BarrierBehaviour {
+            ball_handle: ball_c_handle,
+            ball_rigid_handle: ball_r_handle,
+            rng: thread_rng(),
+        })
+        .collider(top_wall_collider);
 
     let top_wall = scene.register_game_object(top_wall_builder);
 
     let top_wall_collider_handle = top_wall.physics.collider_handle.unwrap();
-
 
     let bottom_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.0, -0.15])
@@ -158,11 +170,14 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let mut bottom_wall_builder = GameObjectBuilder::new().rigid_body(bottom_wall_rigid_body).behaviour(BarrierBehaviour {
-        ball_handle: ball_c_handle,
-        ball_rigid_handle: ball_r_handle,
-        rng: thread_rng(),
-    }).collider(bottom_wall_collider);
+    let mut bottom_wall_builder = GameObjectBuilder::new()
+        .rigid_body(bottom_wall_rigid_body)
+        .behaviour(BarrierBehaviour {
+            ball_handle: ball_c_handle,
+            ball_rigid_handle: ball_r_handle,
+            rng: thread_rng(),
+        })
+        .collider(bottom_wall_collider);
 
     let bottom_wall = scene.register_game_object(bottom_wall_builder);
 
@@ -183,14 +198,15 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 100.0,
     };
 
-    let mut fail_barrier_builder = GameObjectBuilder::new().behaviour(FailBehaviour {
-        speed: 0.0,
-        ball_handle: ball_c_handle,
-    }).rigid_body(fail_barrier_rigid_body).collider(fail_barrier_collider);
+    let mut fail_barrier_builder = GameObjectBuilder::new()
+        .behaviour(FailBehaviour {
+            speed: 0.0,
+            ball_handle: ball_c_handle,
+        })
+        .rigid_body(fail_barrier_rigid_body)
+        .collider(fail_barrier_collider);
 
     let fail_barrier = scene.register_game_object(fail_barrier_builder);
 
-    let fail_barrier_collider_handle =
-        fail_barrier.physics.collider_handle.unwrap();
-
+    let fail_barrier_collider_handle = fail_barrier.physics.collider_handle.unwrap();
 }

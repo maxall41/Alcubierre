@@ -5,8 +5,7 @@ use alcubierre::game_object::GameObjectView;
 use rapier2d::prelude::{vector, Vector};
 
 #[derive(Clone)]
-pub struct BallBehaviour {
-}
+pub struct BallBehaviour {}
 
 impl UserBehaviour for BallBehaviour {
     fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {}
