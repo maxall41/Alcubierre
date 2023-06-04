@@ -23,8 +23,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .data_map
         .insert("ScoreValue".to_string(), "0".to_string());
 
-    let mut ball = GameObject::new(0.0, 0.0);
-
     let ball_rigid_body = RigidBodyBuilder::dynamic()
         .translation(vector![0.0, 0.0])
         .linear_damping(0.0)
@@ -32,6 +30,8 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .ccd_enabled(true)
         .can_sleep(false)
         .build();
+
+    let mut ball = GameObjectBuilder::new().rigid_body(ball_rigid_body)
 
     let ball_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Circle(0.6),

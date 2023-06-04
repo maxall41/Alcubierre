@@ -142,7 +142,7 @@ pub struct GameObjectBuilder {
     pub pos_x: f32,
     pub pos_y: f32,
     pub pre_rapier_collider: Option<AlcubierreCollider>,
-    pub rigid_body_handle: Option<RigidBodyHandle>
+    pub rigid_body: Option<RigidBody>
 }
 
 impl GameObjectBuilder {
@@ -153,7 +153,7 @@ impl GameObjectBuilder {
             pos_y: 0.0,
             pos_x: 0.0,
             pre_rapier_collider: None,
-            rigid_body_handle: None
+            rigid_body: None
         }
     }
     pub fn graphics(mut self, graphics: GraphicsType) -> GameObjectBuilder {
@@ -161,8 +161,7 @@ impl GameObjectBuilder {
         self
     }
     pub fn rigid_body(mut self, rigid_body: RigidBody, scene: &mut Scene) -> GameObjectBuilder {
-        let handle = scene.rigid_body_set.insert(rigid_body);
-        self.rigid_body_handle = Some(handle.clone());
+        self.rigid_body = Some(rigid_body);
         self
     }
     pub fn behaviour(mut self, behaviour: impl UserBehaviour) -> GameObjectBuilder {

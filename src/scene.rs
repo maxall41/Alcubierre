@@ -4,10 +4,7 @@ use crate::ui::frontend::HyperFoilAST;
 use crate::ui::parse_ui_blob;
 use hashbrown::HashMap;
 use rapier2d::geometry::{ColliderHandle, ColliderSet};
-use rapier2d::prelude::{
-    BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager,
-    MultibodyJointSet, NarrowPhase, RigidBodySet,
-};
+use rapier2d::prelude::{BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager, MultibodyJointSet, NarrowPhase, RigidBodyHandle, RigidBodySet};
 use crate::game_object::physics::PhysicsData;
 
 #[derive(Clone)]
@@ -31,17 +28,17 @@ impl Scene {
     pub fn register_game_object(&mut self, game_object_builder: GameObjectBuilder) {
 
         let mut collider_handle : Option<ColliderHandle> = None;
+        let mut rigid_body_handle : Option<RigidBodyHandle> = None;
         if game_object_builder.pre_rapier_collider.is_some() {
-            if game_object_builder.rigid_body_handle.is_some() {
-                let handle = self.collider_set.insert_with_parent(
+            if game_object_builder.rigid_body.is_some() {
+                rigid_body_handle = Some(self.rigid_body_set.insert(game_object_builder.rigid_body.unwrap()));
+                collider_handle = Some(self.collider_set.insert_with_parent(
                     game_object_builder.pre_rapier_collider.unwrap().to_rapier(self.current_game_object_id),
-                    game_object_builder.rigid_body_handle.unwrap(),
+                    rigid_body_handle.unwrap(),
                     &mut self.rigid_body_set,
-                );
-                collider_handle = Some(handle.clone());
+                ));
             } else {
-                let handle = self.collider_set.insert(game_object_builder.pre_rapier_collider.unwrap().to_rapier(self.current_game_object_id));
-                collider_handle = Some(handle.clone());
+               collider_handle = Some(self.collider_set.insert(game_object_builder.pre_rapier_collider.unwrap().to_rapier(self.current_game_object_id)));
             }
         }
 
@@ -53,7 +50,7 @@ impl Scene {
             pos_y: game_object_builder.pos_y,
             physics: PhysicsData {
                 collider_handle: collider_handle,
-                rigid_body_handle: game_object_builder.rigid_body_handle,
+                rigid_body_handle: rigid_body_handle    ,
             },
             id: self.current_game_object_id,
         };
