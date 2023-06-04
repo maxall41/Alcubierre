@@ -25,7 +25,7 @@ pub struct Scene {
     pub(crate) current_game_object_id: u128,
 }
 impl Scene {
-    pub fn register_game_object(&mut self, game_object_builder: GameObjectBuilder) {
+    pub fn register_game_object(&mut self, game_object_builder: GameObjectBuilder) -> &GameObject {
 
         let mut collider_handle : Option<ColliderHandle> = None;
         let mut rigid_body_handle : Option<RigidBodyHandle> = None;
@@ -50,13 +50,17 @@ impl Scene {
             pos_y: game_object_builder.pos_y,
             physics: PhysicsData {
                 collider_handle: collider_handle,
-                rigid_body_handle: rigid_body_handle    ,
+                rigid_body_handle: rigid_body_handle,
             },
             id: self.current_game_object_id,
         };
 
         self.game_objects.push(game_object);
+        let just_inserted = self.game_objects.get(self.current_game_object_id as usize);
+
         self.current_game_object_id += 1;
+
+        just_inserted.unwrap()
     }
     pub fn register_ui(&mut self, blob: &str) {
         let ui_ast = parse_ui_blob(blob);

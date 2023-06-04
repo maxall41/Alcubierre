@@ -6,7 +6,6 @@ use rapier2d::prelude::{vector, Vector};
 
 #[derive(Clone)]
 pub struct BallBehaviour {
-    pub(crate) speed: f32,
 }
 
 impl UserBehaviour for BallBehaviour {

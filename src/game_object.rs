@@ -160,7 +160,7 @@ impl GameObjectBuilder {
         self.graphics = Some(graphics);
         self
     }
-    pub fn rigid_body(mut self, rigid_body: RigidBody, scene: &mut Scene) -> GameObjectBuilder {
+    pub fn rigid_body(mut self, rigid_body: RigidBody) -> GameObjectBuilder {
         self.rigid_body = Some(rigid_body);
         self
     }
@@ -171,7 +171,6 @@ impl GameObjectBuilder {
     pub fn collider(
         mut self,
         collider: AlcubierreCollider,
-        scene: &mut Scene,
     ) -> GameObjectBuilder {
         self.pre_rapier_collider = Some(collider);
         self

@@ -31,8 +31,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .can_sleep(false)
         .build();
 
-    let mut ball = GameObjectBuilder::new().rigid_body(ball_rigid_body)
-
     let ball_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Circle(0.6),
         sensor: false,
@@ -40,33 +38,19 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let mut ball = GameObjectBuilder::new()
-        .behaviour(BallBehaviour { speed: 0.001 })
-        .rigid_body(ball_rigid_body, scene)
-        .collider(ball_collider, scene)
-        .graphics(GraphicsType::Circle(CircleData {
-            radius: 0.6,
-            color: RGBColor {
-                red: 255,
-                green: 255,
-                blue: 255,
-            },
-        }))
-        .build();
+    let mut ball_builder = GameObjectBuilder::new().behaviour(BallBehaviour {}).rigid_body(ball_rigid_body).collider(ball_collider).graphics(GraphicsType::Circle(CircleData {
+        radius: 0.6,
+        color: RGBColor {
+            red: 255,
+            green: 255,
+            blue: 255,
+        },
+    }));
+
+    let ball = scene.register_game_object(ball_builder);
 
     let ball_c_handle = ball.physics.collider_handle.unwrap();
     let ball_r_handle = ball.physics.rigid_body_handle.unwrap();
-
-    scene.register_game_object(ball);
-
-    let mut player = GameObject::new(0.0, 0.0);
-
-    player.insert_behaviour(PlayerBehaviour {
-        speed: 0.01,
-        decay: 50.5,
-        ball_handle: ball_c_handle,
-        score: 0,
-    });
 
     let player_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![-0.1, 0.0])
@@ -76,8 +60,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .ccd_enabled(true)
         .build();
 
-    player.attach_rigid_body(player_rigid_body, scene);
-
     let player_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((0.5, 6.0)), // Extra 5PX comfort zone to make it feel more fair
         sensor: false,
@@ -85,9 +67,12 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let player_collider_handle = player.attach_collider_with_rigid_body(player_collider, scene);
-
-    player.add_graphics(GraphicsType::Rect(RectData {
+    let mut player_builder = GameObjectBuilder::new().behaviour(PlayerBehaviour {
+        speed: 0.01,
+        decay: 50.5,
+        ball_handle: ball_c_handle,
+        score: 0,
+    }).rigid_body(player_rigid_body).collider(player_collider).graphics(GraphicsType::Rect(RectData {
         width: 0.5,
         height: 6.0,
         color: RGBColor {
@@ -97,16 +82,8 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         },
     }));
 
-    scene.register_game_object(player);
+    let player = scene.register_game_object(player_builder);
 
-    let mut ai = GameObject::new(0.0, 0.0);
-
-    ai.insert_behaviour(AIBehaviour {
-        speed: 1.0,
-        ball_handle: ball_c_handle,
-        ball_rigid_handle: ball_r_handle,
-        rng: rand::thread_rng(),
-    });
 
     let ai_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.1, 0.0])
@@ -115,8 +92,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .can_sleep(false)
         .build();
 
-    ai.attach_rigid_body(ai_rigid_body, scene);
-
     let ai_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((0.5, 6.0)),
         sensor: false,
@@ -124,9 +99,12 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let ai_collider_handle = ai.attach_collider_with_rigid_body(ai_collider, scene);
-
-    ai.add_graphics(GraphicsType::Rect(RectData {
+    let mut ai_builder = GameObjectBuilder::new().behaviour(AIBehaviour {
+        speed: 1.0,
+        ball_handle: ball_c_handle,
+        ball_rigid_handle: ball_r_handle,
+        rng: rand::thread_rng(),
+    }).rigid_body(ai_rigid_body).collider(ai_collider).graphics(GraphicsType::Rect(RectData {
         width: 0.5,
         height: 6.0,
         color: RGBColor {
@@ -136,9 +114,8 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         },
     }));
 
-    scene.register_game_object(ai);
+    let ai = scene.register_game_object(ai_builder);
 
-    let mut top_wall = GameObject::new(0.0, 0.0);
 
     let top_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.0, 0.15])
@@ -148,14 +125,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .ccd_enabled(true)
         .build();
 
-    top_wall.attach_rigid_body(top_wall_rigid_body, scene);
-
-    top_wall.insert_behaviour(BarrierBehaviour {
-        ball_handle: ball_c_handle,
-        ball_rigid_handle: ball_r_handle,
-        rng: thread_rng(),
-    });
-
     let top_wall_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
         sensor: false,
@@ -163,12 +132,16 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let top_wall_collider_handle =
-        top_wall.attach_collider_with_rigid_body(top_wall_collider, scene);
+    let mut top_wall_builder = GameObjectBuilder::new().rigid_body(top_wall_rigid_body).behaviour(BarrierBehaviour {
+        ball_handle: ball_c_handle,
+        ball_rigid_handle: ball_r_handle,
+        rng: thread_rng(),
+    }).collider(top_wall_collider);
 
-    scene.register_game_object(top_wall);
+    let top_wall = scene.register_game_object(top_wall_builder);
 
-    let mut bottom_wall = GameObject::new(0.0, 0.0);
+    let top_wall_collider_handle = top_wall.physics.collider_handle.unwrap();
+
 
     let bottom_wall_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![0.0, -0.15])
@@ -178,14 +151,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .ccd_enabled(true)
         .build();
 
-    bottom_wall.insert_behaviour(BarrierBehaviour {
-        ball_handle: ball_c_handle,
-        ball_rigid_handle: ball_r_handle,
-        rng: thread_rng(),
-    });
-
-    bottom_wall.attach_rigid_body(bottom_wall_rigid_body, scene);
-
     let bottom_wall_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((30.0, 0.5)),
         sensor: false,
@@ -193,17 +158,15 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 0.0,
     };
 
-    let bottom_wall_collider_handle =
-        bottom_wall.attach_collider_with_rigid_body(bottom_wall_collider, scene);
-
-    scene.register_game_object(bottom_wall);
-
-    let mut fail_barrier = GameObject::new(0.0, 0.0);
-
-    fail_barrier.insert_behaviour(FailBehaviour {
-        speed: 0.0,
+    let mut bottom_wall_builder = GameObjectBuilder::new().rigid_body(bottom_wall_rigid_body).behaviour(BarrierBehaviour {
         ball_handle: ball_c_handle,
-    });
+        ball_rigid_handle: ball_r_handle,
+        rng: thread_rng(),
+    }).collider(bottom_wall_collider);
+
+    let bottom_wall = scene.register_game_object(bottom_wall_builder);
+
+    let bottom_wall_collider_handle = bottom_wall.physics.collider_handle.unwrap();
 
     let fail_barrier_rigid_body = RigidBodyBuilder::kinematic_position_based()
         .translation(vector![-0.2, 0.0])
@@ -213,8 +176,6 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .ccd_enabled(true)
         .build();
 
-    fail_barrier.attach_rigid_body(fail_barrier_rigid_body, scene);
-
     let fail_barrier_collider = AlcubierreCollider {
         collider_type: AlcubierreColliderType::Rectangle((0.5, 30.0)),
         sensor: true,
@@ -222,8 +183,14 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         friction: 100.0,
     };
 
-    let fail_barrier_collider_handle =
-        fail_barrier.attach_collider_with_rigid_body(fail_barrier_collider, scene);
+    let mut fail_barrier_builder = GameObjectBuilder::new().behaviour(FailBehaviour {
+        speed: 0.0,
+        ball_handle: ball_c_handle,
+    }).rigid_body(fail_barrier_rigid_body).collider(fail_barrier_collider);
 
-    scene.register_game_object(fail_barrier);
+    let fail_barrier = scene.register_game_object(fail_barrier_builder);
+
+    let fail_barrier_collider_handle =
+        fail_barrier.physics.collider_handle.unwrap();
+
 }
