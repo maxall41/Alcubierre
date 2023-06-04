@@ -220,6 +220,13 @@ impl Render {
             self.config.width = new_size.width;
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
+            self.camera_uniform
+                .update_view_proj(&self.camera, &self.projection);
+            self.queue.write_buffer(
+                &self.camera_buffer,
+                0,
+                bytemuck::cast_slice(&[self.camera_uniform]),
+            );
         }
     }
 
@@ -232,13 +239,6 @@ impl Render {
         engine_view: &mut EngineView,
         mouse_data: &MouseData
     ) {
-        self.camera_uniform
-            .update_view_proj(&self.camera, &self.projection);
-        self.queue.write_buffer(
-            &self.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[self.camera_uniform]),
-        );
 
         let mut encoder = self
             .device
