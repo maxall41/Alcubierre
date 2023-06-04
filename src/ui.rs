@@ -6,10 +6,10 @@ use crate::ui::frontend::rough::params::{
 };
 use crate::ui::frontend::rough::parse_element_type;
 use crate::ui::frontend::{ButtonElement, Element, HyperFoilAST, TextElement};
+use log::warn;
 use miette::LabeledSpan;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use log::warn;
 
 pub mod backend;
 pub mod frontend;
@@ -53,7 +53,6 @@ fn parse_rough_line(line: &str) -> Option<Element> {
 }
 
 pub fn parse_ui_blob(blob: &str) -> HyperFoilAST {
-
     let mut ast = HyperFoilAST { elements: vec![] };
 
     for line in blob.lines() {

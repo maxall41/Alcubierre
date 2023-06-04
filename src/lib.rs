@@ -9,15 +9,15 @@ pub mod ui;
 use crate::renderer::buffer::QuadBufferBuilder;
 use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
+use instant::Instant;
 use kira::manager::backend::DefaultBackend;
 use kira::manager::{AudioManager, AudioManagerSettings};
+use log::warn;
 use nalgebra::{SMatrix, Vector2};
 use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
 use std::thread::sleep;
-use std::time::{Duration};
-use instant::Instant;
-use log::warn;
+use std::time::Duration;
 
 use crate::events::EngineEvent;
 use crate::game_object::behaviours::EngineView;
@@ -35,7 +35,7 @@ use winit::window::WindowBuilder;
 
 use crate::scene::Scene;
 
-#[cfg(target_arch="wasm32")]
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
 pub struct MouseData {
@@ -61,7 +61,7 @@ pub struct Engine {
     audio_manager: AudioManager,
     renderer: Option<Render>,
     last_delta: Duration,
-    last_frame_end: Instant
+    last_frame_end: Instant,
 }
 
 pub struct EngineConfig {
@@ -80,7 +80,6 @@ impl Engine {
 
         let mut audio_manager =
             AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
-
 
         Engine {
             scenes: HashMap::new(),
@@ -103,7 +102,7 @@ impl Engine {
                 mouse_position: Vector2::new(0.0, 0.0),
             },
             last_delta: Duration::from_millis(0),
-            last_frame_end: Instant::now()
+            last_frame_end: Instant::now(),
         }
     }
 
@@ -119,7 +118,7 @@ impl Engine {
                     &mut self.key_locks,
                     &mut self.query_pipeline,
                     &mut scene.collider_set,
-                    &mut self.last_delta
+                    &mut self.last_delta,
                 )
             }
         }
@@ -139,7 +138,7 @@ impl Engine {
                 &mut self.key_locks,
                 &mut self.query_pipeline,
                 &mut active_scene.collider_set,
-                &mut self.last_delta
+                &mut self.last_delta,
             )
         }
     }
@@ -244,7 +243,9 @@ impl Engine {
                 // Cap FPS at 60FPS. With practically no minimum
                 // sleep(last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)));
 
-                let clamped_delta = self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100));
+                let clamped_delta = self
+                    .last_delta
+                    .clamp(Duration::from_millis(16), Duration::from_secs(100));
 
                 if tf_start - self.last_frame_end > clamped_delta {
                     let start = Instant::now();
@@ -280,7 +281,6 @@ impl Engine {
                     //
                     // warn!("FPS: {:?}",1000.0 / clamped_delta.as_millis() as f32);
                 }
-
             }
             _ => *control_flow = ControlFlow::Poll,
         });
@@ -304,7 +304,7 @@ impl Engine {
                     &mut self.key_locks,
                     &mut self.query_pipeline,
                     &mut active_scene.collider_set,
-                    &mut self.last_delta
+                    &mut self.last_delta,
                 );
             }
 
@@ -321,9 +321,9 @@ impl Engine {
                     key_locks: &mut self.key_locks,
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
-                    frame_delta: &mut self.last_delta
+                    frame_delta: &mut self.last_delta,
                 },
-                &self.mouse_data
+                &self.mouse_data,
             );
         }
     }
@@ -352,6 +352,7 @@ impl Engine {
                 ui_ast: None,
                 function_map: HashMap::new(),
                 data_map: HashMap::new(),
+                current_game_object_id: 0,
             },
         );
         self.scenes.get_mut(&scene_name).unwrap()

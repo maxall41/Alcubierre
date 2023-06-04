@@ -8,18 +8,7 @@ use rapier2d::math::Real;
 use rapier2d::prelude::{RigidBodyHandle, RigidBodySet};
 
 pub trait PhysicsObject {
-    fn attach_collider(
-        &mut self,
-        collider: AlcubierreCollider,
-        scene: &mut Scene,
-    ) -> ColliderHandle;
-    fn attach_collider_with_rigid_body(
-        &mut self,
-        collider: AlcubierreCollider,
-        scene: &mut Scene,
-    ) -> ColliderHandle;
     fn remove_collider(&mut self, scene: &mut Scene);
-    fn attach_rigid_body(&mut self, rigid_body: RigidBody, scene: &mut Scene) -> RigidBodyHandle;
     fn remove_rigid_body(&mut self, scene: &mut Scene);
     fn get_updated_physics_position(&mut self, rigid_body_set: &mut RigidBodySet) -> (Real, Real);
 }
@@ -31,29 +20,6 @@ pub struct PhysicsData {
 }
 
 impl PhysicsObject for GameObject {
-    fn attach_collider(
-        &mut self,
-        collider: AlcubierreCollider,
-        scene: &mut Scene,
-    ) -> ColliderHandle {
-        let handle = scene.collider_set.insert(collider.to_rapier());
-        self.physics.collider_handle = Some(handle.clone());
-        handle
-    }
-
-    fn attach_collider_with_rigid_body(
-        &mut self,
-        collider: AlcubierreCollider,
-        scene: &mut Scene,
-    ) -> ColliderHandle {
-        let handle = scene.collider_set.insert_with_parent(
-            collider.to_rapier(),
-            self.physics.rigid_body_handle.unwrap(),
-            &mut scene.rigid_body_set,
-        );
-        self.physics.collider_handle = Some(handle.clone());
-        handle
-    }
 
     fn remove_collider(&mut self, scene: &mut Scene) {
         scene.collider_set.remove(
@@ -63,12 +29,6 @@ impl PhysicsObject for GameObject {
             true,
         );
         self.physics.collider_handle = None;
-    }
-
-    fn attach_rigid_body(&mut self, rigid_body: RigidBody, scene: &mut Scene) -> RigidBodyHandle {
-        let handle = scene.rigid_body_set.insert(rigid_body);
-        self.physics.rigid_body_handle = Some(handle.clone());
-        handle
     }
 
     fn remove_rigid_body(&mut self, _scene: &mut Scene) {

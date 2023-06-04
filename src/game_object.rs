@@ -1,4 +1,3 @@
-use std::time::Duration;
 use crate::game_object::behaviours::{EngineView, UserBehaviour};
 use crate::game_object::graphics::{Graphics, GraphicsType};
 use crate::game_object::physics::{PhysicsData, PhysicsObject};
@@ -7,9 +6,10 @@ use crate::renderer::buffer::QuadBufferBuilder;
 use crate::{EngineEvent, Scene};
 use flume::Sender;
 use hashbrown::HashSet;
-use rapier2d::dynamics::RigidBody;
+use rapier2d::dynamics::{RigidBody, RigidBodyHandle};
 use rapier2d::geometry::NarrowPhase;
 use rapier2d::prelude::{ColliderSet, QueryPipeline, RigidBodySet};
+use std::time::Duration;
 use winit::event::VirtualKeyCode;
 
 pub mod behaviours;
@@ -23,6 +23,7 @@ pub struct GameObject {
     pub pos_x: f32,
     pub pos_y: f32,
     pub physics: PhysicsData,
+    pub(crate) id: u128,
 }
 
 pub struct GameObjectView<'a> {
@@ -32,19 +33,7 @@ pub struct GameObjectView<'a> {
 }
 
 impl GameObject {
-    pub fn new(pos_x: f32, pos_y: f32) -> Self {
-        GameObject {
-            graphics: None,
-            behaviours: vec![],
-            pos_y,
-            pos_x,
-            physics: PhysicsData {
-                collider_handle: None,
-                rigid_body_handle: None,
-            },
-        }
-    }
-    pub fn unloading(
+    pub(crate) fn unloading(
         &mut self,
         narrow_phase: &mut NarrowPhase,
         rigid_body_set: &mut RigidBodySet,
@@ -53,7 +42,7 @@ impl GameObject {
         key_locks: &mut HashSet<VirtualKeyCode>,
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
-        frame_delta: &mut Duration
+        frame_delta: &mut Duration,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -65,7 +54,7 @@ impl GameObject {
                     key_locks,
                     query_pipeline,
                     collider_set,
-                    frame_delta
+                    frame_delta,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -75,7 +64,7 @@ impl GameObject {
             );
         }
     }
-    pub fn loading(
+    pub(crate) fn loading(
         &mut self,
         narrow_phase: &mut NarrowPhase,
         rigid_body_set: &mut RigidBodySet,
@@ -84,7 +73,7 @@ impl GameObject {
         key_locks: &mut HashSet<VirtualKeyCode>,
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
-        frame_delta: &mut Duration
+        frame_delta: &mut Duration,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -96,7 +85,7 @@ impl GameObject {
                     keys_pressed,
                     query_pipeline,
                     collider_set,
-                    frame_delta
+                    frame_delta,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -106,7 +95,7 @@ impl GameObject {
             );
         }
     }
-    pub fn execute(
+    pub(crate) fn execute(
         &mut self,
         rigid_body_set: &mut RigidBodySet,
         narrow_phase: &mut NarrowPhase,
@@ -116,7 +105,7 @@ impl GameObject {
         key_locks: &mut HashSet<VirtualKeyCode>,
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
-        frame_delta: &mut Duration
+        frame_delta: &mut Duration,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.game_loop(
@@ -133,15 +122,10 @@ impl GameObject {
                     key_locks,
                     query_pipeline,
                     collider_set,
-                    frame_delta
+                    frame_delta,
                 },
             );
         }
-
-        // let handle = self.physics.collider_handle.unwrap();
-        // let collider = collider_set.get_mut(handle).unwrap();
-        //
-        // println!("{:?}",collider.shape().as_cuboid().unwrap());
 
         if self.physics.rigid_body_handle.is_some() {
             let new_pos = self.get_updated_physics_position(rigid_body_set);
@@ -157,7 +141,8 @@ pub struct GameObjectBuilder {
     pub behaviours: Vec<Box<dyn UserBehaviour + 'static>>,
     pub pos_x: f32,
     pub pos_y: f32,
-    pub physics: PhysicsData,
+    pub pre_rapier_collider: Option<AlcubierreCollider>,
+    pub rigid_body_handle: Option<RigidBodyHandle>
 }
 
 impl GameObjectBuilder {
@@ -167,10 +152,8 @@ impl GameObjectBuilder {
             behaviours: vec![],
             pos_y: 0.0,
             pos_x: 0.0,
-            physics: PhysicsData {
-                collider_handle: None,
-                rigid_body_handle: None,
-            },
+            pre_rapier_collider: None,
+            rigid_body_handle: None
         }
     }
     pub fn graphics(mut self, graphics: GraphicsType) -> GameObjectBuilder {
@@ -179,7 +162,7 @@ impl GameObjectBuilder {
     }
     pub fn rigid_body(mut self, rigid_body: RigidBody, scene: &mut Scene) -> GameObjectBuilder {
         let handle = scene.rigid_body_set.insert(rigid_body);
-        self.physics.rigid_body_handle = Some(handle.clone());
+        self.rigid_body_handle = Some(handle.clone());
         self
     }
     pub fn behaviour(mut self, behaviour: impl UserBehaviour) -> GameObjectBuilder {
@@ -191,26 +174,7 @@ impl GameObjectBuilder {
         collider: AlcubierreCollider,
         scene: &mut Scene,
     ) -> GameObjectBuilder {
-        if self.physics.rigid_body_handle.is_some() {
-            let handle = scene.collider_set.insert_with_parent(
-                collider.to_rapier(),
-                self.physics.rigid_body_handle.unwrap(),
-                &mut scene.rigid_body_set,
-            );
-            self.physics.collider_handle = Some(handle.clone());
-        } else {
-            let handle = scene.collider_set.insert(collider.to_rapier());
-            self.physics.collider_handle = Some(handle.clone());
-        }
+        self.pre_rapier_collider = Some(collider);
         self
-    }
-    pub fn build(self) -> GameObject {
-        GameObject {
-            graphics: self.graphics,
-            behaviours: self.behaviours,
-            pos_x: self.pos_x,
-            pos_y: self.pos_y,
-            physics: self.physics,
-        }
     }
 }

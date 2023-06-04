@@ -2,8 +2,8 @@ pub(crate) mod buffer;
 pub mod camera;
 
 use hashbrown::HashMap;
-use std::iter;
 use log::warn;
+use std::iter;
 use wgpu::util::DeviceExt;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
@@ -15,8 +15,8 @@ use crate::game_object::behaviours::EngineView;
 use crate::renderer::camera::{Camera, CameraUniform};
 use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::HyperFoilAST;
-use buffer::*;
 use crate::MouseData;
+use buffer::*;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -72,7 +72,7 @@ impl Render {
             })
             .await
             .unwrap();
-        warn!("Using adapter: {:?}",adapter.get_info());
+        warn!("Using adapter: {:?}", adapter.get_info());
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
@@ -128,20 +128,19 @@ impl Render {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
-        let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                }],
-                label: Some("bind_group_layout"),
-            });
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+            label: Some("bind_group_layout"),
+        });
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
@@ -237,9 +236,8 @@ impl Render {
         data_map: &HashMap<String, String>,
         function_map: &HashMap<String, fn(&mut EngineView)>,
         engine_view: &mut EngineView,
-        mouse_data: &MouseData
+        mouse_data: &MouseData,
     ) {
-
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -255,7 +253,7 @@ impl Render {
                 &mut buffer,
                 engine_view,
                 &self.projection,
-                mouse_data
+                mouse_data,
             );
         }
 

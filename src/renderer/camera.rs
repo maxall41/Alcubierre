@@ -63,7 +63,7 @@ pub struct Projection {
     pub(crate) aspect: f32,
     pub(crate) fovy: Rad<f32>,
     znear: f32,
-    zfar: f32
+    zfar: f32,
 }
 
 impl Projection {
@@ -82,7 +82,15 @@ impl Projection {
 
     pub fn calc_matrix(&self) -> Matrix4<f32> {
         // OPENGL_TO_WGPU_MATRIX * perspective(self.fovy, self.aspect, self.znear, self.zfar)
-        OPENGL_TO_WGPU_MATRIX * ortho(-7.0*self.aspect, 7.0*self.aspect, -7.0, 7.0, 0.001, 1000.0)
+        OPENGL_TO_WGPU_MATRIX
+            * ortho(
+                -7.0 * self.aspect,
+                7.0 * self.aspect,
+                -7.0,
+                7.0,
+                0.001,
+                1000.0,
+            )
     }
 }
 

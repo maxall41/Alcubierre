@@ -23,7 +23,7 @@ pub fn physics_units_to_pixels(units: f32) -> f32 {
 }
 
 impl AlcubierreCollider {
-    pub fn to_rapier(&self) -> Collider {
+    pub fn to_rapier(&self, id: u128) -> Collider {
         match self.collider_type {
             AlcubierreColliderType::Rectangle((x, y)) => ColliderBuilder::cuboid(
                 screen_units_to_physics_units(x) / 2.0,
@@ -32,15 +32,16 @@ impl AlcubierreCollider {
             .sensor(self.sensor)
             .friction(self.friction)
             .restitution(self.restitution)
+            .user_data(id)
             .build(),
 
             AlcubierreColliderType::Circle(radius) => {
                 let pr = screen_units_to_physics_units(radius);
-                println!("PR: {}", pr);
                 ColliderBuilder::ball(pr)
                     .sensor(self.sensor)
                     .friction(self.friction)
                     .restitution(self.restitution)
+                    .user_data(id)
                     .build()
             }
         }
