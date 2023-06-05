@@ -290,23 +290,29 @@ impl Engine {
         let mut buffer = QuadBufferBuilder::new();
 
         if active_scene.is_some() {
+
+            {
+                let active_scene = self.active_scene.as_mut().unwrap();
+
+                for object in &mut active_scene.game_objects {
+                    object.execute(
+                        &mut active_scene.rigid_body_set,
+                        &mut active_scene.narrow_phase_collision,
+                        &mut self.event_tx,
+                        &mut buffer,
+                        &mut self.keys_pressed,
+                        &mut self.key_locks,
+                        &mut self.query_pipeline,
+                        &mut active_scene.collider_set,
+                        &mut self.last_delta,
+                    );
+                }
+            }
+
+
             self.handle_events();
 
             let active_scene = self.active_scene.as_mut().unwrap();
-
-            for object in &mut active_scene.game_objects {
-                object.execute(
-                    &mut active_scene.rigid_body_set,
-                    &mut active_scene.narrow_phase_collision,
-                    &mut self.event_tx,
-                    &mut buffer,
-                    &mut self.keys_pressed,
-                    &mut self.key_locks,
-                    &mut self.query_pipeline,
-                    &mut active_scene.collider_set,
-                    &mut self.last_delta,
-                );
-            }
 
             self.renderer.as_mut().unwrap().render_buffer(
                 buffer,

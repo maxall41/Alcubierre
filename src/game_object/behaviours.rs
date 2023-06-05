@@ -59,23 +59,19 @@ pub struct EngineView<'a> {
 }
 
 impl<'a> EngineView<'a> {
-    pub fn is_colliding_with_sensor(&self, col1: ColliderHandle, col2: ColliderHandle) -> bool {
+    pub fn is_colliding_with_sensor(&self, col1: ColliderHandle, col2: ColliderHandle) -> Option<ColliderHandle> {
         if self.narrow_phase.intersection_pair(col1, col2) == Some(true) {
-            true
-        } else {
-            false
+            return Some(col2);
         }
+        None
     }
-    pub fn is_colliding(&self, col1: ColliderHandle, col2: ColliderHandle) -> bool {
+    pub fn is_colliding(&self, col1: ColliderHandle, col2: ColliderHandle) -> Option<ColliderHandle> {
         if let Some(contact_pair) = self.narrow_phase.contact_pair(col1, col2) {
             if contact_pair.has_any_active_contact {
-                true
-            } else {
-                false
+                return Some(col2);
             }
-        } else {
-            false
         }
+        None
     }
     pub fn pull_game_object_from_collider<F>(&self,collider_handle: ColliderHandle,callback: F)
         where
