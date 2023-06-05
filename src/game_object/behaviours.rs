@@ -14,6 +14,7 @@ use winit::event::VirtualKeyCode;
 use crate::game_object::{GameObject, GameObjectView};
 use crate::physics::screen_units_to_physics_units;
 use crate::EngineEvent;
+use crate::events::PullGameObjectRequest;
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView);
@@ -75,6 +76,15 @@ impl<'a> EngineView<'a> {
         } else {
             false
         }
+    }
+    pub fn pull_game_object_from_collider<F>(&self,collider_handle: ColliderHandle,callback: F)
+        where
+            F: Fn(EngineView,&GameObject) + 'static
+         {
+        self.event_tx.send(EngineEvent::PullGameObject(PullGameObjectRequest {
+            collider_handle,
+            callback: Box::new(callback),
+        })).unwrap();
     }
     pub fn load_scene(&self, scene_name: String) {
         self.event_tx

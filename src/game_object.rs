@@ -4,7 +4,7 @@ use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
 use crate::{EngineEvent, Scene};
-use flume::Sender;
+use flume::{Receiver, Sender};
 use hashbrown::HashSet;
 use rapier2d::dynamics::{RigidBody, RigidBodyHandle};
 use rapier2d::geometry::NarrowPhase;
@@ -15,6 +15,11 @@ use winit::event::VirtualKeyCode;
 pub mod behaviours;
 pub mod graphics;
 pub mod physics;
+
+#[derive(Clone)]
+pub enum GameObjectIPC {
+    CollisionResultObject(GameObject)
+}
 
 #[derive(Clone)]
 pub struct GameObject {

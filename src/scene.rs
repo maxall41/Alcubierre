@@ -42,7 +42,6 @@ impl Scene {
             }
         }
 
-
         let game_object = GameObject {
             graphics: game_object_builder.graphics,
             behaviours: game_object_builder.behaviours,
