@@ -32,9 +32,9 @@ impl UserBehaviour for AIBehaviour {
                 // ball_rigid_body.reset_forces(true);
                 let x = self.rng.gen_range(0..100);
                 if x > 50 {
-                    ball_rigid_body.apply_impulse(vector![0.0, 0.00003], true);
+                    ball_rigid_body.apply_impulse(vector![0.0, 0.000002 * engine_view.frame_delta.as_millis() as f32], true);
                 } else {
-                    ball_rigid_body.apply_impulse(vector![0.0, -0.00003], true);
+                    ball_rigid_body.apply_impulse(vector![0.0, -0.000002 * engine_view.frame_delta.as_millis() as f32], true);
                 }
             }
         }

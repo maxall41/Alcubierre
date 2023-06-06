@@ -176,6 +176,9 @@ impl Engine {
             current_size,
         )));
 
+        let dt_physics = 1.0 / 60.0;
+        let mut accumulator = 0.0;
+
         event_loop.run(move |event, _, control_flow| match event {
             Event::WindowEvent {
                 ref event,
@@ -248,36 +251,48 @@ impl Engine {
                 }
 
                 let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
-                self.physics_pipeline.step(
-                    &self.gravity,
-                    &active_scene_unwrapped.integration_params,
-                    &mut active_scene_unwrapped.island_manager,
-                    &mut active_scene_unwrapped.broad_phase,
-                    &mut active_scene_unwrapped.narrow_phase_collision,
-                    &mut active_scene_unwrapped.rigid_body_set,
-                    &mut active_scene_unwrapped.collider_set,
-                    &mut active_scene_unwrapped.impulse_joint_set,
-                    &mut active_scene_unwrapped.multibody_joint_set,
-                    &mut active_scene_unwrapped.ccd_solver,
-                    None,
-                    &(),
-                    &(),
-                );
 
-                self.query_pipeline.update(
-                    &active_scene_unwrapped.rigid_body_set,
-                    &active_scene_unwrapped.collider_set,
-                );
+                // active_scene_unwrapped.integration_params.dt = 1.0 / (1000.0 / self.last_delta.as_millis() as f32);
+                let mut runs = 0;
+
+                while ( accumulator >= dt_physics )
+                {
+                    self.physics_pipeline.step(
+                        &self.gravity,
+                        &active_scene_unwrapped.integration_params,
+                        &mut active_scene_unwrapped.island_manager,
+                        &mut active_scene_unwrapped.broad_phase,
+                        &mut active_scene_unwrapped.narrow_phase_collision,
+                        &mut active_scene_unwrapped.rigid_body_set,
+                        &mut active_scene_unwrapped.collider_set,
+                        &mut active_scene_unwrapped.impulse_joint_set,
+                        &mut active_scene_unwrapped.multibody_joint_set,
+                        &mut active_scene_unwrapped.ccd_solver,
+                        None,
+                        &(),
+                        &(),
+                    );
+
+                    self.query_pipeline.update(
+                        &active_scene_unwrapped.rigid_body_set,
+                        &active_scene_unwrapped.collider_set,
+                    );
+
+                    accumulator -= dt_physics;
+                    runs += 1;
+                }
 
                 self.draw();
 
 
                 self.last_delta = Instant::now() - self.last_frame_end;
 
+                accumulator += self.last_delta.as_millis() as f32 / 1000.0;
+
                 self.last_frame_end = Instant::now();
 
                 //
-                // println!("FPS: {:?}",1000.0 / self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)).as_millis() as f32);
+                println!("LD: {:?}, {:?}",self.last_delta.as_millis(),runs);
             }
             _ => *control_flow = ControlFlow::Poll,
         });
