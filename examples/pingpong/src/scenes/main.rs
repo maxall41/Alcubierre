@@ -73,7 +73,7 @@ pub fn register_main_scene(mut flame: &mut Engine) {
 
     let mut player_builder = GameObjectBuilder::new()
         .behaviour(PlayerBehaviour {
-            speed: 0.01,
+            speed: 0.0008,
             decay: 50.5,
             ball_handle: ball_c_handle,
             score: 0,

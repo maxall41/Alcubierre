@@ -17,10 +17,10 @@ impl UserBehaviour for PlayerBehaviour {
     fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {
         let mut y_vel: f32 = 0.0;
         if engine_view.is_key_down(VirtualKeyCode::Up) {
-            y_vel += self.speed;
+            y_vel += self.speed * engine_view.frame_delta.as_millis() as f32;
         }
         if engine_view.is_key_down(VirtualKeyCode::Down) {
-            y_vel -= self.speed;
+            y_vel -= self.speed * engine_view.frame_delta.as_millis() as f32;
         }
 
         let rigid_body = engine_view

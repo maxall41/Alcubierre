@@ -62,6 +62,7 @@ pub struct Engine {
     renderer: Option<Render>,
     last_delta: Duration,
     last_frame_end: Instant,
+    real_delta_time: Duration
 }
 
 pub struct EngineConfig {
@@ -103,6 +104,7 @@ impl Engine {
             },
             last_delta: Duration::from_millis(0),
             last_frame_end: Instant::now(),
+            real_delta_time: Duration::from_millis(0)
         }
     }
 
@@ -236,6 +238,17 @@ impl Engine {
             },
             Event::RedrawRequested(window_id) if window_id == window.id() => {}
             Event::MainEventsCleared => {
+                let real_start = Instant::now();
+                // Cap FPS at 60FPS. With practically no minimum
+                // Only sleep on native. When running in WASM browser controls FPS via requestAnimationFrame.
+                cfg_if::cfg_if! {
+                    if #[cfg(target_arch = "wasm32")] {
+
+                    } else {
+                        sleep(self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)));
+                    }
+                }
+
 
                 let start = Instant::now();
 
@@ -265,9 +278,14 @@ impl Engine {
 
                 self.last_frame_end = Instant::now();
 
+                self.real_delta_time = self.last_frame_end - real_start;
+
                 self.last_delta = self.last_frame_end - start;
+
+                //
+                // println!("FPS: {:?}",1000.0 / self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)).as_millis() as f32);
             }
-            _ => *control_flow = ControlFlow::WaitUntil(Instant::now() + self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100))),
+            _ => *control_flow = ControlFlow::Poll,
         });
     }
     fn draw(&mut self) {
@@ -289,7 +307,7 @@ impl Engine {
                         &mut self.key_locks,
                         &mut self.query_pipeline,
                         &mut active_scene.collider_set,
-                        &mut self.last_delta,
+                        &mut self.real_delta_time,
                     );
                 }
             }
@@ -312,7 +330,7 @@ impl Engine {
                     key_locks: &mut self.key_locks,
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
-                    frame_delta: &mut self.last_delta,
+                    frame_delta: &mut self.real_delta_time,
                 },
                 &self.mouse_data,
             );

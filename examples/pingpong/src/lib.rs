@@ -9,8 +9,9 @@ use rapier2d::geometry::{Collider, ColliderBuilder};
 use rapier2d::prelude::{vector, RigidBodyBuilder};
 use std::sync::Arc;
 use std::sync::RwLock;
+use wasm_bindgen::closure::Closure;
 use wasm_bindgen::prelude::wasm_bindgen;
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 
 mod scenes;
 mod scripts;
@@ -27,6 +28,7 @@ pub fn main() -> Result<(), JsValue> {
             env_logger::init();
         }
     }
+
 
     warn!("Started");
 

@@ -62,7 +62,7 @@ impl UserBehaviour for AIBehaviour {
         let y_range = upper_edge - lower_edge;
         // println!("YR: {}",y_range);
 
-        if ball_y > lower_edge || ball_y > upper_edge && ball_vel.x > 0.0 {
+        if ball_y > lower_edge || ball_y > upper_edge && ball_vel.x < 0.0 {
             rigid_body.set_position(Isometry::new(vector![pos.translation.x, ball_y], 0.0), true);
         }
     }

@@ -72,7 +72,7 @@ impl Render {
             })
             .await
             .unwrap();
-        warn!("Using adapter: {:?}", adapter.get_info());
+        // warn!("Using adapter: {:?}", adapter.get_info());
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
