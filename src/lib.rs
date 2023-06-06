@@ -171,8 +171,6 @@ impl Engine {
 
         window.set_inner_size(current_size);
 
-        let fps = 60;
-
         self.renderer = Some(pollster::block_on(renderer::Render::new(
             &window,
             current_size,
@@ -238,51 +236,38 @@ impl Engine {
             },
             Event::RedrawRequested(window_id) if window_id == window.id() => {}
             Event::MainEventsCleared => {
-                let tf_start = Instant::now();
 
-                // Cap FPS at 60FPS. With practically no minimum
-                // sleep(last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)));
+                let start = Instant::now();
 
-                let clamped_delta = self
-                    .last_delta
-                    .clamp(Duration::from_millis(16), Duration::from_secs(100));
+                let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
+                self.physics_pipeline.step(
+                    &self.gravity,
+                    &active_scene_unwrapped.integration_params,
+                    &mut active_scene_unwrapped.island_manager,
+                    &mut active_scene_unwrapped.broad_phase,
+                    &mut active_scene_unwrapped.narrow_phase_collision,
+                    &mut active_scene_unwrapped.rigid_body_set,
+                    &mut active_scene_unwrapped.collider_set,
+                    &mut active_scene_unwrapped.impulse_joint_set,
+                    &mut active_scene_unwrapped.multibody_joint_set,
+                    &mut active_scene_unwrapped.ccd_solver,
+                    None,
+                    &(),
+                    &(),
+                );
 
-                if tf_start - self.last_frame_end > clamped_delta {
-                    let start = Instant::now();
+                self.query_pipeline.update(
+                    &active_scene_unwrapped.rigid_body_set,
+                    &active_scene_unwrapped.collider_set,
+                );
 
-                    let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
-                    self.physics_pipeline.step(
-                        &self.gravity,
-                        &active_scene_unwrapped.integration_params,
-                        &mut active_scene_unwrapped.island_manager,
-                        &mut active_scene_unwrapped.broad_phase,
-                        &mut active_scene_unwrapped.narrow_phase_collision,
-                        &mut active_scene_unwrapped.rigid_body_set,
-                        &mut active_scene_unwrapped.collider_set,
-                        &mut active_scene_unwrapped.impulse_joint_set,
-                        &mut active_scene_unwrapped.multibody_joint_set,
-                        &mut active_scene_unwrapped.ccd_solver,
-                        None,
-                        &(),
-                        &(),
-                    );
+                self.draw();
 
-                    self.query_pipeline.update(
-                        &active_scene_unwrapped.rigid_body_set,
-                        &active_scene_unwrapped.collider_set,
-                    );
+                self.last_frame_end = Instant::now();
 
-                    self.draw();
-
-                    self.last_frame_end = Instant::now();
-
-                    self.last_delta = self.last_frame_end - start;
-
-                    //
-                    // warn!("FPS: {:?}",1000.0 / clamped_delta.as_millis() as f32);
-                }
+                self.last_delta = self.last_frame_end - start;
             }
-            _ => *control_flow = ControlFlow::Poll,
+            _ => *control_flow = ControlFlow::WaitUntil(Instant::now() + self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100))),
         });
     }
     fn draw(&mut self) {
