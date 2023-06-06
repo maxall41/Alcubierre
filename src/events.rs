@@ -4,7 +4,6 @@ use crate::audio::basic::AudioSource;
 use crate::Engine;
 use crate::game_object::behaviours::EngineView;
 use crate::game_object::{GameObject, GameObjectIPC, GameObjectView};
-use crate::game_object::GameObjectIPC::CollisionResultObject;
 
 pub struct PullGameObjectRequest {
     pub(crate) collider_handle: ColliderHandle,

@@ -11,7 +11,7 @@ use std::time::Duration;
 use crate::audio::basic::AudioSource;
 use winit::event::VirtualKeyCode;
 
-use crate::game_object::{GameObject, GameObjectView};
+use crate::game_object::{GameObject, GameObjectIPC, GameObjectView};
 use crate::physics::screen_units_to_physics_units;
 use crate::EngineEvent;
 use crate::events::PullGameObjectRequest;
@@ -20,6 +20,7 @@ pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView);
     fn unloaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
     fn loaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
+    fn received_event(&mut self,event: &GameObjectIPC, _engine_view: EngineView, _game_object_view: GameObjectView) {}
 }
 
 pub trait UserBehaviourClone: 'static {

@@ -4,7 +4,7 @@ use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
 use crate::{EngineEvent, Scene};
-use flume::{Receiver, Sender};
+use flume::{Receiver, Sender, TryRecvError};
 use hashbrown::HashSet;
 use rapier2d::dynamics::{RigidBody, RigidBodyHandle};
 use rapier2d::geometry::NarrowPhase;
@@ -18,7 +18,7 @@ pub mod physics;
 
 #[derive(Clone)]
 pub enum GameObjectIPC {
-    CollisionResultObject(GameObject)
+    UserEvent(u16) // User can use #[repr(u16)] on an enum to use this nicely
 }
 
 #[derive(Clone)]
@@ -29,6 +29,8 @@ pub struct GameObject {
     pub pos_y: f32,
     pub physics: PhysicsData,
     pub(crate) id: u128,
+    pub(crate) event_tx: Sender<GameObjectIPC>,
+    pub(crate) event_rx: Receiver<GameObjectIPC>
 }
 
 pub struct GameObjectView<'a> {
@@ -38,6 +40,9 @@ pub struct GameObjectView<'a> {
 }
 
 impl GameObject {
+    pub fn notify(&self,event: u16) {
+        self.event_tx.send(GameObjectIPC::UserEvent(event)).unwrap();
+    }
     pub(crate) fn unloading(
         &mut self,
         narrow_phase: &mut NarrowPhase,
@@ -112,7 +117,43 @@ impl GameObject {
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
     ) {
+        let event = self.event_rx.try_recv();
+        let mut object_event : Option<GameObjectIPC> = None;
+        match event {
+            Ok(object) => {
+                object_event = Some(object);
+            },
+            Err(e) => {
+                match e {
+                    TryRecvError::Empty => {},
+                    _ => {
+                        panic!("{}",e);
+                    }
+                }
+            }
+        }
+
         for behaviour in &mut self.behaviours {
+           if object_event.is_some() {
+               behaviour.received_event(
+                   object_event.as_ref().unwrap(),
+                   EngineView {
+                       rigid_body_set,
+                       narrow_phase,
+                       event_tx,
+                       keys_pressed,
+                       key_locks,
+                       query_pipeline,
+                       collider_set,
+                       frame_delta,
+                   },
+                   GameObjectView {
+                       physics: &mut self.physics,
+                       pos_x: &mut self.pos_x,
+                       pos_y: &mut self.pos_y,
+                   },
+               );
+           }
             behaviour.game_loop(
                 GameObjectView {
                     physics: &mut self.physics,

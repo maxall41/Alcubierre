@@ -42,6 +42,8 @@ impl Scene {
             }
         }
 
+        let (event_tx, event_rx) = flume::bounded(60);
+
         let game_object = GameObject {
             graphics: game_object_builder.graphics,
             behaviours: game_object_builder.behaviours,
@@ -52,6 +54,8 @@ impl Scene {
                 rigid_body_handle: rigid_body_handle,
             },
             id: self.current_game_object_id,
+            event_tx,
+            event_rx
         };
 
         self.game_objects.push(game_object);

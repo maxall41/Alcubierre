@@ -18,10 +18,13 @@ pub struct AIBehaviour {
 impl UserBehaviour for AIBehaviour {
     fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {
         {
-            if engine_view.is_colliding(
-                game_object_view.physics.collider_handle.unwrap(),
-                self.ball_handle,
-            ).is_some() {
+            if engine_view
+                .is_colliding(
+                    game_object_view.physics.collider_handle.unwrap(),
+                    self.ball_handle,
+                )
+                .is_some()
+            {
                 let ball_rigid_body = engine_view
                     .rigid_body_set
                     .get_mut(self.ball_rigid_handle)

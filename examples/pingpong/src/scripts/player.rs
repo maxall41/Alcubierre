@@ -34,10 +34,13 @@ impl UserBehaviour for PlayerBehaviour {
             true,
         );
 
-        if engine_view.is_colliding(
-            game_object_view.physics.collider_handle.unwrap(),
-            self.ball_handle,
-        ).is_some() {
+        if engine_view
+            .is_colliding(
+                game_object_view.physics.collider_handle.unwrap(),
+                self.ball_handle,
+            )
+            .is_some()
+        {
             self.score += 1;
             engine_view.set_datamap_value("ScoreValue".to_string(), self.score.to_string());
         }
