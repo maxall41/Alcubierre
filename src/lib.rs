@@ -61,8 +61,7 @@ pub struct Engine {
     audio_manager: AudioManager,
     renderer: Option<Render>,
     last_delta: Duration,
-    last_frame_end: Instant,
-    real_delta_time: Duration
+    last_frame_end: Instant
 }
 
 pub struct EngineConfig {
@@ -104,7 +103,6 @@ impl Engine {
             },
             last_delta: Duration::from_millis(0),
             last_frame_end: Instant::now(),
-            real_delta_time: Duration::from_millis(0)
         }
     }
 
@@ -245,12 +243,9 @@ impl Engine {
                     if #[cfg(target_arch = "wasm32")] {
 
                     } else {
-                        sleep(self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)));
+                        sleep(Duration::from_millis(16));
                     }
                 }
-
-
-                let start = Instant::now();
 
                 let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
                 self.physics_pipeline.step(
@@ -276,11 +271,10 @@ impl Engine {
 
                 self.draw();
 
+
+                self.last_delta = Instant::now() - self.last_frame_end;
+
                 self.last_frame_end = Instant::now();
-
-                self.real_delta_time = self.last_frame_end - real_start;
-
-                self.last_delta = self.last_frame_end - start;
 
                 //
                 // println!("FPS: {:?}",1000.0 / self.last_delta.clamp(Duration::from_millis(16),Duration::from_secs(100)).as_millis() as f32);
@@ -307,7 +301,7 @@ impl Engine {
                         &mut self.key_locks,
                         &mut self.query_pipeline,
                         &mut active_scene.collider_set,
-                        &mut self.real_delta_time,
+                        &mut self.last_delta
                     );
                 }
             }
@@ -330,7 +324,7 @@ impl Engine {
                     key_locks: &mut self.key_locks,
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
-                    frame_delta: &mut self.real_delta_time,
+                    frame_delta: &mut self.last_delta
                 },
                 &self.mouse_data,
             );
