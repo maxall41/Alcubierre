@@ -7,7 +7,6 @@ pub mod scene;
 pub mod ui;
 
 use crate::renderer::buffer::QuadBufferBuilder;
-use flume::{Receiver, Sender};
 use hashbrown::{HashMap, HashSet};
 use instant::Instant;
 use kira::manager::backend::DefaultBackend;
@@ -18,6 +17,7 @@ use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
 use std::thread::sleep;
 use std::time::Duration;
+use kanal::{Receiver, Sender};
 
 use crate::events::EngineEvent;
 use crate::game_object::behaviours::EngineView;
@@ -70,7 +70,7 @@ pub struct EngineConfig {
 
 impl Engine {
     pub fn new(window_width: i32, window_height: i32, config: EngineConfig) -> Self {
-        let (event_tx, event_rx) = flume::bounded(60); //TODO: Set to frame rate
+        let (event_tx, event_rx) = kanal::bounded(60); //TODO: Set to frame rate
 
         let query_pipeline = QueryPipeline::new();
 

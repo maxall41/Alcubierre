@@ -4,12 +4,12 @@ use crate::game_object::physics::{PhysicsData, PhysicsObject};
 use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
 use crate::{EngineEvent, Scene};
-use flume::{Receiver, Sender, TryRecvError};
 use hashbrown::HashSet;
 use rapier2d::dynamics::{RigidBody, RigidBodyHandle};
 use rapier2d::geometry::NarrowPhase;
 use rapier2d::prelude::{ColliderSet, QueryPipeline, RigidBodySet};
 use std::time::Duration;
+use kanal::{Receiver, Sender};
 use winit::event::VirtualKeyCode;
 
 pub mod behaviours;
@@ -121,15 +121,10 @@ impl GameObject {
         let mut object_event : Option<GameObjectIPC> = None;
         match event {
             Ok(object) => {
-                object_event = Some(object);
+                object_event = object;
             },
             Err(e) => {
-                match e {
-                    TryRecvError::Empty => {},
-                    _ => {
-                        panic!("{}",e);
-                    }
-                }
+                panic!("{}",e);
             }
         }
 

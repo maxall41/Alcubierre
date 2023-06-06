@@ -1,4 +1,3 @@
-use flume::Sender;
 use hashbrown::HashSet;
 use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
@@ -7,6 +6,7 @@ use rapier2d::prelude::{
     ColliderHandle, NarrowPhase, QueryPipeline, RayIntersection, RigidBodySet,
 };
 use std::time::Duration;
+use kanal::Sender;
 
 use crate::audio::basic::AudioSource;
 use winit::event::VirtualKeyCode;

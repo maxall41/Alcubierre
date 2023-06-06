@@ -42,7 +42,7 @@ impl Scene {
             }
         }
 
-        let (event_tx, event_rx) = flume::bounded(60);
+        let (event_tx, event_rx) = kanal::bounded(60);
 
         let game_object = GameObject {
             graphics: game_object_builder.graphics,
