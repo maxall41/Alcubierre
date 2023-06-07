@@ -14,7 +14,7 @@ pub struct PlayerBehaviour {
 }
 
 impl UserBehaviour for PlayerBehaviour {
-    fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView) {
+    fn game_loop(&mut self, game_object_view: GameObjectView, mut engine_view: EngineView) {
         let mut y_vel: f32 = 0.0;
         if engine_view.is_key_down(VirtualKeyCode::Up) {
             y_vel += self.speed * engine_view.frame_delta.as_millis() as f32;
@@ -35,7 +35,7 @@ impl UserBehaviour for PlayerBehaviour {
         );
 
         if engine_view
-            .is_colliding(
+            .is_colliding_once(
                 game_object_view.physics.collider_handle.unwrap(),
                 self.ball_handle,
             )

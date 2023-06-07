@@ -43,6 +43,7 @@ impl Engine {
                                 key_locks: &mut self.key_locks,
                                 query_pipeline: &mut self.query_pipeline,
                                 collider_set: &mut scene.collider_set,
+                                collision_locks: &mut self.collision_locks,
                                 frame_delta: &Duration::from_millis(5) //TODO
                             },game_object)
                         }

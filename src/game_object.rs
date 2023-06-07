@@ -7,7 +7,7 @@ use crate::{EngineEvent, Scene};
 use hashbrown::HashSet;
 use rapier2d::dynamics::{RigidBody, RigidBodyHandle};
 use rapier2d::geometry::NarrowPhase;
-use rapier2d::prelude::{ColliderSet, QueryPipeline, RigidBodySet};
+use rapier2d::prelude::{ColliderHandle, ColliderSet, QueryPipeline, RigidBodySet};
 use std::time::Duration;
 use kanal::{Receiver, Sender};
 use winit::event::VirtualKeyCode;
@@ -53,6 +53,7 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
+        collision_locks: &mut HashSet<ColliderHandle>
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -65,6 +66,7 @@ impl GameObject {
                     query_pipeline,
                     collider_set,
                     frame_delta,
+                    collision_locks
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -84,6 +86,7 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
+        collision_locks: &mut HashSet<ColliderHandle>
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -96,6 +99,7 @@ impl GameObject {
                     query_pipeline,
                     collider_set,
                     frame_delta,
+                    collision_locks
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -116,6 +120,7 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
+        collision_locks: &mut HashSet<ColliderHandle>
     ) {
         let event = self.event_rx.try_recv();
         let mut object_event : Option<GameObjectIPC> = None;
@@ -141,6 +146,7 @@ impl GameObject {
                        query_pipeline,
                        collider_set,
                        frame_delta,
+                       collision_locks
                    },
                    GameObjectView {
                        physics: &mut self.physics,
@@ -164,6 +170,7 @@ impl GameObject {
                     query_pipeline,
                     collider_set,
                     frame_delta,
+                    collision_locks
                 },
             );
         }

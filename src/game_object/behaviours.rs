@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use hashbrown::HashSet;
 use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
@@ -54,6 +55,7 @@ pub struct EngineView<'a> {
     pub collider_set: &'a mut ColliderSet,
     pub(crate) event_tx: &'a mut Sender<EngineEvent>,
     pub(crate) key_locks: &'a mut HashSet<VirtualKeyCode>,
+    pub(crate) collision_locks: &'a mut HashSet<ColliderHandle>,
     pub(crate) keys_pressed: &'a mut HashSet<VirtualKeyCode>,
     pub(crate) query_pipeline: &'a mut QueryPipeline,
     pub frame_delta: &'a Duration,
@@ -66,10 +68,41 @@ impl<'a> EngineView<'a> {
         }
         None
     }
+    pub fn is_colliding_with_sensor_once(&mut self,col1: ColliderHandle,col2: ColliderHandle) -> Option<ColliderHandle> {
+        if self.narrow_phase.intersection_pair(col1, col2) == Some(true) {
+            let contains = self.collision_locks.contains(&col2);
+            if !contains {
+                self.collision_locks.insert(col2);
+                return Some(col2);
+            }
+        } else {
+            let contains = self.collision_locks.contains(&col2);
+            if contains {
+                self.collision_locks.remove(&col2);
+            }
+        }
+        None
+    }
     pub fn is_colliding(&self, col1: ColliderHandle, col2: ColliderHandle) -> Option<ColliderHandle> {
         if let Some(contact_pair) = self.narrow_phase.contact_pair(col1, col2) {
             if contact_pair.has_any_active_contact {
                 return Some(col2);
+            }
+        }
+        None
+    }
+
+    pub fn is_colliding_once(&mut self,col1: ColliderHandle,col2: ColliderHandle) -> Option<ColliderHandle> {
+        if let Some(_) = self.narrow_phase.contact_pair(col1, col2) {
+            let contains = self.collision_locks.contains(&col2);
+            if !contains {
+                self.collision_locks.insert(col2);
+                return Some(col2);
+            }
+        } else {
+            let contains = self.collision_locks.contains(&col2);
+            if contains {
+                self.collision_locks.remove(&col2);
             }
         }
         None

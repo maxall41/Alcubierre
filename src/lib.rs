@@ -22,10 +22,7 @@ use kanal::{Receiver, Sender};
 use crate::events::EngineEvent;
 use crate::game_object::behaviours::EngineView;
 use crate::renderer::Render;
-use rapier2d::prelude::{
-    vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager,
-    MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet,
-};
+use rapier2d::prelude::{vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet, ColliderHandle};
 use winit::dpi::PhysicalSize;
 use winit::event::{
     DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent,
@@ -54,6 +51,7 @@ pub struct Engine {
     window_height: i32,
     keys_pressed: HashSet<VirtualKeyCode>,
     key_locks: HashSet<VirtualKeyCode>,
+    collision_locks: HashSet<ColliderHandle>,
     mouse_data: MouseData,
     query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
@@ -90,6 +88,7 @@ impl Engine {
             window_height,
             key_locks: HashSet::new(),
             keys_pressed: HashSet::new(),
+            collision_locks: HashSet::new(),
             query_pipeline,
             audio_manager,
             physics_pipeline,
@@ -119,6 +118,7 @@ impl Engine {
                     &mut self.query_pipeline,
                     &mut scene.collider_set,
                     &mut self.last_delta,
+                    &mut self.collision_locks
                 )
             }
         }
@@ -139,6 +139,7 @@ impl Engine {
                 &mut self.query_pipeline,
                 &mut active_scene.collider_set,
                 &mut self.last_delta,
+                &mut self.collision_locks
             )
         }
     }
@@ -239,7 +240,6 @@ impl Engine {
             },
             Event::RedrawRequested(window_id) if window_id == window.id() => {}
             Event::MainEventsCleared => {
-                let real_start = Instant::now();
                 // Cap FPS at 60FPS. With practically no minimum
                 // Only sleep on native. When running in WASM browser controls FPS via requestAnimationFrame.
                 cfg_if::cfg_if! {
@@ -252,10 +252,8 @@ impl Engine {
 
                 let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
 
-                // active_scene_unwrapped.integration_params.dt = 1.0 / (1000.0 / self.last_delta.as_millis() as f32);
-                let mut runs = 0;
 
-                while ( accumulator >= dt_physics )
+                while accumulator >= dt_physics
                 {
                     self.physics_pipeline.step(
                         &self.gravity,
@@ -279,7 +277,6 @@ impl Engine {
                     );
 
                     accumulator -= dt_physics;
-                    runs += 1;
                 }
 
                 self.draw();
@@ -292,7 +289,6 @@ impl Engine {
                 self.last_frame_end = Instant::now();
 
                 //
-                println!("LD: {:?}, {:?}",self.last_delta.as_millis(),runs);
             }
             _ => *control_flow = ControlFlow::Poll,
         });
@@ -316,7 +312,8 @@ impl Engine {
                         &mut self.key_locks,
                         &mut self.query_pipeline,
                         &mut active_scene.collider_set,
-                        &mut self.last_delta
+                        &mut self.last_delta,
+                        &mut self.collision_locks
                     );
                 }
             }
@@ -339,7 +336,8 @@ impl Engine {
                     key_locks: &mut self.key_locks,
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
-                    frame_delta: &mut self.last_delta
+                    frame_delta: &mut self.last_delta,
+                    collision_locks: &mut self.collision_locks
                 },
                 &self.mouse_data,
             );
