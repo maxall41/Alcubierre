@@ -5,11 +5,11 @@ use crate::physics::AlcubierreCollider;
 use crate::renderer::buffer::QuadBufferBuilder;
 use crate::{EngineEvent, Scene};
 use hashbrown::HashSet;
+use kanal::{Receiver, Sender};
 use rapier2d::dynamics::{RigidBody, RigidBodyHandle};
 use rapier2d::geometry::NarrowPhase;
 use rapier2d::prelude::{ColliderHandle, ColliderSet, QueryPipeline, RigidBodySet};
 use std::time::Duration;
-use kanal::{Receiver, Sender};
 use winit::event::VirtualKeyCode;
 
 pub mod behaviours;
@@ -18,7 +18,7 @@ pub mod physics;
 
 #[derive(Clone)]
 pub enum GameObjectIPC {
-    UserEvent(u16) // User can use #[repr(u16)] on an enum to use this nicely
+    UserEvent(Vec<u8>), // User can use #[repr(u16)] on an enum to use this nicely
 }
 
 #[derive(Clone)]
@@ -30,7 +30,7 @@ pub struct GameObject {
     pub physics: PhysicsData,
     pub(crate) id: u128,
     pub(crate) event_tx: Sender<GameObjectIPC>,
-    pub(crate) event_rx: Receiver<GameObjectIPC>
+    pub(crate) event_rx: Receiver<GameObjectIPC>,
 }
 
 pub struct GameObjectView<'a> {
@@ -40,8 +40,12 @@ pub struct GameObjectView<'a> {
 }
 
 impl GameObject {
-    pub fn notify(&self,event: u16) {
-        self.event_tx.send(GameObjectIPC::UserEvent(event)).unwrap();
+    pub fn notify(&self, event: &[u8]) {
+        let ev = event.to_vec();
+        self.notify_internal(ev);
+    }
+    pub(crate) fn notify_internal(&self, event: Vec<u8>) {
+        self.event_tx.send(GameObjectIPC::UserEvent(event));
     }
     pub(crate) fn unloading(
         &mut self,
@@ -53,7 +57,7 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
-        collision_locks: &mut HashSet<ColliderHandle>
+        collision_locks: &mut HashSet<ColliderHandle>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.unloaded(
@@ -66,7 +70,7 @@ impl GameObject {
                     query_pipeline,
                     collider_set,
                     frame_delta,
-                    collision_locks
+                    collision_locks,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -86,7 +90,7 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
-        collision_locks: &mut HashSet<ColliderHandle>
+        collision_locks: &mut HashSet<ColliderHandle>,
     ) {
         for behaviour in &mut self.behaviours {
             behaviour.loaded(
@@ -99,7 +103,7 @@ impl GameObject {
                     query_pipeline,
                     collider_set,
                     frame_delta,
-                    collision_locks
+                    collision_locks,
                 },
                 GameObjectView {
                     physics: &mut self.physics,
@@ -120,41 +124,42 @@ impl GameObject {
         query_pipeline: &mut QueryPipeline,
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
-        collision_locks: &mut HashSet<ColliderHandle>
+        collision_locks: &mut HashSet<ColliderHandle>,
     ) {
         let event = self.event_rx.try_recv();
-        let mut object_event : Option<GameObjectIPC> = None;
+        let mut object_event: Option<GameObjectIPC> = None;
         match event {
             Ok(object) => {
                 object_event = object;
-            },
+            }
             Err(e) => {
-                panic!("{}",e);
+                panic!("{}", e);
             }
         }
 
         for behaviour in &mut self.behaviours {
-           if object_event.is_some() {
-               behaviour.received_event(
-                   object_event.as_ref().unwrap(),
-                   EngineView {
-                       rigid_body_set,
-                       narrow_phase,
-                       event_tx,
-                       keys_pressed,
-                       key_locks,
-                       query_pipeline,
-                       collider_set,
-                       frame_delta,
-                       collision_locks
-                   },
-                   GameObjectView {
-                       physics: &mut self.physics,
-                       pos_x: &mut self.pos_x,
-                       pos_y: &mut self.pos_y,
-                   },
-               );
-           }
+            //TODO: Maybe this should be a drain so all events get sent per frame
+            if object_event.is_some() {
+                behaviour.received_event(
+                    object_event.as_ref().unwrap(),
+                    EngineView {
+                        rigid_body_set,
+                        narrow_phase,
+                        event_tx,
+                        keys_pressed,
+                        key_locks,
+                        query_pipeline,
+                        collider_set,
+                        frame_delta,
+                        collision_locks,
+                    },
+                    GameObjectView {
+                        physics: &mut self.physics,
+                        pos_x: &mut self.pos_x,
+                        pos_y: &mut self.pos_y,
+                    },
+                );
+            }
             behaviour.game_loop(
                 GameObjectView {
                     physics: &mut self.physics,
@@ -170,7 +175,7 @@ impl GameObject {
                     query_pipeline,
                     collider_set,
                     frame_delta,
-                    collision_locks
+                    collision_locks,
                 },
             );
         }
@@ -190,7 +195,7 @@ pub struct GameObjectBuilder {
     pub pos_x: f32,
     pub pos_y: f32,
     pub pre_rapier_collider: Option<AlcubierreCollider>,
-    pub rigid_body: Option<RigidBody>
+    pub rigid_body: Option<RigidBody>,
 }
 
 impl GameObjectBuilder {
@@ -201,7 +206,7 @@ impl GameObjectBuilder {
             pos_y: 0.0,
             pos_x: 0.0,
             pre_rapier_collider: None,
-            rigid_body: None
+            rigid_body: None,
         }
     }
     pub fn graphics(mut self, graphics: GraphicsType) -> GameObjectBuilder {
@@ -216,10 +221,7 @@ impl GameObjectBuilder {
         self.behaviours.push(Box::new(behaviour));
         self
     }
-    pub fn collider(
-        mut self,
-        collider: AlcubierreCollider,
-    ) -> GameObjectBuilder {
+    pub fn collider(mut self, collider: AlcubierreCollider) -> GameObjectBuilder {
         self.pre_rapier_collider = Some(collider);
         self
     }

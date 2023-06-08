@@ -1,11 +1,14 @@
 use crate::game_object::behaviours::EngineView;
+use crate::game_object::physics::PhysicsData;
 use crate::game_object::{GameObject, GameObjectBuilder};
 use crate::ui::frontend::HyperFoilAST;
 use crate::ui::parse_ui_blob;
 use hashbrown::HashMap;
 use rapier2d::geometry::{ColliderHandle, ColliderSet};
-use rapier2d::prelude::{BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager, MultibodyJointSet, NarrowPhase, RigidBodyHandle, RigidBodySet};
-use crate::game_object::physics::PhysicsData;
+use rapier2d::prelude::{
+    BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager,
+    MultibodyJointSet, NarrowPhase, RigidBodyHandle, RigidBodySet,
+};
 
 #[derive(Clone)]
 pub struct Scene {
@@ -26,19 +29,33 @@ pub struct Scene {
 }
 impl Scene {
     pub fn register_game_object(&mut self, game_object_builder: GameObjectBuilder) -> &GameObject {
-
-        let mut collider_handle : Option<ColliderHandle> = None;
-        let mut rigid_body_handle : Option<RigidBodyHandle> = None;
+        let mut collider_handle: Option<ColliderHandle> = None;
+        let mut rigid_body_handle: Option<RigidBodyHandle> = None;
         if game_object_builder.pre_rapier_collider.is_some() {
             if game_object_builder.rigid_body.is_some() {
-                rigid_body_handle = Some(self.rigid_body_set.insert(game_object_builder.rigid_body.unwrap()));
-                collider_handle = Some(self.collider_set.insert_with_parent(
-                    game_object_builder.pre_rapier_collider.unwrap().to_rapier(self.current_game_object_id),
-                    rigid_body_handle.unwrap(),
-                    &mut self.rigid_body_set,
-                ));
+                rigid_body_handle = Some(
+                    self.rigid_body_set
+                        .insert(game_object_builder.rigid_body.unwrap()),
+                );
+                collider_handle = Some(
+                    self.collider_set.insert_with_parent(
+                        game_object_builder
+                            .pre_rapier_collider
+                            .unwrap()
+                            .to_rapier(self.current_game_object_id),
+                        rigid_body_handle.unwrap(),
+                        &mut self.rigid_body_set,
+                    ),
+                );
             } else {
-               collider_handle = Some(self.collider_set.insert(game_object_builder.pre_rapier_collider.unwrap().to_rapier(self.current_game_object_id)));
+                collider_handle = Some(
+                    self.collider_set.insert(
+                        game_object_builder
+                            .pre_rapier_collider
+                            .unwrap()
+                            .to_rapier(self.current_game_object_id),
+                    ),
+                );
             }
         }
 
@@ -55,7 +72,7 @@ impl Scene {
             },
             id: self.current_game_object_id,
             event_tx,
-            event_rx
+            event_rx,
         };
 
         self.game_objects.push(game_object);

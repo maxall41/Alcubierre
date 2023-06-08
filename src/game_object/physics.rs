@@ -20,7 +20,6 @@ pub struct PhysicsData {
 }
 
 impl PhysicsObject for GameObject {
-
     fn remove_collider(&mut self, scene: &mut Scene) {
         scene.collider_set.remove(
             self.physics.collider_handle.unwrap(),

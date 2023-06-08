@@ -14,7 +14,7 @@ use winit::window::Window;
 use crate::game_object::behaviours::EngineView;
 use crate::renderer::camera::{Camera, CameraUniform};
 use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
-use crate::ui::frontend::HyperFoilAST;
+use crate::ui::frontend::{HyperFoilAST, RGBColor};
 use crate::MouseData;
 use buffer::*;
 
@@ -237,6 +237,7 @@ impl Render {
         function_map: &HashMap<String, fn(&mut EngineView)>,
         engine_view: &mut EngineView,
         mouse_data: &MouseData,
+        clear_color: &RGBColor,
     ) {
         let mut encoder = self
             .device
@@ -271,7 +272,15 @@ impl Render {
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                         view: &view,
                         resolve_target: None,
-                        ops: wgpu::Operations::default(),
+                        ops: wgpu::Operations {
+                            store: true,
+                            load: wgpu::LoadOp::Clear(wgpu::Color {
+                                r: clear_color.red as f64 / 255.0,
+                                g: clear_color.green as f64 / 255.0,
+                                b: clear_color.blue as f64 / 255.0,
+                                a: 1.0,
+                            }),
+                        },
                     })],
                     depth_stencil_attachment: None,
                 });

@@ -3,6 +3,7 @@ use crate::scenes::main::register_main_scene;
 use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
 use alcubierre::game_object::physics::PhysicsObject;
 use alcubierre::game_object::GameObject;
+use alcubierre::ui::frontend::RGBColor;
 use alcubierre::{Engine, EngineConfig};
 use log::warn;
 use rapier2d::geometry::{Collider, ColliderBuilder};
@@ -29,7 +30,6 @@ pub fn main() -> Result<(), JsValue> {
         }
     }
 
-
     warn!("Started");
 
     let mut flame = Engine::new(
@@ -37,7 +37,11 @@ pub fn main() -> Result<(), JsValue> {
         480,
         EngineConfig {
             gravity: 0.0,
-            // clear_color: Color::BLACK,
+            clear_color: RGBColor {
+                red: 0,
+                green: 0,
+                blue: 0,
+            },
         },
     );
 

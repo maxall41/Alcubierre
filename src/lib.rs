@@ -9,6 +9,7 @@ pub mod ui;
 use crate::renderer::buffer::QuadBufferBuilder;
 use hashbrown::{HashMap, HashSet};
 use instant::Instant;
+use kanal::{Receiver, Sender};
 use kira::manager::backend::DefaultBackend;
 use kira::manager::{AudioManager, AudioManagerSettings};
 use log::warn;
@@ -17,12 +18,15 @@ use rapier2d::geometry::ColliderSet;
 use std::ops::Add;
 use std::thread::sleep;
 use std::time::Duration;
-use kanal::{Receiver, Sender};
+use ui::frontend::RGBColor;
 
 use crate::events::EngineEvent;
 use crate::game_object::behaviours::EngineView;
 use crate::renderer::Render;
-use rapier2d::prelude::{vector, BroadPhase, CCDSolver, ImpulseJointSet, IntegrationParameters, IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet, ColliderHandle};
+use rapier2d::prelude::{
+    vector, BroadPhase, CCDSolver, ColliderHandle, ImpulseJointSet, IntegrationParameters,
+    IslandManager, MultibodyJointSet, NarrowPhase, PhysicsPipeline, QueryPipeline, RigidBodySet,
+};
 use winit::dpi::PhysicalSize;
 use winit::event::{
     DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent,
@@ -55,15 +59,16 @@ pub struct Engine {
     mouse_data: MouseData,
     query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
-    gravity: SMatrix<f32, 2, 1>,
+    config: EngineConfig,
     audio_manager: AudioManager,
     renderer: Option<Render>,
     last_delta: Duration,
-    last_frame_end: Instant
+    last_frame_end: Instant,
 }
 
 pub struct EngineConfig {
     pub gravity: f32,
+    pub clear_color: RGBColor,
 }
 
 impl Engine {
@@ -74,11 +79,8 @@ impl Engine {
 
         let mut physics_pipeline = PhysicsPipeline::new();
 
-        let gravity = vector![0.0, config.gravity];
-
         let mut audio_manager =
             AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
-
         Engine {
             scenes: HashMap::new(),
             event_tx,
@@ -92,7 +94,7 @@ impl Engine {
             query_pipeline,
             audio_manager,
             physics_pipeline,
-            gravity,
+            config,
             renderer: None,
             mouse_data: MouseData {
                 is_left_pressed: false,
@@ -118,7 +120,7 @@ impl Engine {
                     &mut self.query_pipeline,
                     &mut scene.collider_set,
                     &mut self.last_delta,
-                    &mut self.collision_locks
+                    &mut self.collision_locks,
                 )
             }
         }
@@ -139,7 +141,7 @@ impl Engine {
                 &mut self.query_pipeline,
                 &mut active_scene.collider_set,
                 &mut self.last_delta,
-                &mut self.collision_locks
+                &mut self.collision_locks,
             )
         }
     }
@@ -252,11 +254,9 @@ impl Engine {
 
                 let active_scene_unwrapped = self.active_scene.as_mut().unwrap();
 
-
-                while accumulator >= dt_physics
-                {
+                while accumulator >= dt_physics {
                     self.physics_pipeline.step(
-                        &self.gravity,
+                        &vector![0.0, self.config.gravity],
                         &active_scene_unwrapped.integration_params,
                         &mut active_scene_unwrapped.island_manager,
                         &mut active_scene_unwrapped.broad_phase,
@@ -281,7 +281,6 @@ impl Engine {
 
                 self.draw();
 
-
                 self.last_delta = Instant::now() - self.last_frame_end;
 
                 accumulator += self.last_delta.as_millis() as f32 / 1000.0;
@@ -298,7 +297,6 @@ impl Engine {
         let mut buffer = QuadBufferBuilder::new();
 
         if active_scene.is_some() {
-
             {
                 let active_scene = self.active_scene.as_mut().unwrap();
 
@@ -313,11 +311,10 @@ impl Engine {
                         &mut self.query_pipeline,
                         &mut active_scene.collider_set,
                         &mut self.last_delta,
-                        &mut self.collision_locks
+                        &mut self.collision_locks,
                     );
                 }
             }
-
 
             self.handle_events();
 
@@ -337,9 +334,10 @@ impl Engine {
                     keys_pressed: &mut self.keys_pressed,
                     query_pipeline: &mut self.query_pipeline,
                     frame_delta: &mut self.last_delta,
-                    collision_locks: &mut self.collision_locks
+                    collision_locks: &mut self.collision_locks,
                 },
                 &self.mouse_data,
+                &self.config.clear_color,
             );
         }
     }

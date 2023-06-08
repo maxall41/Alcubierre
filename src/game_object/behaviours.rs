@@ -1,27 +1,33 @@
-use std::hash::Hash;
 use hashbrown::HashSet;
+use kanal::Sender;
 use rapier2d::geometry::{ColliderSet, Ray};
 use rapier2d::math::{Point, Real, Vector};
 use rapier2d::pipeline::QueryFilter;
 use rapier2d::prelude::{
     ColliderHandle, NarrowPhase, QueryPipeline, RayIntersection, RigidBodySet,
 };
+use std::hash::Hash;
 use std::time::Duration;
-use kanal::Sender;
 
 use crate::audio::basic::AudioSource;
 use winit::event::VirtualKeyCode;
 
+use crate::events::PullGameObjectRequest;
 use crate::game_object::{GameObject, GameObjectIPC, GameObjectView};
 use crate::physics::screen_units_to_physics_units;
 use crate::EngineEvent;
-use crate::events::PullGameObjectRequest;
 
 pub trait UserBehaviour: UserBehaviourClone {
     fn game_loop(&mut self, game_object_view: GameObjectView, engine_view: EngineView);
     fn unloaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
     fn loaded(&mut self, _engine_view: EngineView, _game_object_view: GameObjectView) {} // {} Is Optional
-    fn received_event(&mut self,event: &GameObjectIPC, _engine_view: EngineView, _game_object_view: GameObjectView) {}
+    fn received_event(
+        &mut self,
+        event: &GameObjectIPC,
+        _engine_view: EngineView,
+        _game_object_view: GameObjectView,
+    ) {
+    }
 }
 
 pub trait UserBehaviourClone: 'static {
@@ -62,13 +68,25 @@ pub struct EngineView<'a> {
 }
 
 impl<'a> EngineView<'a> {
-    pub fn is_colliding_with_sensor(&self, col1: ColliderHandle, col2: ColliderHandle) -> Option<ColliderHandle> {
+    pub fn is_colliding_with_sensor(
+        &self,
+        col1: ColliderHandle,
+        col2: ColliderHandle,
+    ) -> Option<ColliderHandle> {
         if self.narrow_phase.intersection_pair(col1, col2) == Some(true) {
             return Some(col2);
         }
         None
     }
-    pub fn is_colliding_with_sensor_once(&mut self,col1: ColliderHandle,col2: ColliderHandle) -> Option<ColliderHandle> {
+    pub fn notify_global(&self, event: &[u8]) {
+        let ev = event.to_vec();
+        self.event_tx.send(EngineEvent::UserEvent(ev)).unwrap();
+    }
+    pub fn is_colliding_with_sensor_once(
+        &mut self,
+        col1: ColliderHandle,
+        col2: ColliderHandle,
+    ) -> Option<ColliderHandle> {
         if self.narrow_phase.intersection_pair(col1, col2) == Some(true) {
             let contains = self.collision_locks.contains(&col2);
             if !contains {
@@ -83,7 +101,11 @@ impl<'a> EngineView<'a> {
         }
         None
     }
-    pub fn is_colliding(&self, col1: ColliderHandle, col2: ColliderHandle) -> Option<ColliderHandle> {
+    pub fn is_colliding(
+        &self,
+        col1: ColliderHandle,
+        col2: ColliderHandle,
+    ) -> Option<ColliderHandle> {
         if let Some(contact_pair) = self.narrow_phase.contact_pair(col1, col2) {
             if contact_pair.has_any_active_contact {
                 return Some(col2);
@@ -92,7 +114,11 @@ impl<'a> EngineView<'a> {
         None
     }
 
-    pub fn is_colliding_once(&mut self,col1: ColliderHandle,col2: ColliderHandle) -> Option<ColliderHandle> {
+    pub fn is_colliding_once(
+        &mut self,
+        col1: ColliderHandle,
+        col2: ColliderHandle,
+    ) -> Option<ColliderHandle> {
         if let Some(_) = self.narrow_phase.contact_pair(col1, col2) {
             let contains = self.collision_locks.contains(&col2);
             if !contains {
@@ -107,14 +133,16 @@ impl<'a> EngineView<'a> {
         }
         None
     }
-    pub fn pull_game_object_from_collider<F>(&self,collider_handle: ColliderHandle,callback: F)
-        where
-            F: Fn(EngineView,&GameObject) + 'static
-         {
-        self.event_tx.send(EngineEvent::PullGameObject(PullGameObjectRequest {
-            collider_handle,
-            callback: Box::new(callback),
-        })).unwrap();
+    pub fn pull_game_object_from_collider<F>(&self, collider_handle: ColliderHandle, callback: F)
+    where
+        F: Fn(EngineView, &GameObject) + 'static,
+    {
+        self.event_tx
+            .send(EngineEvent::PullGameObject(PullGameObjectRequest {
+                collider_handle,
+                callback: Box::new(callback),
+            }))
+            .unwrap();
     }
     pub fn load_scene(&self, scene_name: String) {
         self.event_tx
