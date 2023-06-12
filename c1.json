@@ -85,7 +85,10 @@
     {
       "Text": {
         "content": {
-          "Variable": "Health"
+          "Variable": [
+            "Health",
+            "Health: "
+          ]
         },
         "styles": {
           "font": "",

@@ -1,16 +1,15 @@
-use flame::ui::frontend::Element::{Button, Text};
-use flame::ui::frontend::ElementAlignment::TopLeft;
-use flame::ui::frontend::SpacingUnit::{PercentHeight, PercentWidth, Pixels};
-use flame::ui::frontend::ValueOrVar::{Value, Variable};
-use flame::ui::frontend::{
+use alcubierre::ui::frontend::Element::{Button, Text};
+use alcubierre::ui::frontend::ElementAlignment::TopLeft;
+use alcubierre::ui::frontend::SpacingUnit::{PercentHeight, PercentWidth, Pixels};
+use alcubierre::ui::frontend::ValueOrVar::{Value, Variable};
+use alcubierre::ui::frontend::{
     ButtonElement, ButtonStyleData, ElementAlignment, HyperFoilAST, RGBColor, TextElement,
     TextStyleData,
 };
-use flame::ui::parse_file;
+use alcubierre::ui::parse_ui_blob;
 use pretty_assertions::assert_eq;
 use std::fs;
 use std::fs::File;
-use tokio::io::AsyncWriteExt;
 
 #[test]
 fn basic_rough_parse() {
@@ -61,7 +60,7 @@ fn basic_rough_parse() {
                 binding: "dec_health".to_string(),
             }),
             Text(TextElement {
-                content: Variable("Health".to_string()),
+                content: Variable(("Health".to_string(), "Health: ".to_string())),
                 styles: TextStyleData {
                     font: "".to_string(),
                     font_size: Pixels(12),
@@ -81,35 +80,35 @@ fn basic_rough_parse() {
         ],
     };
 
-    assert_eq!(parse_file("tests/basic.hfm"), basic_res);
+    assert_eq!(parse_ui_blob(include_str!("./basic.hfm")), basic_res);
 }
 
 #[test]
 fn somewhat_complex_rough_parse() {
-    let c1 = fs::read_to_string("tests/c1.json").expect("Should have been able to read the file");
+    let c1 = fs::read_to_string("./c1.json").expect("Should have been able to read the file");
 
     let c1_ast: HyperFoilAST = serde_json::from_str(&c1).unwrap();
 
-    assert_eq!(parse_file("tests/c1.hfm"), c1_ast);
+    assert_eq!(parse_ui_blob(include_str!("./c1.hfm")), c1_ast);
 
-    // let ast = parse_file("tests/c1.hfm");
-    //
+    // let ast = parse_ui_blob(include_str!("./c1.hfm"));
+
     // let st = serde_json::to_string(&ast).unwrap();
-    //
+
     // fs::write("c1.json", st).expect("Unable to write file");
 }
 
 #[test]
 fn more_complex_rough_parse() {
-    let c2 = fs::read_to_string("tests/c2.json").expect("Should have been able to read the file");
+    let c2 = fs::read_to_string("./c2.json").expect("Should have been able to read the file");
 
     let c2_ast: HyperFoilAST = serde_json::from_str(&c2).unwrap();
 
-    assert_eq!(parse_file("tests/c2.hfm"), c2_ast);
+    assert_eq!(parse_ui_blob(include_str!("./c2.hfm")), c2_ast);
 
-    // let ast = parse_file("tests/c2.hfm");
-    //
+    // let ast = parse_ui_blob(include_str!("./c2.hfm"));
+
     // let st = serde_json::to_string(&ast).unwrap();
-    //
+
     // fs::write("c2.json", st).expect("Unable to write file");
 }
