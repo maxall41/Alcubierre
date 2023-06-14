@@ -10,6 +10,7 @@ It is no where near ready for that use case though. As what it supports is still
 
 ## What Works:
 * Physics
+* Collisions 
 * Drawing Squares
 * Playing Sounds
 * Scenes
@@ -20,7 +21,6 @@ It is no where near ready for that use case though. As what it supports is still
 
 ## Coming Soon:
 * Sprites
-* Return GameObject from collision checks
 * Exposed Camera System
 * Animations
 * Error Handling
@@ -31,6 +31,5 @@ It is no where near ready for that use case though. As what it supports is still
 * Nested GameObjects
 * Music Manager
 * Particle System
-* Better ease of use
 * Animations
 * Level Manager
