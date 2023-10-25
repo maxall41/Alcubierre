@@ -5,8 +5,6 @@ use hashbrown::HashMap;
 use log::warn;
 use std::iter;
 use wgpu::util::DeviceExt;
-use wgpu_glyph::ab_glyph::FontArc;
-use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
 
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
@@ -17,6 +15,20 @@ use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::{HyperFoilAST, RGBColor};
 use crate::MouseData;
 use buffer::*;
+use glyphon::{
+    Attrs, Buffer, Color, Family, FontSystem, Metrics, Resolution, Shaping, SwashCache, TextArea,
+    TextAtlas, TextBounds, TextRenderer,
+};
+use wgpu::MultisampleState;
+
+pub struct CustomTextArea {
+    pub buffer: Buffer,
+    pub left: f32,
+    pub top: f32,
+    pub scale: f32,
+    pub bounds: TextBounds,
+    pub default_color: Color
+}
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -28,15 +40,17 @@ pub struct Render {
     pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
-    staging_belt: wgpu::util::StagingBelt,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera: camera::Camera,
     projection: camera::Projection,
     camera_bind_group: wgpu::BindGroup,
-    glyph_brush: GlyphBrush<()>,
     size: PhysicalSize<u32>,
-    font: FontArc,
+    text_renderer: TextRenderer,
+    cache: SwashCache,
+    atlas: TextAtlas,
+    font_system: FontSystem,
+    buffer: Buffer
 }
 
 impl Render {
@@ -183,13 +197,21 @@ impl Render {
             mapped_at_creation: false,
         });
 
-        let staging_belt = wgpu::util::StagingBelt::new(1024);
+        // let font =
+        //     ab_glyph::FontArc::try_from_slice(include_bytes!("./assets/monogram-default-font.ttf"))
+        //         .unwrap();
 
-        let font =
-            ab_glyph::FontArc::try_from_slice(include_bytes!("./assets/monogram-default-font.ttf"))
-                .unwrap();
+        // Text Rendering
+        let mut font_system = FontSystem::new();
+        let mut cache = SwashCache::new();
+        let mut atlas = TextAtlas::new(&device, &queue, surface_format);
+        let mut text_renderer =
+            TextRenderer::new(&mut atlas, &device, MultisampleState::default(), None);
+        let mut buffer = Buffer::new(&mut font_system, Metrics::new(30.0, 42.0));
 
-        let glyph_brush = GlyphBrushBuilder::using_font(font.clone()).build(&device, config.format);
+        buffer.set_size(&mut font_system, size.width as f32, size.height as f32);
+        buffer.set_text(&mut font_system, "Hello world! 👋\nThis is rendered with 🦅 glyphon 🦁\nThe text below should be partially clipped.\na b c d e f g h i j k l m n o p q r s t u v w x y z", Attrs::new().family(Family::SansSerif), Shaping::Advanced);
+        buffer.shape_until_scroll(&mut font_system);
 
         Self {
             surface,
@@ -200,15 +222,17 @@ impl Render {
             pipeline,
             vertex_buffer,
             index_buffer,
-            staging_belt,
             camera_bind_group: bind_group,
             camera_buffer,
             camera_uniform,
             projection,
             camera,
-            glyph_brush,
+            text_renderer,
             size,
-            font,
+            cache,
+            atlas,
+            font_system,
+            buffer
         }
     }
 
@@ -229,7 +253,7 @@ impl Render {
         }
     }
 
-    pub fn render_buffer(
+    pub fn render_buffer<'a>(
         &mut self,
         mut buffer: QuadBufferBuilder,
         ast: &Option<HyperFoilAST>,
@@ -242,20 +266,31 @@ impl Render {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
+        let mut text_areas : Vec<TextArea> = Vec::new();
+        let mut custom_text_areas : Vec<CustomTextArea> = Vec::new();
         if ast.is_some() {
-            render_from_hyperfoil_ast(
+            custom_text_areas = render_from_hyperfoil_ast(
                 ast.as_ref().unwrap(),
-                &mut self.glyph_brush,
                 self.size,
-                &self.font,
                 data_map,
                 function_map,
                 &mut buffer,
                 engine_view,
                 &self.projection,
                 mouse_data,
+                &mut self.font_system
             );
+            text_areas = custom_text_areas.iter().map(| ca | {
+                let area = TextArea {
+                    buffer: &ca.buffer,
+                    left: ca.left,
+                    top: ca.top,
+                    scale: ca.scale,
+                    bounds: ca.bounds,
+                    default_color: ca.default_color,
+                };
+                return area;
+            }).collect::<Vec<TextArea>>();
         }
 
         let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
@@ -266,6 +301,22 @@ impl Render {
         match self.surface.get_current_texture() {
             Ok(frame) => {
                 let view = frame.texture.create_view(&Default::default());
+
+                // Prepare text renderer
+                self.text_renderer
+                    .prepare(
+                        &self.device,
+                        &self.queue,
+                        &mut self.font_system,
+                        &mut self.atlas,
+                        Resolution {
+                            width: self.config.width,
+                            height: self.config.height,
+                        },
+                        text_areas,
+                        &mut self.cache,
+                    )
+                    .unwrap();
 
                 let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: Some("Main Render Pass"),
@@ -285,6 +336,9 @@ impl Render {
                     depth_stencil_attachment: None,
                 });
 
+                // Draw text
+                self.text_renderer.render(&self.atlas, &mut render_pass).unwrap();
+
                 // Setup
                 render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
 
@@ -297,22 +351,8 @@ impl Render {
 
                 drop(render_pass);
 
-                // Draw the text!
-                self.glyph_brush
-                    .draw_queued(
-                        &self.device,
-                        &mut self.staging_belt,
-                        &mut encoder,
-                        &view,
-                        self.size.width,
-                        self.size.height,
-                    )
-                    .expect("Draw queued");
-
-                self.staging_belt.finish();
                 self.queue.submit(iter::once(encoder.finish()));
                 frame.present();
-                self.staging_belt.recall();
             }
             Err(wgpu::SurfaceError::Outdated) => {
                 println!("Outdated surface texture");
