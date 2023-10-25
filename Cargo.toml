@@ -25,8 +25,7 @@ serde = "1.0.163"
 serde_derive = "1.0.163"
 serde_json = "1.0.96"
 pollster = "0.3.0"
-#wgpu_glyph = "0.20.0"
-wgpu_glyph = { path = "../wgpu_glyph" }
+wgpu_glyph = "0.20.0"
 winit = "0.28.6"
 env_logger = "0.10.0"
 log = "0.4.18"
@@ -38,6 +37,7 @@ console_log = "1.0.0"
 wasm-bindgen-futures = "0.4.30"
 web-sys = { version = "0.3.63", features = ["Window","Document","Element","Headers", "Request", "RequestInit","RequestMode","Response","AudioContext","AudioBuffer"] }
 kanal = "0.1.0-pre8"
+rhai = "1.16.2"
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

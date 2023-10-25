@@ -7,6 +7,7 @@ use rapier2d::prelude::{
     ColliderHandle, NarrowPhase, QueryPipeline, RayIntersection, RigidBodySet,
 };
 use std::hash::Hash;
+use std::sync::Arc;
 use std::time::Duration;
 
 use crate::audio::basic::AudioSource;
@@ -49,11 +50,11 @@ impl Clone for Box<dyn UserBehaviour> {
     }
 }
 
-impl GameObject {
-    pub fn insert_behaviour(&mut self, behaviour: impl UserBehaviour) {
-        self.behaviours.push(Box::new(behaviour));
-    }
-}
+// impl GameObject {
+//     pub fn insert_behaviour(&mut self, behaviour: Runtime) {
+//         self.behaviours.push(Arc::new(behaviour));
+//     }
+// }
 
 pub struct EngineView<'a> {
     pub rigid_body_set: &'a mut RigidBodySet,

@@ -1,4 +1,3 @@
-use crate::scenes::fail::register_fail_scene;
 use crate::scenes::main::register_main_scene;
 use alcubierre::game_object::graphics::{CircleData, Graphics, GraphicsType, RectData};
 use alcubierre::game_object::physics::PhysicsObject;
@@ -15,9 +14,6 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
 
 mod scenes;
-mod scripts;
-
-use crate::scripts::player::PlayerBehaviour;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub fn main() -> Result<(), JsValue> {
@@ -47,7 +43,6 @@ pub fn main() -> Result<(), JsValue> {
 
     register_main_scene(&mut flame);
 
-    register_fail_scene(&mut flame);
     //
     flame.set_current_scene("Main".to_string());
     //
