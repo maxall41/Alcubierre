@@ -10,6 +10,7 @@ use rapier2d::geometry::ColliderBuilder;
 use rapier2d::math::Isometry;
 use rapier2d::prelude::{vector, Ball, RigidBodyBuilder};
 use winit::event::VirtualKeyCode;
+use alcubierre::game_object::graphics::SpriteData;
 
 use alcubierre::game_object::behaviours::EngineView;
 use alcubierre::game_object::behaviours::UserBehaviour;
@@ -48,6 +49,8 @@ impl UserBehaviour for BallBehaviour {
 }
 
 pub fn register_main_scene(mut flame: &mut Engine) {
+    let sprite_id = flame.load_sprite("torch.png");
+
     let scene = flame.register_scene("Main".to_string());
 
     scene.register_ui(include_str!("ui/test.html"));
@@ -57,7 +60,7 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .insert("ScoreValue".to_string(), "0".to_string());
 
     let ball_rigid_body = RigidBodyBuilder::kinematic_position_based()
-        .translation(vector![0.1, 0.0])
+        .translation(vector![0.0, 0.0])
         .linear_damping(5.5)
         .angular_damping(2.0)
         .can_sleep(false)
@@ -74,13 +77,11 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .behaviour("ball.rhai")
         .rigid_body(ball_rigid_body)
         .collider(ball_collider)
-        .graphics(GraphicsType::Circle(CircleData {
-            radius: 0.6,
-            color: RGBColor {
-                red: 255,
-                green: 255,
-                blue: 255,
-            },
+        .graphics(GraphicsType::Sprite(SpriteData {
+            width: 2.0,
+            height: 2.0,
+            sprite_id: sprite_id,
+            filter: false
         }));
 
     let ball = scene.register_game_object(ball_builder);

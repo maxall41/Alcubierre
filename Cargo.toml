@@ -38,6 +38,7 @@ wasm-bindgen-futures = "0.4.30"
 web-sys = { version = "0.3.63", features = ["Window","Document","Element","Headers", "Request", "RequestInit","RequestMode","Response","AudioContext","AudioBuffer"] }
 kanal = "0.1.0-pre8"
 rhai = "1.16.2"
+image = {  version = "0.24.7", features = ["png","jpeg"] }
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

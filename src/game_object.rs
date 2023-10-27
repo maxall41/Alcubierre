@@ -15,6 +15,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use rapier2d::math::Isometry;
 use winit::event::VirtualKeyCode;
+use crate::renderer::sprite::SpriteInstance;
 
 pub mod behaviours;
 pub mod graphics;
@@ -226,6 +227,7 @@ impl GameObject {
         collider_set: &mut ColliderSet,
         frame_delta: &mut Duration,
         collision_locks: &mut HashSet<ColliderHandle>,
+        sprite_instances: &mut Vec<SpriteInstance>,
     ) {
         let event = self.event_rx.try_recv();
         let mut object_event: Option<GameObjectIPC> = None;
@@ -357,7 +359,7 @@ impl GameObject {
             self.pos_x = new_pos.0;
             self.pos_y = new_pos.1;
         }
-        self.render(buffer);
+        self.render(buffer,sprite_instances);
     }
 }
 

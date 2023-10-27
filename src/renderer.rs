@@ -1,9 +1,12 @@
 pub(crate) mod buffer;
+pub(crate) mod sprite;
 pub mod camera;
 
 use hashbrown::HashMap;
-use log::warn;
 use std::iter;
+use std::num::NonZeroU32;
+use cgmath::Rotation3;
+use wgpu::{BindGroup, BindGroupLayout, Buffer, Sampler, TextureView};
 use wgpu::util::DeviceExt;
 use wgpu_glyph::ab_glyph::FontArc;
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
@@ -17,6 +20,8 @@ use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::{HyperFoilAST, RGBColor};
 use crate::MouseData;
 use buffer::*;
+use crate::renderer::sprite::{create_sprite_render_pipeline, SpriteInstance, SpriteVertex};
+use crate::renderer::sprite::texture::Texture;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -26,6 +31,7 @@ pub struct Render {
     device: wgpu::Device,
     queue: wgpu::Queue,
     pipeline: wgpu::RenderPipeline,
+    sprite_render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     staging_belt: wgpu::util::StagingBelt,
@@ -37,6 +43,12 @@ pub struct Render {
     glyph_brush: GlyphBrush<()>,
     size: PhysicalSize<u32>,
     font: FontArc,
+    sprite_bind_group_layout: BindGroupLayout,
+    sprite_vertex_buffer: Buffer,
+    sprite_index_buffer: Buffer,
+    sprite_instance_buffer: Buffer,
+    sprite_num_indices: u32,
+    diffuse_bind_group: BindGroup
 }
 
 impl Render {
@@ -77,8 +89,8 @@ impl Render {
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: None,
-                    features: wgpu::Features::empty(),
-                    limits: wgpu::Limits::downlevel_webgl2_defaults(),
+                    features: wgpu::Features::TEXTURE_BINDING_ARRAY | wgpu::Features::SAMPLED_TEXTURE_AND_STORAGE_BUFFER_ARRAY_NON_UNIFORM_INDEXING,
+                    limits: adapter.limits(),
                 },
                 None, // Trace path
             )
@@ -151,9 +163,16 @@ impl Render {
             label: Some("camera_bind_group"),
         });
 
+        // Textures
+        let texture_count = 1;
+        let (sprite_render_pipeline,sprite_bind_group_layout) = create_sprite_render_pipeline(&device,&config,texture_count);
+
+
         //
 
         surface.configure(&device, &config);
+
+
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&bind_group_layout],
@@ -183,6 +202,41 @@ impl Render {
             mapped_at_creation: false,
         });
 
+        const VERTICES: &[SpriteVertex] = &[
+            SpriteVertex {
+                position: [0.3381871, -0.3, 0.0],
+                tex_coords: [1.0, 1.0],
+            }, // A
+            SpriteVertex {
+                position: [0.9381871, -0.3, 0.0],
+                tex_coords: [0.0, 1.0],
+            }, // B
+            SpriteVertex {
+                position: [0.9381871, 0.3, 0.0],
+                tex_coords: [0.0, 0.0],
+            }, // C
+            SpriteVertex {
+                position: [0.3381871, 0.3, 0.0],
+                tex_coords: [1.0, 0.0],
+            }, // D
+        ];
+
+        const INDICES: &[u16] = &[0, 1, 2,0,2,3];
+
+        let sprite_num_indices = INDICES.len() as u32;
+
+        let sprite_vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffer"),
+            contents: bytemuck::cast_slice(VERTICES),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+        let sprite_index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Index Buffer"),
+            contents: bytemuck::cast_slice(INDICES),
+            usage: wgpu::BufferUsages::INDEX,
+        });
+
+
         let staging_belt = wgpu::util::StagingBelt::new(1024);
 
         let font =
@@ -190,6 +244,28 @@ impl Render {
                 .unwrap();
 
         let glyph_brush = GlyphBrushBuilder::using_font(font.clone()).build(&device, config.format);
+
+        let sprite_instance_buffer = device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                label: Some("Sprite Instance Buffer"),
+                contents: &[],
+                usage: wgpu::BufferUsages::VERTEX,
+            }
+        );
+
+       // sprite_diffuse_bind_group
+
+
+        let fake_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[],
+            label: Some("fake_bind_group_layout"),
+        });
+
+        let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &fake_bind_group_layout,
+            entries: &[],
+            label: Some("fake_diffuse_bind_group"),
+        });
 
         Self {
             surface,
@@ -209,6 +285,13 @@ impl Render {
             glyph_brush,
             size,
             font,
+            sprite_render_pipeline,
+            sprite_bind_group_layout,
+            sprite_vertex_buffer,
+            sprite_index_buffer,
+            sprite_num_indices,
+            sprite_instance_buffer,
+            diffuse_bind_group
         }
     }
 
@@ -238,6 +321,8 @@ impl Render {
         engine_view: &mut EngineView,
         mouse_data: &MouseData,
         clear_color: &RGBColor,
+        sprite_instances: Vec<SpriteInstance>,
+        textures: Vec<&[u8]>
     ) {
         let mut encoder = self
             .device
@@ -288,12 +373,72 @@ impl Render {
                 // Setup
                 render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
 
-                // Squares
+                // Geometry
                 render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
                 render_pass.set_pipeline(&self.pipeline);
                 render_pass.draw_indexed(0..num_indices, 0, 0..1);
+
+                // Sprites
+
+                let sprite_instance_data = sprite_instances.iter().map(SpriteInstance::to_raw).collect::<Vec<_>>();
+                self.sprite_instance_buffer = self.device.create_buffer_init(
+                    &wgpu::util::BufferInitDescriptor {
+                        label: Some("Sprite Instance Buffer"),
+                        contents: bytemuck::cast_slice(&sprite_instance_data),
+                        usage: wgpu::BufferUsages::VERTEX,
+                    }
+                );
+
+                let mut loaded_textures: Vec<TextureView> = Vec::new();
+
+                for texture in textures {
+                    let diffuse_texture =
+                        sprite::texture::Texture::from_bytes(&self.device, &self.queue, texture, "torch.png",false);
+                    loaded_textures.push(diffuse_texture.view);
+                }
+
+                let sampler = self.device.create_sampler(&wgpu::SamplerDescriptor {
+                    address_mode_u: wgpu::AddressMode::ClampToEdge,
+                    address_mode_v: wgpu::AddressMode::ClampToEdge,
+                    address_mode_w: wgpu::AddressMode::ClampToEdge,
+                    mag_filter: wgpu::FilterMode::Nearest,
+                    min_filter: wgpu::FilterMode::Nearest,
+                    mipmap_filter: wgpu::FilterMode::Nearest,
+                    ..Default::default()
+                });
+
+                let x = loaded_textures.iter().map(| x | x).collect::<Vec<&TextureView>>();
+
+
+                self.diffuse_bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+                    layout: &self.sprite_bind_group_layout,
+                    entries: &[
+                        wgpu::BindGroupEntry {
+                            binding: 0,
+                            resource: wgpu::BindingResource::TextureViewArray(x.as_slice()),
+                        },
+                        wgpu::BindGroupEntry {
+                            binding: 1,
+                            resource: wgpu::BindingResource::Sampler(&sampler),
+                        },
+                        wgpu::BindGroupEntry {
+                            binding: 2,
+                            resource: self.camera_buffer.as_entire_binding(),
+                        }
+                    ],
+                    label: Some("diffuse_bind_group"),
+                });
+
+                render_pass.set_pipeline(&self.sprite_render_pipeline);
+                render_pass.set_bind_group(2, &self.camera_bind_group, &[]);
+                render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+                render_pass.set_vertex_buffer(0, self.sprite_vertex_buffer.slice(..));
+                render_pass.set_vertex_buffer(1, self.sprite_instance_buffer.slice(..));
+                render_pass.set_index_buffer(self.sprite_index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+                render_pass.draw_indexed(0..self.sprite_num_indices, 0, 0..sprite_instances.len() as _);
+
 
                 drop(render_pass);
 

@@ -38,6 +38,8 @@ use crate::scene::Scene;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
+use crate::game_object::graphics::get_file_as_byte_vector;
+use crate::renderer::sprite::{SpriteInstance};
 
 pub struct MouseData {
     is_middle_pressed: bool,
@@ -64,6 +66,7 @@ pub struct Engine {
     renderer: Option<Render>,
     last_delta: Duration,
     last_frame_end: Instant,
+    sprites: Vec<Vec<u8>>
 }
 
 pub struct EngineConfig {
@@ -104,7 +107,14 @@ impl Engine {
             },
             last_delta: Duration::from_millis(0),
             last_frame_end: Instant::now(),
+            sprites: Vec::new()
         }
+    }
+
+    pub fn load_sprite(&mut self,image: &str) -> usize {
+        let f = get_file_as_byte_vector(image);
+        self.sprites.push(f);
+        return self.sprites.len()
     }
 
     pub fn set_current_scene(&mut self, new_scene: String) {
@@ -296,6 +306,10 @@ impl Engine {
         let active_scene = self.active_scene.as_mut();
         let mut buffer = QuadBufferBuilder::new();
 
+        // Sprites
+        let mut sprite_instances: Vec<SpriteInstance> = Vec::new();
+        //
+
         if active_scene.is_some() {
             {
                 let active_scene = self.active_scene.as_mut().unwrap();
@@ -312,6 +326,7 @@ impl Engine {
                         &mut active_scene.collider_set,
                         &mut self.last_delta,
                         &mut self.collision_locks,
+                        &mut sprite_instances
                     );
                 }
             }
@@ -338,6 +353,8 @@ impl Engine {
                 },
                 &self.mouse_data,
                 &self.config.clear_color,
+                sprite_instances,
+                self.sprites.iter().map(| sprite| sprite.as_slice()).collect()
             );
         }
     }
