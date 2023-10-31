@@ -1,0 +1,340 @@
+{
+    "software": {
+        "name": "rTexPacker v2.5",
+        "url": "https://raylibtech.itch.io/rtexpacker"
+    },
+    "atlas": {
+        "imagePath": "atlas.png",
+        "width": 512,
+        "height": 512,
+        "spriteCount": 36,
+        "isFont": false,
+        "fontSize": 32
+    },
+    "sprites": [
+        {
+            "nameId": "tile000",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 0, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile001",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 12, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile002",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 24, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile003",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 36, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 3, "y": 2, "width": 7, "height": 8 }
+        },
+        {
+            "nameId": "tile004",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 48, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 2, "width": 8, "height": 7 }
+        },
+        {
+            "nameId": "tile005",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 60, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 3, "y": 2, "width": 7, "height": 8 }
+        },
+        {
+            "nameId": "tile006",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 72, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 2, "width": 8, "height": 7 }
+        },
+        {
+            "nameId": "tile007",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 84, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 5, "width": 8, "height": 5 }
+        },
+        {
+            "nameId": "tile008",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 96, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile009",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 108, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile010",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 120, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile011",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 132, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 3, "width": 8, "height": 8 }
+        },
+        {
+            "nameId": "tile012",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 144, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 1, "width": 8, "height": 10 }
+        },
+        {
+            "nameId": "tile016",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 156, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile017",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 168, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile018",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 180, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile019",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 192, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 1, "y": 1, "width": 10, "height": 10 }
+        },
+        {
+            "nameId": "tile021",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 204, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile022",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 216, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile023",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 228, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 4, "y": 0, "width": 4, "height": 12 }
+        },
+        {
+            "nameId": "tile024",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 240, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile025",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 252, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile026",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 264, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 1, "y": 0, "width": 11, "height": 12 }
+        },
+        {
+            "nameId": "tile027",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 276, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 11, "height": 12 }
+        },
+        {
+            "nameId": "tile032",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 288, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile033",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 300, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 12 }
+        },
+        {
+            "nameId": "tile034",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 312, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 0, "y": 0, "width": 12, "height": 6 }
+        },
+        {
+            "nameId": "tile035",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 324, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 0, "width": 8, "height": 12 }
+        },
+        {
+            "nameId": "tile037",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 336, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 1, "y": 1, "width": 9, "height": 10 }
+        },
+        {
+            "nameId": "tile038",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 348, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 1, "y": 1, "width": 9, "height": 10 }
+        },
+        {
+            "nameId": "tile039",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 360, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 1, "y": 1, "width": 9, "height": 10 }
+        },
+        {
+            "nameId": "tile040",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 372, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 2, "width": 8, "height": 8 }
+        },
+        {
+            "nameId": "tile041",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 384, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 3, "y": 2, "width": 6, "height": 8 }
+        },
+        {
+            "nameId": "tile043",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 396, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 3, "y": 2, "width": 6, "height": 8 }
+        },
+        {
+            "nameId": "tile044",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 408, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 2, "width": 8, "height": 8 }
+        },
+        {
+            "nameId": "tile045",
+            "origin": { "x": 0, "y": 0 },
+            "position": { "x": 420, "y": 0 },
+            "sourceSize": { "width": 12, "height": 12 },
+            "padding": 0,
+            "trimmed": false,
+            "trimRec": { "x": 2, "y": 2, "width": 8, "height": 8 }
+        }
+    ]
+}

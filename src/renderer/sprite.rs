@@ -6,7 +6,7 @@ pub(crate) mod texture;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-pub(crate) struct SpriteVertex {
+pub struct SpriteVertex {
     pub(crate) position: [f32; 3],
     pub(crate) tex_coords: [f32; 2],
 }
@@ -33,77 +33,10 @@ impl SpriteVertex {
     }
 }
 
-pub struct SpriteInstance {
-    pub position: cgmath::Vector3<f32>,
-    pub rotation: cgmath::Quaternion<f32>,
-    pub sprite_index: f32 // Don't ask...
-}
-
-impl SpriteInstance {
-    pub(crate) fn to_raw(&self) -> SpriteInstanceRaw {
-        SpriteInstanceRaw {
-            model: (cgmath::Matrix4::from_translation(self.position) * cgmath::Matrix4::from(self.rotation)).into(),
-            sprite_index: self.sprite_index
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
-pub(crate) struct SpriteInstanceRaw {
-    pub(crate) model: [[f32; 4]; 4],
-    pub(crate) sprite_index: f32
-}
-
-impl SpriteInstanceRaw {
-    fn desc() -> wgpu::VertexBufferLayout<'static> {
-        use std::mem;
-        wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<SpriteInstanceRaw>() as wgpu::BufferAddress,
-            // We need to switch from using a step mode of Vertex to Instance
-            // This means that our shaders will only change to use the next
-            // instance when the shader starts processing a new instance
-            step_mode: wgpu::VertexStepMode::Instance,
-            attributes: &[
-                // A mat4 takes up 4 vertex slots as it is technically 4 vec4s. We need to define a slot
-                // for each vec4. We'll have to reassemble the mat4 in the shader.
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    // While our vertex shader only uses locations 0, and 1 now, in later tutorials we'll
-                    // be using 2, 3, and 4, for Vertex. We'll start at slot 5 not conflict with them later
-                    shader_location: 5,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
-                    shader_location: 6,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 8]>() as wgpu::BufferAddress,
-                    shader_location: 7,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 12]>() as wgpu::BufferAddress,
-                    shader_location: 8,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                // Sprite index
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 16]>() as wgpu::BufferAddress,
-                    shader_location: 9,
-                    format: wgpu::VertexFormat::Float32,
-                },
-            ],
-        }
-    }
-}
-
 
 pub(crate) fn create_sprite_render_pipeline(device : &Device,config: &wgpu::SurfaceConfiguration,texture_count: u32) -> (RenderPipeline,BindGroupLayout) {
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: Some("Shader"),
+        label: Some("Sprite Shader"),
         source: wgpu::ShaderSource::Wgsl(include_str!("../renderer/shaders/sprite.wgsl").into()),
     });
 
@@ -118,7 +51,7 @@ pub(crate) fn create_sprite_render_pipeline(device : &Device,config: &wgpu::Surf
                         view_dimension: wgpu::TextureViewDimension::D2,
                         sample_type: wgpu::TextureSampleType::Float { filterable: true },
                     },
-                    count: NonZeroU32::new(128),
+                    count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
                     binding: 1,
@@ -153,7 +86,7 @@ pub(crate) fn create_sprite_render_pipeline(device : &Device,config: &wgpu::Surf
         vertex: wgpu::VertexState {
             module: &shader,
             entry_point: "vs_main",
-            buffers: &[SpriteVertex::desc(), SpriteInstanceRaw::desc()],
+            buffers: &[SpriteVertex::desc()],
         },
         fragment: Some(wgpu::FragmentState {
             module: &shader,

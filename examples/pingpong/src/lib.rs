@@ -38,8 +38,9 @@ pub fn main() -> Result<(), JsValue> {
                 green: 0,
                 blue: 0,
             },
-        },
+        }
     );
+    flame.load_sprite_atlas("atlas.json","atlas.png");
 
     register_main_scene(&mut flame);
 

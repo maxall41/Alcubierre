@@ -1,22 +1,18 @@
 use crate::game_object::GameObject;
+use crate::renderer::atlas::{AtlasVector2, SpriteAtlas};
 use crate::renderer::buffer::QuadBufferBuilder;
+use crate::renderer::sprite::SpriteVertex;
 use crate::ui::frontend::RGBColor;
-use std::f32::consts::PI;
-use std::fs;
-use std::fs::File;
-use std::io::Read;
-use cgmath::Rotation3;
-use hashbrown::HashMap;
-use crate::renderer::sprite::SpriteInstance;
 
-pub type SpriteID = usize;
+pub type SpriteID = String;
 
 #[derive(Clone)]
 pub struct SpriteData {
     pub sprite_id: SpriteID,
-    pub filter: bool,
     pub width: f32,
-    pub height: f32
+    pub height: f32,
+    pub flip_h: bool,
+    pub flip_v: bool
 }
 #[derive(Clone)]
 pub struct CircleData {
@@ -44,31 +40,23 @@ pub enum GraphicsType {
 
 pub trait Graphics {
     fn add_graphics(&mut self, graphics_type: GraphicsType);
-    fn render(&mut self, buffer: &mut QuadBufferBuilder,sprite_instances: &mut Vec<SpriteInstance>);
-}
-
-pub(crate) fn get_file_as_byte_vector(filename: &str) -> Vec<u8> {
-    let mut f = File::open(&filename).expect("no file found");
-    let metadata = fs::metadata(&filename).expect("unable to read metadata");
-    let mut buffer = vec![0; metadata.len() as usize];
-    f.read(&mut buffer).expect("buffer overflow");
-
-    buffer
+    fn render(&mut self, buffer: &mut QuadBufferBuilder,sprite_verticies: &mut Vec<SpriteVertex>,
+              sprite_indicies: &mut Vec<u16>,atlas: &SpriteAtlas);
 }
 
 impl Graphics for GameObject {
     fn add_graphics(&mut self, graphics_type: GraphicsType) {
         self.graphics = Some(graphics_type);
     }
-    fn render(&mut self, buffer: &mut QuadBufferBuilder,sprite_instances: &mut Vec<SpriteInstance>) {
+    fn render(&mut self, buffer: &mut QuadBufferBuilder,sprite_verticies: &mut Vec<SpriteVertex>,
+              sprite_indicies: &mut Vec<u16>,atlas: &SpriteAtlas) {
         match &self.graphics {
             Some(graphics) => match graphics {
                 GraphicsType::Sprite(sprite) => {
-                    sprite_instances.push(SpriteInstance {
-                        position: cgmath::Vector3 { x: self.pos_x, y: self.pos_y, z: 0.0 },
-                        rotation: cgmath::Quaternion::from_axis_angle(cgmath::Vector3::unit_z(), cgmath::Deg(0.0)),
-                        sprite_index: sprite.sprite_id as f32,
-                    });
+                    let sprite_data = atlas.lookup_sprite_data_from_descriptor(&sprite.sprite_id);
+                    let sprite = atlas.get_sprite_from_atlas(&sprite_data.position,&sprite_data.sourceSize,[self.pos_x,self.pos_y],[sprite.width,sprite.height],sprite.flip_h,sprite.flip_v);
+                    sprite_verticies.extend_from_slice(&sprite.0);
+                    sprite_indicies.extend_from_slice(&sprite.1)
                 }
                 GraphicsType::Circle(circle) => {
                     // 1.55 here is to match physics scaling

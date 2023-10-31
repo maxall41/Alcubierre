@@ -1,6 +1,8 @@
 pub(crate) mod buffer;
 pub(crate) mod sprite;
 pub mod camera;
+pub(crate) mod atlas;
+mod texture;
 
 use hashbrown::HashMap;
 use std::iter;
@@ -20,8 +22,8 @@ use crate::ui::backend::wgpu::render_from_hyperfoil_ast;
 use crate::ui::frontend::{HyperFoilAST, RGBColor};
 use crate::MouseData;
 use buffer::*;
-use crate::renderer::sprite::{create_sprite_render_pipeline, SpriteInstance, SpriteVertex};
-use crate::renderer::sprite::texture::Texture;
+use crate::renderer::atlas::SpriteAtlas;
+use crate::renderer::sprite::{create_sprite_render_pipeline, SpriteVertex};
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -46,8 +48,6 @@ pub struct Render {
     sprite_bind_group_layout: BindGroupLayout,
     sprite_vertex_buffer: Buffer,
     sprite_index_buffer: Buffer,
-    sprite_instance_buffer: Buffer,
-    sprite_num_indices: u32,
     diffuse_bind_group: BindGroup
 }
 
@@ -202,38 +202,18 @@ impl Render {
             mapped_at_creation: false,
         });
 
-        const VERTICES: &[SpriteVertex] = &[
-            SpriteVertex {
-                position: [0.3381871, -0.3, 0.0],
-                tex_coords: [1.0, 1.0],
-            }, // A
-            SpriteVertex {
-                position: [0.9381871, -0.3, 0.0],
-                tex_coords: [0.0, 1.0],
-            }, // B
-            SpriteVertex {
-                position: [0.9381871, 0.3, 0.0],
-                tex_coords: [0.0, 0.0],
-            }, // C
-            SpriteVertex {
-                position: [0.3381871, 0.3, 0.0],
-                tex_coords: [1.0, 0.0],
-            }, // D
-        ];
-
-        const INDICES: &[u16] = &[0, 1, 2,0,2,3];
-
-        let sprite_num_indices = INDICES.len() as u32;
-
-        let sprite_vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(VERTICES),
-            usage: wgpu::BufferUsages::VERTEX,
+        let sprite_vertex_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Sprite Vertex Buffer"),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            size: Vertex::SIZE * 4 * 2000,
+            mapped_at_creation: false,
         });
-        let sprite_index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Index Buffer"),
-            contents: bytemuck::cast_slice(INDICES),
-            usage: wgpu::BufferUsages::INDEX,
+
+        let sprite_index_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Sprite Index Buffer"),
+            usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
+            size: U32_SIZE * 6 * 2000,
+            mapped_at_creation: false,
         });
 
 
@@ -244,14 +224,6 @@ impl Render {
                 .unwrap();
 
         let glyph_brush = GlyphBrushBuilder::using_font(font.clone()).build(&device, config.format);
-
-        let sprite_instance_buffer = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Sprite Instance Buffer"),
-                contents: &[],
-                usage: wgpu::BufferUsages::VERTEX,
-            }
-        );
 
        // sprite_diffuse_bind_group
 
@@ -289,8 +261,6 @@ impl Render {
             sprite_bind_group_layout,
             sprite_vertex_buffer,
             sprite_index_buffer,
-            sprite_num_indices,
-            sprite_instance_buffer,
             diffuse_bind_group
         }
     }
@@ -321,8 +291,9 @@ impl Render {
         engine_view: &mut EngineView,
         mouse_data: &MouseData,
         clear_color: &RGBColor,
-        sprite_instances: Vec<SpriteInstance>,
-        textures: Vec<&[u8]>
+        sprite_vertices: Vec<SpriteVertex>,
+        sprite_indices: Vec<u16>,
+        sprite_atlas: &Option<SpriteAtlas>
     ) {
         let mut encoder = self
             .device
@@ -348,6 +319,15 @@ impl Render {
         stg_vertex.copy_to_buffer(&mut encoder, &self.vertex_buffer);
         stg_index.copy_to_buffer(&mut encoder, &self.index_buffer);
 
+        // Sprite stuff
+
+        let stg_sprite_vertex = StagingBuffer::new(&self.device, sprite_vertices.as_slice(), false);
+        let stg_sprite_index =  StagingBuffer::new(&self.device, sprite_indices.as_slice(), true);
+
+        stg_sprite_vertex.copy_to_buffer(&mut encoder, &self.sprite_vertex_buffer);
+        stg_sprite_index.copy_to_buffer(&mut encoder, &self.sprite_index_buffer);
+
+        //
         match self.surface.get_current_texture() {
             Ok(frame) => {
                 let view = frame.texture.create_view(&Default::default());
@@ -382,23 +362,6 @@ impl Render {
 
                 // Sprites
 
-                let sprite_instance_data = sprite_instances.iter().map(SpriteInstance::to_raw).collect::<Vec<_>>();
-                self.sprite_instance_buffer = self.device.create_buffer_init(
-                    &wgpu::util::BufferInitDescriptor {
-                        label: Some("Sprite Instance Buffer"),
-                        contents: bytemuck::cast_slice(&sprite_instance_data),
-                        usage: wgpu::BufferUsages::VERTEX,
-                    }
-                );
-
-                let mut loaded_textures: Vec<TextureView> = Vec::new();
-
-                for texture in textures {
-                    let diffuse_texture =
-                        sprite::texture::Texture::from_bytes(&self.device, &self.queue, texture, "torch.png",false);
-                    loaded_textures.push(diffuse_texture.view);
-                }
-
                 let sampler = self.device.create_sampler(&wgpu::SamplerDescriptor {
                     address_mode_u: wgpu::AddressMode::ClampToEdge,
                     address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -409,7 +372,10 @@ impl Render {
                     ..Default::default()
                 });
 
-                let x = loaded_textures.iter().map(| x | x).collect::<Vec<&TextureView>>();
+                //TODO: Make actually optional
+                let atlas = sprite_atlas.as_ref().unwrap();
+
+                let diffuse_texture = texture::Texture::from_bytes(&self.device, &self.queue, atlas.atlas.as_slice(), "sprite-atlas");
 
 
                 self.diffuse_bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -417,7 +383,7 @@ impl Render {
                     entries: &[
                         wgpu::BindGroupEntry {
                             binding: 0,
-                            resource: wgpu::BindingResource::TextureViewArray(x.as_slice()),
+                            resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
                         },
                         wgpu::BindGroupEntry {
                             binding: 1,
@@ -431,13 +397,14 @@ impl Render {
                     label: Some("diffuse_bind_group"),
                 });
 
+                let sprite_indices_len = sprite_indices.len() as u32;
+
                 render_pass.set_pipeline(&self.sprite_render_pipeline);
                 render_pass.set_bind_group(2, &self.camera_bind_group, &[]);
                 render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
                 render_pass.set_vertex_buffer(0, self.sprite_vertex_buffer.slice(..));
-                render_pass.set_vertex_buffer(1, self.sprite_instance_buffer.slice(..));
                 render_pass.set_index_buffer(self.sprite_index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.draw_indexed(0..self.sprite_num_indices, 0, 0..sprite_instances.len() as _);
+                render_pass.draw_indexed(0..sprite_indices_len, 0, 0..1);
 
 
                 drop(render_pass);

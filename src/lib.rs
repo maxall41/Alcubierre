@@ -38,8 +38,8 @@ use crate::scene::Scene;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
-use crate::game_object::graphics::get_file_as_byte_vector;
-use crate::renderer::sprite::{SpriteInstance};
+use crate::renderer::atlas::{get_file_as_byte_vector, SpriteAtlas};
+use crate::renderer::sprite::{SpriteVertex};
 
 pub struct MouseData {
     is_middle_pressed: bool,
@@ -66,7 +66,7 @@ pub struct Engine {
     renderer: Option<Render>,
     last_delta: Duration,
     last_frame_end: Instant,
-    sprites: Vec<Vec<u8>>
+    sprite_atlas: Option<SpriteAtlas>
 }
 
 pub struct EngineConfig {
@@ -107,14 +107,13 @@ impl Engine {
             },
             last_delta: Duration::from_millis(0),
             last_frame_end: Instant::now(),
-            sprites: Vec::new()
+            sprite_atlas: None
         }
     }
 
-    pub fn load_sprite(&mut self,image: &str) -> usize {
-        let f = get_file_as_byte_vector(image);
-        self.sprites.push(f);
-        return self.sprites.len()
+    pub fn load_sprite_atlas(&mut self,descriptor_filename: &str,atlas_filename: &str) {
+        let atlas = SpriteAtlas::new(atlas_filename,descriptor_filename);
+        self.sprite_atlas = Some(atlas)
     }
 
     pub fn set_current_scene(&mut self, new_scene: String) {
@@ -307,7 +306,8 @@ impl Engine {
         let mut buffer = QuadBufferBuilder::new();
 
         // Sprites
-        let mut sprite_instances: Vec<SpriteInstance> = Vec::new();
+        let mut sprite_verticies: Vec<SpriteVertex> = Vec::new();
+        let mut sprite_indicies: Vec<u16> = Vec::new();
         //
 
         if active_scene.is_some() {
@@ -326,7 +326,9 @@ impl Engine {
                         &mut active_scene.collider_set,
                         &mut self.last_delta,
                         &mut self.collision_locks,
-                        &mut sprite_instances
+                        &mut sprite_verticies,
+                        &mut sprite_indicies,
+                        &self.sprite_atlas.as_ref().unwrap()
                     );
                 }
             }
@@ -353,8 +355,9 @@ impl Engine {
                 },
                 &self.mouse_data,
                 &self.config.clear_color,
-                sprite_instances,
-                self.sprites.iter().map(| sprite| sprite.as_slice()).collect()
+                sprite_verticies,
+                sprite_indicies,
+                &self.sprite_atlas
             );
         }
     }

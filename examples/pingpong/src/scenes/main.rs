@@ -49,7 +49,6 @@ impl UserBehaviour for BallBehaviour {
 }
 
 pub fn register_main_scene(mut flame: &mut Engine) {
-    let sprite_id = flame.load_sprite("torch.png");
 
     let scene = flame.register_scene("Main".to_string());
 
@@ -78,10 +77,11 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .rigid_body(ball_rigid_body)
         .collider(ball_collider)
         .graphics(GraphicsType::Sprite(SpriteData {
-            width: 2.0,
-            height: 2.0,
-            sprite_id: sprite_id,
-            filter: false
+            width: 1.0,
+            height: 1.0,
+            sprite_id: "tile000".to_string(),
+            flip_h: false,
+            flip_v: false
         }));
 
     let ball = scene.register_game_object(ball_builder);
