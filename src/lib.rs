@@ -338,32 +338,32 @@ impl Engine {
                 }
             }
 
-            // self.handle_events();
-            //
-            // let active_scene = self.active_scene.as_mut().unwrap();
+            self.handle_events();
 
-            // self.renderer.as_mut().unwrap().render_buffer(
-            //     buffer,
-            //     &active_scene.ui_ast,
-            //     &active_scene.data_map,
-            //     &active_scene.function_map,
-            //     &mut EngineView {
-            //         rigid_body_set: &mut active_scene.rigid_body_set,
-            //         narrow_phase: &mut active_scene.narrow_phase_collision,
-            //         collider_set: &mut active_scene.collider_set,
-            //         event_tx: &mut self.event_tx,
-            //         key_locks: &mut self.key_locks,
-            //         keys_pressed: &mut self.keys_pressed,
-            //         query_pipeline: &mut self.query_pipeline,
-            //         frame_delta: &mut self.last_delta,
-            //         collision_locks: &mut self.collision_locks,
-            //     },
-            //     &self.mouse_data,
-            //     &self.config.clear_color,
-            //     sprite_verticies,
-            //     sprite_indicies,
-            //     &self.sprite_atlas
-            // );
+            let active_scene = self.active_scene.as_mut().unwrap();
+
+            self.renderer.as_mut().unwrap().render_buffer(
+                buffer,
+                &active_scene.ui_ast,
+                &active_scene.data_map,
+                &active_scene.function_map,
+                &mut EngineView {
+                    rigid_body_set: &mut active_scene.rigid_body_set,
+                    narrow_phase: &mut active_scene.narrow_phase_collision,
+                    collider_set: &mut active_scene.collider_set,
+                    event_tx: &mut self.event_tx,
+                    key_locks: &mut self.key_locks,
+                    keys_pressed: &mut self.keys_pressed,
+                    query_pipeline: &mut self.query_pipeline,
+                    frame_delta: &mut self.last_delta,
+                    collision_locks: &mut self.collision_locks,
+                },
+                &self.mouse_data,
+                &self.config.clear_color,
+                sprite_verticies,
+                sprite_indicies,
+                &self.sprite_atlas
+            );
         }
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {

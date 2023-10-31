@@ -302,20 +302,20 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        // if ast.is_some() {
-        //     render_from_hyperfoil_ast(
-        //         ast.as_ref().unwrap(),
-        //         &mut self.glyph_brush,
-        //         self.size,
-        //         &self.font,
-        //         data_map,
-        //         function_map,
-        //         &mut buffer,
-        //         engine_view,
-        //         &self.projection,
-        //         mouse_data,
-        //     );
-        // }
+        if ast.is_some() {
+            render_from_hyperfoil_ast(
+                ast.as_ref().unwrap(),
+                &mut self.glyph_brush,
+                self.size,
+                &self.font,
+                data_map,
+                function_map,
+                &mut buffer,
+                engine_view,
+                &self.projection,
+                mouse_data,
+            );
+        }
 
         let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
 
@@ -409,16 +409,16 @@ impl Render {
                 drop(render_pass);
 
                 // Draw the text!
-                // self.glyph_brush
-                //     .draw_queued(
-                //         &self.device,
-                //         &mut self.staging_belt,
-                //         &mut encoder,
-                //         &view,
-                //         self.size.width,
-                //         self.size.height,
-                //     )
-                //     .expect("Draw queued");
+                self.glyph_brush
+                    .draw_queued(
+                        &self.device,
+                        &mut self.staging_belt,
+                        &mut encoder,
+                        &view,
+                        self.size.width,
+                        self.size.height,
+                    )
+                    .expect("Draw queued");
 
                 self.staging_belt.finish();
                 self.queue.submit(iter::once(encoder.finish()));

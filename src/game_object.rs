@@ -355,12 +355,12 @@ impl GameObject {
             // );
         }
 
-        // if self.physics.rigid_body_handle.is_some() {
-        //     let new_pos = self.get_updated_physics_position(rigid_body_set);
-        //     self.pos_x = new_pos.0;
-        //     self.pos_y = new_pos.1;
-        // }
-        // self.render(buffer,sprite_verticies,sprite_indicies,atlas);
+        if self.physics.rigid_body_handle.is_some() {
+            let new_pos = self.get_updated_physics_position(rigid_body_set);
+            self.pos_x = new_pos.0;
+            self.pos_y = new_pos.1;
+        }
+        self.render(buffer,sprite_verticies,sprite_indicies,atlas);
     }
 }
 
