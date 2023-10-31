@@ -79,10 +79,18 @@ pub fn register_main_scene(mut flame: &mut Engine) {
         .graphics(GraphicsType::Sprite(SpriteData {
             width: 1.0,
             height: 1.0,
-            sprite_id: "tile000".to_string(),
+            sprite_id: "tile003".to_string(),
             flip_h: false,
             flip_v: false
         }));
+        // .graphics(GraphicsType::Circle(CircleData {
+        //     radius: 1.0,
+        //     color: RGBColor {
+        //         red: 255,
+        //         green: 255,
+        //         blue: 255
+        //     }
+        // }));
 
     let ball = scene.register_game_object(ball_builder);
 

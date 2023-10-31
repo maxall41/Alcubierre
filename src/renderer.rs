@@ -24,6 +24,7 @@ use crate::MouseData;
 use buffer::*;
 use crate::renderer::atlas::SpriteAtlas;
 use crate::renderer::sprite::{create_sprite_render_pipeline, SpriteVertex};
+use crate::renderer::texture::Texture;
 
 pub struct Render {
     surface: wgpu::Surface,
@@ -48,7 +49,8 @@ pub struct Render {
     sprite_bind_group_layout: BindGroupLayout,
     sprite_vertex_buffer: Buffer,
     sprite_index_buffer: Buffer,
-    diffuse_bind_group: BindGroup
+    diffuse_bind_group: BindGroup,
+    cached_sprite_atlas_texture: Option<Texture>,
 }
 
 impl Render {
@@ -261,7 +263,8 @@ impl Render {
             sprite_bind_group_layout,
             sprite_vertex_buffer,
             sprite_index_buffer,
-            diffuse_bind_group
+            diffuse_bind_group,
+            cached_sprite_atlas_texture: None
         }
     }
 
@@ -299,20 +302,20 @@ impl Render {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        if ast.is_some() {
-            render_from_hyperfoil_ast(
-                ast.as_ref().unwrap(),
-                &mut self.glyph_brush,
-                self.size,
-                &self.font,
-                data_map,
-                function_map,
-                &mut buffer,
-                engine_view,
-                &self.projection,
-                mouse_data,
-            );
-        }
+        // if ast.is_some() {
+        //     render_from_hyperfoil_ast(
+        //         ast.as_ref().unwrap(),
+        //         &mut self.glyph_brush,
+        //         self.size,
+        //         &self.font,
+        //         data_map,
+        //         function_map,
+        //         &mut buffer,
+        //         engine_view,
+        //         &self.projection,
+        //         mouse_data,
+        //     );
+        // }
 
         let (stg_vertex, stg_index, num_indices) = buffer.build(&self.device);
 
@@ -362,64 +365,60 @@ impl Render {
 
                 // Sprites
 
-                let sampler = self.device.create_sampler(&wgpu::SamplerDescriptor {
-                    address_mode_u: wgpu::AddressMode::ClampToEdge,
-                    address_mode_v: wgpu::AddressMode::ClampToEdge,
-                    address_mode_w: wgpu::AddressMode::ClampToEdge,
-                    mag_filter: wgpu::FilterMode::Nearest,
-                    min_filter: wgpu::FilterMode::Nearest,
-                    mipmap_filter: wgpu::FilterMode::Nearest,
-                    ..Default::default()
-                });
+                // Sprite rendering
+                if sprite_atlas.is_some() {
+                    if self.cached_sprite_atlas_texture.is_none() {
+                        let atlas = sprite_atlas.as_ref().unwrap();
+                        let diffuse_texture = texture::Texture::from_bytes(&self.device, &self.queue, atlas.atlas.as_slice(), "sprite-atlas");
+                        self.cached_sprite_atlas_texture = Some(diffuse_texture);
+                    }
 
-                //TODO: Make actually optional
-                let atlas = sprite_atlas.as_ref().unwrap();
-
-                let diffuse_texture = texture::Texture::from_bytes(&self.device, &self.queue, atlas.atlas.as_slice(), "sprite-atlas");
+                    let safe_cached_sprite_atlas_texture = self.cached_sprite_atlas_texture.as_ref().unwrap();
 
 
-                self.diffuse_bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                    layout: &self.sprite_bind_group_layout,
-                    entries: &[
-                        wgpu::BindGroupEntry {
-                            binding: 0,
-                            resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                        },
-                        wgpu::BindGroupEntry {
-                            binding: 1,
-                            resource: wgpu::BindingResource::Sampler(&sampler),
-                        },
-                        wgpu::BindGroupEntry {
-                            binding: 2,
-                            resource: self.camera_buffer.as_entire_binding(),
-                        }
-                    ],
-                    label: Some("diffuse_bind_group"),
-                });
+                    self.diffuse_bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+                        layout: &self.sprite_bind_group_layout,
+                        entries: &[
+                            wgpu::BindGroupEntry {
+                                binding: 0,
+                                resource: wgpu::BindingResource::TextureView(&safe_cached_sprite_atlas_texture.view),
+                            },
+                            wgpu::BindGroupEntry {
+                                binding: 1,
+                                resource: wgpu::BindingResource::Sampler(&safe_cached_sprite_atlas_texture.sampler),
+                            },
+                            wgpu::BindGroupEntry {
+                                binding: 2,
+                                resource: self.camera_buffer.as_entire_binding(),
+                            }
+                        ],
+                        label: Some("diffuse_bind_group"),
+                    });
 
-                let sprite_indices_len = sprite_indices.len() as u32;
+                    let sprite_indices_len = sprite_indices.len() as u32;
 
-                render_pass.set_pipeline(&self.sprite_render_pipeline);
-                render_pass.set_bind_group(2, &self.camera_bind_group, &[]);
-                render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
-                render_pass.set_vertex_buffer(0, self.sprite_vertex_buffer.slice(..));
-                render_pass.set_index_buffer(self.sprite_index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.draw_indexed(0..sprite_indices_len, 0, 0..1);
+                    render_pass.set_pipeline(&self.sprite_render_pipeline);
+                    render_pass.set_bind_group(2, &self.camera_bind_group, &[]);
+                    render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+                    render_pass.set_vertex_buffer(0, self.sprite_vertex_buffer.slice(..));
+                    render_pass.set_index_buffer(self.sprite_index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+                    render_pass.draw_indexed(0..sprite_indices_len, 0, 0..1);
+                }
 
 
                 drop(render_pass);
 
                 // Draw the text!
-                self.glyph_brush
-                    .draw_queued(
-                        &self.device,
-                        &mut self.staging_belt,
-                        &mut encoder,
-                        &view,
-                        self.size.width,
-                        self.size.height,
-                    )
-                    .expect("Draw queued");
+                // self.glyph_brush
+                //     .draw_queued(
+                //         &self.device,
+                //         &mut self.staging_belt,
+                //         &mut encoder,
+                //         &view,
+                //         self.size.width,
+                //         self.size.height,
+                //     )
+                //     .expect("Draw queued");
 
                 self.staging_belt.finish();
                 self.queue.submit(iter::once(encoder.finish()));

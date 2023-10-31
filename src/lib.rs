@@ -36,6 +36,8 @@ use winit::window::WindowBuilder;
 
 use crate::scene::Scene;
 
+use rhai::{Engine as RhaiEngine};
+
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 use crate::renderer::atlas::{get_file_as_byte_vector, SpriteAtlas};
@@ -66,7 +68,8 @@ pub struct Engine {
     renderer: Option<Render>,
     last_delta: Duration,
     last_frame_end: Instant,
-    sprite_atlas: Option<SpriteAtlas>
+    sprite_atlas: Option<SpriteAtlas>,
+    engine: RhaiEngine
 }
 
 pub struct EngineConfig {
@@ -107,7 +110,8 @@ impl Engine {
             },
             last_delta: Duration::from_millis(0),
             last_frame_end: Instant::now(),
-            sprite_atlas: None
+            sprite_atlas: None,
+            engine: RhaiEngine::new(),
         }
     }
 
@@ -328,37 +332,38 @@ impl Engine {
                         &mut self.collision_locks,
                         &mut sprite_verticies,
                         &mut sprite_indicies,
-                        &self.sprite_atlas.as_ref().unwrap()
+                        &self.sprite_atlas,
+                        &mut self.engine
                     );
                 }
             }
 
-            self.handle_events();
+            // self.handle_events();
+            //
+            // let active_scene = self.active_scene.as_mut().unwrap();
 
-            let active_scene = self.active_scene.as_mut().unwrap();
-
-            self.renderer.as_mut().unwrap().render_buffer(
-                buffer,
-                &active_scene.ui_ast,
-                &active_scene.data_map,
-                &active_scene.function_map,
-                &mut EngineView {
-                    rigid_body_set: &mut active_scene.rigid_body_set,
-                    narrow_phase: &mut active_scene.narrow_phase_collision,
-                    collider_set: &mut active_scene.collider_set,
-                    event_tx: &mut self.event_tx,
-                    key_locks: &mut self.key_locks,
-                    keys_pressed: &mut self.keys_pressed,
-                    query_pipeline: &mut self.query_pipeline,
-                    frame_delta: &mut self.last_delta,
-                    collision_locks: &mut self.collision_locks,
-                },
-                &self.mouse_data,
-                &self.config.clear_color,
-                sprite_verticies,
-                sprite_indicies,
-                &self.sprite_atlas
-            );
+            // self.renderer.as_mut().unwrap().render_buffer(
+            //     buffer,
+            //     &active_scene.ui_ast,
+            //     &active_scene.data_map,
+            //     &active_scene.function_map,
+            //     &mut EngineView {
+            //         rigid_body_set: &mut active_scene.rigid_body_set,
+            //         narrow_phase: &mut active_scene.narrow_phase_collision,
+            //         collider_set: &mut active_scene.collider_set,
+            //         event_tx: &mut self.event_tx,
+            //         key_locks: &mut self.key_locks,
+            //         keys_pressed: &mut self.keys_pressed,
+            //         query_pipeline: &mut self.query_pipeline,
+            //         frame_delta: &mut self.last_delta,
+            //         collision_locks: &mut self.collision_locks,
+            //     },
+            //     &self.mouse_data,
+            //     &self.config.clear_color,
+            //     sprite_verticies,
+            //     sprite_indicies,
+            //     &self.sprite_atlas
+            // );
         }
     }
     pub fn register_scene(&mut self, scene_name: String) -> &mut Scene {

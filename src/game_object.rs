@@ -230,7 +230,8 @@ impl GameObject {
         collision_locks: &mut HashSet<ColliderHandle>,
         sprite_verticies: &mut Vec<SpriteVertex>,
         sprite_indicies: &mut Vec<u16>,
-        atlas: &SpriteAtlas
+        atlas: &Option<SpriteAtlas>,
+        engine: &mut Engine
     ) {
         let event = self.event_rx.try_recv();
         let mut object_event: Option<GameObjectIPC> = None;
@@ -243,7 +244,7 @@ impl GameObject {
             }
         }
 
-        let mut engine = Engine::new();
+        // let mut engine = Engine::new();
         for behaviour in &mut self.behaviours {
             let rigid_body = rigid_body_set
                 .get_mut(self.physics.rigid_body_handle.unwrap())
@@ -310,9 +311,6 @@ impl GameObject {
                 .call_fn_with_options::<GameObjectRhaiView>(options,&mut behaviour.scope, &behaviour.ast, "update", (frame_delta.as_secs_f64(),))
                 .unwrap();
 
-            //println!("OLD: {}", self.pos_x);
-            //println!("NEW: {}", new_view.pos_x);
-
 
             rigid_body.set_position(new_view.rigid_body.position().clone(),true)
             //TODO: Maybe this should be a drain so all events get sent per frame
@@ -357,12 +355,12 @@ impl GameObject {
             // );
         }
 
-        if self.physics.rigid_body_handle.is_some() {
-            let new_pos = self.get_updated_physics_position(rigid_body_set);
-            self.pos_x = new_pos.0;
-            self.pos_y = new_pos.1;
-        }
-        self.render(buffer,sprite_verticies,sprite_indicies,atlas);
+        // if self.physics.rigid_body_handle.is_some() {
+        //     let new_pos = self.get_updated_physics_position(rigid_body_set);
+        //     self.pos_x = new_pos.0;
+        //     self.pos_y = new_pos.1;
+        // }
+        // self.render(buffer,sprite_verticies,sprite_indicies,atlas);
     }
 }
 

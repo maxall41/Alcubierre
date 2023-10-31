@@ -41,7 +41,7 @@ pub enum GraphicsType {
 pub trait Graphics {
     fn add_graphics(&mut self, graphics_type: GraphicsType);
     fn render(&mut self, buffer: &mut QuadBufferBuilder,sprite_verticies: &mut Vec<SpriteVertex>,
-              sprite_indicies: &mut Vec<u16>,atlas: &SpriteAtlas);
+              sprite_indicies: &mut Vec<u16>,atlas: &Option<SpriteAtlas>);
 }
 
 impl Graphics for GameObject {
@@ -49,17 +49,20 @@ impl Graphics for GameObject {
         self.graphics = Some(graphics_type);
     }
     fn render(&mut self, buffer: &mut QuadBufferBuilder,sprite_verticies: &mut Vec<SpriteVertex>,
-              sprite_indicies: &mut Vec<u16>,atlas: &SpriteAtlas) {
+              sprite_indicies: &mut Vec<u16>,atlas: &Option<SpriteAtlas>) {
         match &self.graphics {
             Some(graphics) => match graphics {
                 GraphicsType::Sprite(sprite) => {
-                    let sprite_data = atlas.lookup_sprite_data_from_descriptor(&sprite.sprite_id);
-                    let sprite = atlas.get_sprite_from_atlas(&sprite_data.position,&sprite_data.sourceSize,[self.pos_x,self.pos_y],[sprite.width,sprite.height],sprite.flip_h,sprite.flip_v);
+                    if atlas.is_none() {
+                        panic!("No atlas configured!"); //TODO: Proper error handling
+                    }
+                    let safe_atlas = atlas.as_ref().unwrap();
+                    let sprite_data = safe_atlas.lookup_sprite_data_from_descriptor(&sprite.sprite_id);
+                    let sprite = safe_atlas.get_sprite_from_atlas(&sprite_data.position,&sprite_data.sourceSize,[self.pos_x,self.pos_y],[sprite.width,sprite.height],sprite.flip_h,sprite.flip_v);
                     sprite_verticies.extend_from_slice(&sprite.0);
                     sprite_indicies.extend_from_slice(&sprite.1)
                 }
                 GraphicsType::Circle(circle) => {
-                    // 1.55 here is to match physics scaling
                     buffer.push_circle(self.pos_x, self.pos_y, circle.radius, &circle.color, 60);
                 }
                 GraphicsType::Rect(square) => {
