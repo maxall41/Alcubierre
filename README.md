@@ -24,7 +24,6 @@ It is no where near ready for that use case though. As what it supports is still
 * Error Handling
 * Collision Layers
 * GameObject Tags
-* LDTK Support
 * Prefabs
 * Tilemaps
 * Advanced Audio System
